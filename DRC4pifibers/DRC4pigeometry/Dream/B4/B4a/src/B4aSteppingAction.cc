@@ -101,12 +101,12 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 	////////////////////////////////////////////////////////////////////
 	//DECOMMENT if you want the tau decays products position information
 	
-	/*if(step->GetTrack()->GetParentID() == 1){
-		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName());
+	if(step->GetTrack()->GetParentID() == 1){
+		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName(),step->GetTrack()->GetKineticEnergy());
 	}
-	
+	/*
 	if(((step->GetTrack()->GetParentID() == 4 || step->GetTrack()->GetParentID() == 3) && (step->GetTrack()->GetDefinition()->GetParticleName()=="gamma"))|| (step->GetTrack()->GetParentID() == 2 && step->GetTrack()->GetDefinition()->GetParticleName()=="mu-")){
-		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName());
+		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName(),step->GetTrack()->GetKineticEnergy());
 	}*/
 	////////////////////////////////////////////////////////////////////
 		
@@ -138,17 +138,21 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 	  
 	std::string LengthFibr =  step->GetPreStepPoint()->GetTouchableHandle()->GetVolume(1)->GetName(); 
 	  
-	G4double S_fiber_ID = Sfibercopynumber/(copynumberslice+1);
+	G4double S_fiber_ID = 0;
 	
-	  
     if (copynumbertower > 0){ //im in barrel right or endcap right
      fEventAction->AddVectorScinEnergyR(saturatedenergydeposited,copynumbertower, copynumberslice); //energy deposited in any scintillating fiber (saturated)
 	 fEventAction->AddVectorR(energydeposited, copynumbertower, copynumberslice);
+	 //I want unique Fiber ID: 168750000 is the max of Sfibercopynumber
+	 S_fiber_ID = Sfibercopynumber+(168750000*copynumberslice);
 	}  
 	  
   	if (copynumbertower < 0){ //im in barrel left or endcap left
   	 fEventAction->AddVectorScinEnergyL(saturatedenergydeposited, copynumbertower, copynumberslice);
-  	 fEventAction->AddVectorL(energydeposited, copynumbertower, copynumberslice);}
+  	 fEventAction->AddVectorL(energydeposited, copynumbertower, copynumberslice);
+	 //I want unique Fiber ID: 168750000 is the max of Sfibercopynumber
+	 S_fiber_ID = Sfibercopynumber-(168750000*copynumberslice);
+	}
 		
 	// Fibers routine: fill the S fibres info 
 	if (saturatedenergydeposited>0.){
@@ -177,7 +181,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 		// Extract info for z time
 		std::ofstream TimeFile;
 		TimeFile.open("Time.txt", std::ios_base::app);
-	  	TimeFile<<"Scin "<< std::fixed << std::setprecision(8) <<S_fiber_ID<<" "<<9.56*saturatedenergydeposited<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
+	  	TimeFile<<"Scin "<< std::fixed << std::setprecision(8) <<S_fiber_ID<<" "<<12.5*saturatedenergydeposited<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
 		TimeFile.close();
 	}
   }
@@ -224,12 +228,18 @@ G4ProcessManager* OpManager =
 
 				std::string LengthFibr =  step->GetPreStepPoint()->GetTouchableHandle()->GetVolume(1)->GetName(); 
 				
-				G4double C_fiber_ID = Cfibercopynumber/(copynumberslice+1);
+				G4double C_fiber_ID = 0;
 			
     		   if (copynumbertower>0){ //i'm in barrel right or endcap right
-	    		   fEventAction->AddVectorCherPER(copynumbertower, copynumberslice);}
+	    		   fEventAction->AddVectorCherPER(copynumbertower, copynumberslice);
+			   	 //I want unique Fiber ID: 168750000 is the max of Cfibercopynumber
+	 			 C_fiber_ID = Cfibercopynumber+(168750000*copynumberslice);
+			   }
 	    	   if (copynumbertower<0){ //i'm in barrel left ot endcap left
-	    	   	   fEventAction->AddVectorCherPEL(copynumbertower, copynumberslice);}
+	    	   	   fEventAction->AddVectorCherPEL(copynumbertower, copynumberslice);
+			   //I want unique Fiber ID: 168750000 is the max of Cfibercopynumber
+	 			 C_fiber_ID = Cfibercopynumber-(168750000*copynumberslice);
+			   }
 	    	   fEventAction->AddCherenkov(); // add one photoelectron from Cherenkov process in Cherenkov fibers                  
 				
 				// Fibers routine: fill the C fibres info 

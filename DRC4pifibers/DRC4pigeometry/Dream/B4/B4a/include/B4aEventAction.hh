@@ -83,11 +83,11 @@ class B4aEventAction : public G4UserEventAction
     void WriteFiber_Info(G4double FID, G4double FE, G4int FType, G4ThreeVector Fpos, G4int slice, G4int tower);
     
     typedef struct TrackingInfo {
-        G4double T_ID, T_X, T_Y, T_Z;
+        G4double T_ID, T_X, T_Y, T_Z, T_Ek;
         G4String T_Name;
     } Tracking_Info;
     
-    void WriteTracking_Info(G4double T_ID, G4ThreeVector Tpos, G4String Name);
+    void WriteTracking_Info(G4double T_ID, G4ThreeVector Tpos, G4String Name, G4double Ek);
     
   private:
     G4int cont;
@@ -137,7 +137,7 @@ inline void B4aEventAction::WriteFiber_Info(G4double FID, G4double FE, G4int FTy
     Fiber_Hits[k].F_tower = tower;
 }
 
-inline void B4aEventAction::WriteTracking_Info(G4double TID, G4ThreeVector Tpos, G4String Name){
+inline void B4aEventAction::WriteTracking_Info(G4double TID, G4ThreeVector Tpos, G4String Name, G4double Ek){
     int k=0;
     while (Tracking_Hits[k].T_ID!=0 && Tracking_Hits[k].T_ID!=TID){
         k++;}
@@ -146,6 +146,7 @@ inline void B4aEventAction::WriteTracking_Info(G4double TID, G4ThreeVector Tpos,
     Tracking_Hits[k].T_Y = Tpos[1];
     Tracking_Hits[k].T_Z = Tpos[2];
     Tracking_Hits[k].T_Name = Name;
+    if (Tracking_Hits[k].T_Ek<=0.) {Tracking_Hits[k].T_Ek = Ek;}
 }
 
 
