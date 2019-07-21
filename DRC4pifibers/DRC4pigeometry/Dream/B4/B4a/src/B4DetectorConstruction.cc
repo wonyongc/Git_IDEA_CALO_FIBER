@@ -461,9 +461,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
   	auto Solenoid = new G4Tubs("Solenoid",2.1*m,2.123002*m,2.5*m,0.,360.*deg);
   	G4LogicalVolume* SolenoidLV = new G4LogicalVolume(Solenoid, Fe, "SolenoidLV");
   	G4RotationMatrix* SolenoidRot = new G4RotationMatrix();
-  	new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
-                    "SolenoidPV",worldLV,
-                    false,0,checkOverlaps);
+  	//new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
+       //             "SolenoidPV",worldLV,
+     //               false,0,checkOverlaps);
 	G4VisAttributes* SolenoidAttributes = new G4VisAttributes(G4Colour(1.,0.,0.));   // LightGray
 	SolenoidLV->SetVisAttributes(SolenoidAttributes);	
 	
@@ -472,18 +472,18 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
   	auto PSDdx = new G4Tubs("PSDdx",250.8367*mm,2.1*m,0.5612*cm,0.,360.*deg);
   	G4LogicalVolume* PSDdxLV = new G4LogicalVolume(PSDdx, Pb, "PSDdxLV");
   	G4RotationMatrix* PSDdxRot = new G4RotationMatrix();
-  	new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2)*cm),PSDdxLV,
-                    "PSDdxPV",worldLV,
-                    false,0,checkOverlaps);
+  	//new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2)*cm),PSDdxLV,
+    //                "PSDdxPV",worldLV,
+    //                false,0,checkOverlaps);
 	G4VisAttributes* PSDAttributes = new G4VisAttributes(G4Colour(0.,1.,0.));   // LightGray
 	PSDdxLV->SetVisAttributes(PSDAttributes);	
 	// I did it of 1 X0 LEAD: X0 = 0.5612 cm
 	auto PSDsx = new G4Tubs("PSDsx",250.8367*mm,2.1*m,0.5612*cm,0.,360.*deg);
   	G4LogicalVolume* PSDsxLV = new G4LogicalVolume(PSDsx, Pb, "PSDsxLV");
   	G4RotationMatrix* PSDsxRot = new G4RotationMatrix();
-  	new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
-                    "PSDsxPV",worldLV,
-                    false,0,checkOverlaps);
+  	//new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
+    //                "PSDsxPV",worldLV,
+    //                false,0,checkOverlaps);
 	PSDsxLV->SetVisAttributes(PSDAttributes);	
 	//////////////////////////////////////////////////////////
 	
@@ -731,7 +731,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalER[i],name,phiERLog,false,NbOfBarrel+i+1,false);
         
         dimE->Getpt(pt);
-        if (i<35) fiberER(i,deltatheta_endcap[i]);
+        //if (i<35) fiberER(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
 }
@@ -764,7 +764,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalEL[i],name,phiELLog,false,-NbOfBarrel-i-1,false);
         
         dimE->Getpt(pt);
-        if(i<35) fiberEL(i,deltatheta_endcap[i]);
+        //if(i<35) fiberEL(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
 }

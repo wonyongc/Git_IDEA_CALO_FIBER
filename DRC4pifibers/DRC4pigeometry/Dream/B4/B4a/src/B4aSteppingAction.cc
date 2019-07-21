@@ -101,9 +101,9 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 	////////////////////////////////////////////////////////////////////
 	//DECOMMENT if you want the tau decays products position information
 	
-	if(step->GetTrack()->GetParentID() == 1){
-		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName(),step->GetTrack()->GetKineticEnergy());
-	}
+	//if(step->GetTrack()->GetParentID() == 1){
+	//	fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName(),step->GetTrack()->GetKineticEnergy());
+	//}
 	/*
 	if(((step->GetTrack()->GetParentID() == 4 || step->GetTrack()->GetParentID() == 3) && (step->GetTrack()->GetDefinition()->GetParticleName()=="gamma"))|| (step->GetTrack()->GetParentID() == 2 && step->GetTrack()->GetDefinition()->GetParticleName()=="mu-")){
 		fEventAction->WriteTracking_Info(step->GetTrack()->GetTrackID(),step->GetPreStepPoint()->GetPosition(),step->GetTrack()->GetDefinition()->GetParticleName(),step->GetTrack()->GetKineticEnergy());
@@ -179,10 +179,10 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 		fEventAction->WriteFiber_Info(S_fiber_ID,saturatedenergydeposited,1,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
 		
 		// Extract info for z time
-		std::ofstream TimeFile;
-		TimeFile.open("Time.txt", std::ios_base::app);
-	  	TimeFile<<"Scin "<< std::fixed << std::setprecision(8) <<S_fiber_ID<<" "<<12.5*saturatedenergydeposited<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
-		TimeFile.close();
+		//std::ofstream TimeFile;
+		//TimeFile.open("Time.txt", std::ios_base::app);
+	  //	TimeFile<<"Scin "<< std::fixed << std::setprecision(8) <<S_fiber_ID<<" "<<12.5*saturatedenergydeposited<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
+		//TimeFile.close();
 	}
   }
 
@@ -264,10 +264,10 @@ G4ProcessManager* OpManager =
 				
 				step->GetTrack()->SetTrackStatus(fStopAndKill); //kill photon
 				// Extract info for z time
-				std::ofstream TimeFile;
-				TimeFile.open("Time.txt", std::ios_base::app);
-	  			TimeFile<<"Cher "<<std::fixed << std::setprecision(8) <<C_fiber_ID<<" "<<1<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
-				TimeFile.close();
+				//std::ofstream TimeFile;
+				//TimeFile.open("Time.txt", std::ios_base::app);
+	  		//	TimeFile<<"Cher "<<std::fixed << std::setprecision(8) <<C_fiber_ID<<" "<<1<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
+				//TimeFile.close();
 				
            	}
            	break;
