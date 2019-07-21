@@ -33,10 +33,14 @@
 
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "globals.hh"
+#include <map>
 
 class G4GeneralParticleSource;
 //class G4ParticleGun;
 class G4Event;
+
+class G4VPrimaryGenerator;
+class H02PrimaryGeneratorMessenger;
 
 /// The primary generator action class with particle gum.
 ///
@@ -56,11 +60,52 @@ public:
   // set methods
   void SetRandomFlag(G4bool value);
 
+  
+  void SetGenerator(G4VPrimaryGenerator* gen);
+  void SetGenerator(G4String genname);
+
+  G4VPrimaryGenerator* GetGenerator() const;
+  G4String GetGeneratorName() const;
+
 private:
    G4GeneralParticleSource* fGeneralParticleSource;
   //G4ParticleGun*  fParticleGun; // G4 particle gun
+
+  G4VPrimaryGenerator* particleGun;
+  G4VPrimaryGenerator* hepmcAscii;
+  G4VPrimaryGenerator* pythiaGen;
+
+  G4VPrimaryGenerator* currentGenerator;
+  G4String currentGeneratorName;
+  std::map<G4String, G4VPrimaryGenerator*> gentypeMap;
+
+  H02PrimaryGeneratorMessenger* messenger;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+inline void B4PrimaryGeneratorAction::SetGenerator(G4VPrimaryGenerator* gen)
+{
+  currentGenerator= gen;
+}
+
+inline void B4PrimaryGeneratorAction::SetGenerator(G4String genname)
+{
+  std::map<G4String, G4VPrimaryGenerator*>::iterator
+       pos = gentypeMap.find(genname);
+  if(pos != gentypeMap.end()) {
+    currentGenerator= pos->second;
+    currentGeneratorName= genname;
+  }
+}
+
+inline G4VPrimaryGenerator* B4PrimaryGeneratorAction::GetGenerator() const
+{
+  return currentGenerator;
+}
+
+inline G4String B4PrimaryGeneratorAction::GetGeneratorName() const
+{
+  return currentGeneratorName;
+}
 
 #endif

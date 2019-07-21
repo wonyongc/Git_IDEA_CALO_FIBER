@@ -42,8 +42,13 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include "HepMCG4AsciiReader.hh"
+#include "HepMCG4PythiaInterface.hh"
 
+#include "H02PrimaryGeneratorMessenger.hh"
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+/*
 B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
  : G4VUserPrimaryGeneratorAction(),
    fGeneralParticleSource(0)
@@ -64,17 +69,40 @@ B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
   //fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
   //fParticleGun->SetParticleEnergy(50.*MeV);
 }
+*/
+B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
+{
+   // default generator is particle gun.
+  currentGenerator= particleGun= new G4GeneralParticleSource();
+  currentGeneratorName= "gps";
+  hepmcAscii= new HepMCG4AsciiReader();
+#ifdef G4LIB_USE_PYTHIA
+  pythiaGen= new HepMCG4PythiaInterface();
+#else
+  pythiaGen= 0;
+#endif
+
+  gentypeMap["gps"]= particleGun;
+  gentypeMap["hepmcAscii"]= hepmcAscii;
+  gentypeMap["pythia"]= pythiaGen;
+
+  messenger= new H02PrimaryGeneratorMessenger(this); 
+}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+/*
 B4PrimaryGeneratorAction::~B4PrimaryGeneratorAction()
 {
   delete fGeneralParticleSource;
   //delete fParticleGun;
 }
-
+*/
+B4PrimaryGeneratorAction::~B4PrimaryGeneratorAction()
+{ 
+  delete messenger;
+}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
+/*
 void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   // This function is called at the begining of event
@@ -108,6 +136,16 @@ void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   fGeneralParticleSource->GeneratePrimaryVertex(anEvent);
   //fParticleGun->GeneratePrimaryVertex(anEvent);
+}
+*/
+void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+{
+  if(currentGenerator)
+    currentGenerator-> GeneratePrimaryVertex(anEvent);
+  else
+    G4Exception("H02PrimaryGeneratorAction::GeneratePrimaries",
+                "InvalidSetup", FatalException,
+                "Generator is not instanciated.");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

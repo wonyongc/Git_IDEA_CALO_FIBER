@@ -655,7 +655,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
         //VERY IMPORTANT TO PLACE FIBERS
-        fiberBR(i,deltatheta_barrel[i]);
+        //fiberBR(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
@@ -687,7 +687,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
        
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
-    	fiberBL(i,deltatheta_barrel[i]);
+    	//fiberBL(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
