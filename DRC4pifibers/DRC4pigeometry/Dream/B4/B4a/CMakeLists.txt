@@ -30,6 +30,12 @@ include(${Geant4_USE_FILE})
 #
 find_package(HepMC REQUIRED)
 
+list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
+find_package(ROOT REQUIRED COMPONENTS RIO EG)
+include(${ROOT_USE_FILE})
+include_directories(${ROOT_INCLUDE_DIRS})
+
+
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
 # NB: headers are included so they will show up in IDEs
@@ -46,7 +52,7 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 add_executable(exampleB4a exampleB4a.cc ${sources} ${headers})
 target_link_libraries(exampleB4a ${Geant4_LIBRARIES}
                       ${HEPMC_LIBRARIES} ${HEPMC_FIO_LIBRARIES}
-                      ${PYTHIA6_LIBRARIES} gfortran)
+                      ${PYTHIA6_LIBRARIES} ${ROOT_LIBRARIES} gfortran)
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we

@@ -99,6 +99,7 @@ B4PrimaryGeneratorAction::~B4PrimaryGeneratorAction()
 */
 B4PrimaryGeneratorAction::~B4PrimaryGeneratorAction()
 { 
+  delete hepmcAscii;
   delete messenger;
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -34,6 +34,7 @@
 
 #include "HepMCG4Interface.hh"
 #include "HepMC/IO_GenEvent.h"
+#include "filltruth.h"
 
 class HepMCG4AsciiReaderMessenger;
 
@@ -44,6 +45,7 @@ protected:
 
   G4int verbose;
   HepMCG4AsciiReaderMessenger* messenger;
+  filltruth* fill;
 
   virtual HepMC::GenEvent* GenerateHepMCEvent();
 
@@ -51,7 +53,7 @@ public:
   HepMCG4AsciiReader();
   ~HepMCG4AsciiReader();
 
-  // set/get methods
+  // set/get method
   void SetFileName(G4String name);
   G4String GetFileName() const;
 

@@ -35,18 +35,23 @@
 #include <iostream>
 #include <fstream>
 
+#include "filltruth.h"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMCG4AsciiReader::HepMCG4AsciiReader()
   :  filename("xxx.dat"), verbose(0)
 {
   asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
-
+  
   messenger= new HepMCG4AsciiReaderMessenger(this);
+
+  //fill = new filltruth();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMCG4AsciiReader::~HepMCG4AsciiReader()
 {
+  //fill->write_tuple();
   delete asciiInput;
   delete messenger;
 }
@@ -57,14 +62,20 @@ void HepMCG4AsciiReader::Initialize()
   delete asciiInput;
 
   asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
+  std::string out = "test.root";
+  //fill->book_tuple(out);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
 {
   HepMC::GenEvent* evt= asciiInput-> read_next_event();
-  if(!evt) return 0; // no more event
-
+  //fill->fill_tuple(evt);
+  //fill->write_tuple();
+  if(!evt){
+    return 0; // no more event
+  } 
+  
   if(verbose>0) evt-> print();
 
   return evt;
