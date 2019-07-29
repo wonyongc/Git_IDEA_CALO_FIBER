@@ -70,8 +70,8 @@ class B4aEventAction : public G4UserEventAction
     //to fill vectors
     void AddVectorScinEnergyR(G4double de, G4int tower, G4int slice); //fill vector of scintillating fibers with energy deposition
     void AddVectorScinEnergyL(G4double de, G4int tower, G4int slice); //fill vector left side
-    void AddVectorCherPER(G4int tower, G4int slice);//fill vector of cherenkov fibers with chernekov photoelectrons
-    void AddVectorCherPEL(G4int tower, G4int slice);
+    void AddVectorCherPER(G4int c_signal, G4int tower, G4int slice);//fill vector of cherenkov fibers with chernekov photoelectrons
+    void AddVectorCherPEL(G4int c_signal, G4int tower, G4int slice);
     void AddVectorR(G4double de, G4int tower, G4int slice);
     void AddVectorL(G4double de, G4int tower, G4int slice);
     
@@ -167,13 +167,13 @@ inline void B4aEventAction::AddVectorScinEnergyL(G4double de, G4int tower, G4int
     VectorSignalsL.at(tower+(slice*75)) += de;
 }
 
-inline void B4aEventAction::AddVectorCherPEL(G4int tower, G4int slice) {
+inline void B4aEventAction::AddVectorCherPEL(G4int c_signal, G4int tower, G4int slice) {
 	tower = -1*tower;
-    VectorSignalsCherL.at(tower+(slice*75)) = VectorSignalsCherL.at(tower+(slice*75))+1;
+    VectorSignalsCherL.at(tower+(slice*75)) = VectorSignalsCherL.at(tower+(slice*75))+c_signal;
 }
 
-inline void B4aEventAction::AddVectorCherPER(G4int tower, G4int slice) {
-    VectorSignalsCherR.at(tower+(slice*75)) = VectorSignalsCherR.at(tower+(slice*75))+1;
+inline void B4aEventAction::AddVectorCherPER(G4int c_signal, G4int tower, G4int slice) {
+    VectorSignalsCherR.at(tower+(slice*75)) = VectorSignalsCherR.at(tower+(slice*75))+c_signal;
 }
 
 inline void B4aEventAction::Addem(G4double de) {
