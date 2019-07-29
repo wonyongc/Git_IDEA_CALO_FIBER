@@ -655,7 +655,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
         //VERY IMPORTANT TO PLACE FIBERS
-        //fiberBR(i,deltatheta_barrel[i]);
+        fiberBR(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
@@ -687,7 +687,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
        
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
-    	//fiberBL(i,deltatheta_barrel[i]);
+    	fiberBL(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
@@ -731,7 +731,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalER[i],name,phiERLog,false,NbOfBarrel+i+1,false);
         
         dimE->Getpt(pt);
-        //if (i<35) fiberER(i,deltatheta_endcap[i]);
+        if (i<35) fiberER(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
 }
@@ -764,7 +764,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalEL[i],name,phiELLog,false,-NbOfBarrel-i-1,false);
         
         dimE->Getpt(pt);
-        //if(i<35) fiberEL(i,deltatheta_endcap[i]);
+        if(i<35) fiberEL(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
 }

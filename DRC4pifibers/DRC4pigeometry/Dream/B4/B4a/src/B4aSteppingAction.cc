@@ -189,6 +189,12 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
   if ( strstr(Fiber.c_str(),C_fiber.c_str())){//it's a Cherenkov fiber
     //Function to add up energy deposited in Cherenkov fibres
 	fEventAction->AddCher(step->GetTotalEnergyDeposit());
+  
+  G4double copynumbertower = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2); 
+  G4double copynumberslice = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);
+
+  if (copynumbertower>0) {fEventAction->AddVectorR(energydeposited, copynumbertower, copynumberslice);}
+  if (copynumbertower<0) {fEventAction->AddVectorL(energydeposited, copynumbertower, copynumberslice);}
   }
 //part for cherenkov photons
 G4OpBoundaryProcessStatus theStatus = Undefined;
