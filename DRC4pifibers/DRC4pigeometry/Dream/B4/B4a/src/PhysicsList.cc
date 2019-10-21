@@ -85,7 +85,7 @@ PhysicsList::PhysicsList(G4String physName):  G4VModularPhysicsList()
         if (std::strcmp(elem->GetPhysicsName(), "neutronTrackingCut") == 0)
         {
             nCut = new G4NeutronTrackingCut("neutronTrackingCut", 1);
-            nCut->SetKineticEnergyLimit(10.*keV);
+            //nCut->SetKineticEnergyLimit(10.*keV);
             nCut->SetTimeLimit(300.*ns);
             RegisterPhysics(nCut);
             continue;
@@ -96,7 +96,7 @@ PhysicsList::PhysicsList(G4String physName):  G4VModularPhysicsList()
 
     
     nCut = new G4NeutronTrackingCut("Neutron tracking cut", 1);
-    nCut->SetKineticEnergyLimit(10.*keV);
+    //nCut->SetKineticEnergyLimit(10.*keV);
     nCut->SetTimeLimit(300.*ns);
     RegisterPhysics(nCut);
     

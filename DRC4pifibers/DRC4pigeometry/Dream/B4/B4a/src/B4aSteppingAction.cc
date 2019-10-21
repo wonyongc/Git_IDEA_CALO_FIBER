@@ -189,7 +189,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 		// SiPM position
 		G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
 		if (s_signal>0.0){
-		  fEventAction->WriteFiber_Info(S_fiber_ID,s_signal,1,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
+		  //fEventAction->WriteFiber_Info(S_fiber_ID,s_signal,1,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
 		}
 		// Extract info for z time
 		//std::ofstream TimeFile;
@@ -279,7 +279,7 @@ G4ProcessManager* OpManager =
 				// SiPM position
 				G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
 	      if (c_signal>0){
-				  fEventAction->WriteFiber_Info(C_fiber_ID,c_signal,0,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
+				  //fEventAction->WriteFiber_Info(C_fiber_ID,c_signal,0,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
 				};
 				step->GetTrack()->SetTrackStatus(fStopAndKill); //kill photon
 				// Extract info for z time
