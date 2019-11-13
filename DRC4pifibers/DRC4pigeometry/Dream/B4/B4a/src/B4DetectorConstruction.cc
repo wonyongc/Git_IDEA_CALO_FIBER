@@ -40,6 +40,7 @@
 #include "G4PVReplica.hh"
 #include "G4GlobalMagFieldMessenger.hh"
 #include "G4AutoDelete.hh"
+#include "G4Sphere.hh"
 
 #include "G4GeometryManager.hh"
 #include "G4PhysicalVolumeStore.hh"
@@ -228,6 +229,28 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
                         false,            // no boolean operation
                         0,                // copy number
                         fCheckOverlaps);  // checking overlaps
+    //absorber to calculate leakage
+    G4VSolid* leakageabsorber
+    = new G4Sphere("leakageabsorber",                        // its name
+                6000., 6500., 0.*deg, 360.*deg, 0.*deg, 180.*deg); // its size
+    
+    G4LogicalVolume* leakageabsorberLV
+    = new G4LogicalVolume(
+                          leakageabsorber,           // its solid
+                          defaultMaterial,  // its material (Galactic or Air)
+                          "leakageabsorber");         // its name
+       
+    G4VPhysicalVolume* leakageabsorberPV
+    = new G4PVPlacement(
+                        0,                // no rotation
+                        G4ThreeVector(),  // at (0,0,0)
+                        leakageabsorberLV,          // its logical volume
+                        "leakageabsorber",          // its name
+                        worldLV,                // its mother  volume
+                        false,            // no boolean operation
+                        0,                // copy number
+                        fCheckOverlaps);  // checking overlaps
+
     
     G4NistManager* nistManager = G4NistManager::Instance();
     
@@ -461,9 +484,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
   	auto Solenoid = new G4Tubs("Solenoid",2.1*m,2.11757*m,2.5*m,0.,360.*deg);
   	G4LogicalVolume* SolenoidLV = new G4LogicalVolume(Solenoid, Fe, "SolenoidLV");
   	G4RotationMatrix* SolenoidRot = new G4RotationMatrix();
-  	new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
+  	/*new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
                     "SolenoidPV",worldLV,
-                    false,0,checkOverlaps);
+                    false,0,checkOverlaps);*/
 	G4VisAttributes* SolenoidAttributes = new G4VisAttributes(G4Colour(1.,0.,0.));   // LightGray
 	SolenoidLV->SetVisAttributes(SolenoidAttributes);	
 	
@@ -472,18 +495,18 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
   	auto PSDdx = new G4Tubs("PSDdx",250.8367*mm,2.1*m,(0.5612/2.0)*cm,0.,360.*deg);
   	G4LogicalVolume* PSDdxLV = new G4LogicalVolume(PSDdx, Pb, "PSDdxLV");
   	G4RotationMatrix* PSDdxRot = new G4RotationMatrix();
-  	new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2.0)*cm),PSDdxLV,
-                    "PSDdxPV",worldLV,
-                    false,0,checkOverlaps);
+  	//new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2.0)*cm),PSDdxLV,
+    //                "PSDdxPV",worldLV,
+    //                false,0,checkOverlaps);
 	G4VisAttributes* PSDAttributes = new G4VisAttributes(G4Colour(0.,1.,0.));   // LightGray
 	PSDdxLV->SetVisAttributes(PSDAttributes);	
 	// I did it of 1 X0 LEAD: X0 = 0.5612 cm
 	auto PSDsx = new G4Tubs("PSDsx",250.8367*mm,2.1*m,(0.5612/2.0)*cm,0.,360.*deg);
   	G4LogicalVolume* PSDsxLV = new G4LogicalVolume(PSDsx, Pb, "PSDsxLV");
   	G4RotationMatrix* PSDsxRot = new G4RotationMatrix();
-  	new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
-                    "PSDsxPV",worldLV,
-                    false,0,checkOverlaps);
+  	//new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
+    //                "PSDsxPV",worldLV,
+    //                false,0,checkOverlaps);
 	PSDsxLV->SetVisAttributes(PSDAttributes);	
 	//////////////////////////////////////////////////////////
 	

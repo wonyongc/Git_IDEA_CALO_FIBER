@@ -48,6 +48,8 @@ class B4aEventAction : public G4UserEventAction
     virtual void  BeginOfEventAction(const G4Event* event);
     virtual void    EndOfEventAction(const G4Event* event);
     
+    void Addneutrinoleakage(G4double de); //add energy of neutrinos in the ball containing the calorimeter
+    void Addleakage(G4double de); //add energy of all particles that are not neutrinos (or anti_neutrinos) in the ball containing the calorimeter
     void Addem(G4double de);  //Add em component
     void AddScin(G4double de);//Add energy in scintillating fibers
     void AddCher(G4double de);//Add energy in Cherenkov fibers
@@ -102,6 +104,8 @@ class B4aEventAction : public G4UserEventAction
     //G4double  Signalfibre[64];//Signal in 64 single module fibers, to be used with AddEnergyfibre
     G4String PrimaryParticleName; //Name of primary particle
     G4double PrimaryParticleEnergy;//Primary particle energy
+    G4double neutrinoleakage; //leakage neutrino
+    G4double leakage; //leakage non neutrino
 
     std::vector<G4double> VectorSignalsR;//Vector filled with scintillating fibers energy deposits
     std::vector<G4double> VectorSignalsL;//vector filled for left side
@@ -113,6 +117,14 @@ class B4aEventAction : public G4UserEventAction
 };
 
 // inline functions
+inline void B4aEventAction::Addneutrinoleakage(G4double de){
+    neutrinoleakage += de;
+}
+
+inline void B4aEventAction::Addleakage(G4double de){
+    leakage += de;
+}
+
 inline void B4aEventAction::AddVectorR(G4double de, G4int tower, G4int slice){
 	VectorR.at(tower+(slice*75)) += de;	
 }

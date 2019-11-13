@@ -153,7 +153,9 @@ void B4RunAction::BeginOfRunAction(const G4Run* run/*run*/)
   analysisManager->CreateNtupleDColumn("EnergyTot");
   analysisManager->CreateNtupleDColumn("PrimaryParticleEnergy");
   analysisManager->CreateNtupleSColumn("PrimaryParticleName");
-	//analysisManager->CreateNtupleDColumn("ID");
+  analysisManager->CreateNtupleDColumn("neutrinoleakage");
+  analysisManager->CreateNtupleDColumn("leakage");
+  //analysisManager->CreateNtupleDColumn("ID");
   analysisManager->CreateNtupleDColumn("VectorSignalsR",eventAction->GetVectorSignalsR());
   analysisManager->CreateNtupleDColumn("VectorSignalsL",eventAction->GetVectorSignalsL());
   analysisManager->CreateNtupleDColumn("VectorSignalsCherR",eventAction->GetVectorSignalsCherR());

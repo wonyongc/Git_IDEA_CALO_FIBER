@@ -96,14 +96,25 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
     }
   }
 
+  if (PreStepVolume->GetName() == "leakageabsorber"){
+    auto name = step->GetTrack()->GetDefinition()->GetParticleName();
+    if (name=="nu_mu" || name=="nu_e" || name=="anti_nu_e" || name=="anti_nu_mu"){
+      //G4cout<<step->GetTrack()->GetCreatorProcess()->GetProcessName()<<G4endl;
+      fEventAction->Addneutrinoleakage(step->GetTrack()->GetKineticEnergy());
+      step->GetTrack()->SetTrackStatus(fStopAndKill);}
+    else{
+      fEventAction->Addleakage(step->GetTrack()->GetKineticEnergy());
+      step->GetTrack()->SetTrackStatus(fStopAndKill);}
+  };
+
   if (PreStepVolume->GetName() != "World" ) {
     if (step->GetTrack()->GetDefinition()->GetParticleName() == "e-" || step->GetTrack()->GetDefinition()->GetParticleName() == "e+"){
       //Function to add up energy deposited by em component
       fEventAction->Addem(energydeposited);
     }
   }
-
-  if ( step->GetTrack()->GetTrackID() == 1 && step->GetTrack()->GetCurrentStepNumber() == 1){
+ 
+   if ( step->GetTrack()->GetTrackID() == 1 && step->GetTrack()->GetCurrentStepNumber() == 1){
     // Function to save primary particle energy and name
     fEventAction->SavePrimaryParticle(step->GetTrack()->GetDefinition()->GetParticleName());
     fEventAction->SavePrimaryEnergy(step->GetTrack()->GetKineticEnergy());

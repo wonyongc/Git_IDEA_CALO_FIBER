@@ -46,6 +46,8 @@
 B4aEventAction::B4aEventAction()
  : G4UserEventAction(),
    Energyem(0.),
+   neutrinoleakage(0.),
+   leakage(0.),
    EnergyScin(0.),
    EnergyCher(0.),
    NofCherenkovDetected(0),
@@ -78,19 +80,21 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
 	TimeFile.close();
 	
   // initialisation per event
-    Energyem = 0.;
-    EnergyScin = 0.;
-    EnergyCher = 0.;
-    NofCherenkovDetected = 0;
-    //NofScintillationDetected = 0;
-    EnergyTot = 0;
+  Energyem = 0.;
+  EnergyScin = 0.;
+  EnergyCher = 0.;
+  NofCherenkovDetected = 0;
+  //NofScintillationDetected = 0;
+  EnergyTot = 0.;
+  neutrinoleakage = 0.;
+  leakage = 0.;
   
-    int fNbOfBarrel = 40;
-    int fNbOfEndcap = 35;
-    int fNbOfZRot = 36;
-    /*for(int i=0;i<64;i++){
-    Signalfibre[i]=0;
-    }*///only if you want to use SignalFibre[64]
+  int fNbOfBarrel = 40;
+  int fNbOfEndcap = 35;
+  int fNbOfZRot = 36;
+  /*for(int i=0;i<64;i++){
+   Signalfibre[i]=0;
+  }*///only if you want to use SignalFibre[64]
 	
 	for (int i=0;i<10000;i++)
 	Fiber_Hits[i]={0.};
@@ -197,6 +201,8 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillNtupleDColumn(4, EnergyTot);
   analysisManager->FillNtupleDColumn(5, PrimaryParticleEnergy);
   analysisManager->FillNtupleSColumn(6, PrimaryParticleName);
+  analysisManager->FillNtupleDColumn(7, neutrinoleakage);
+  analysisManager->FillNtupleDColumn(8, leakage);
   analysisManager->AddNtupleRow();//columns with vector are automatically filled with this function
 
   //print here if you need event by event some information of the screen
