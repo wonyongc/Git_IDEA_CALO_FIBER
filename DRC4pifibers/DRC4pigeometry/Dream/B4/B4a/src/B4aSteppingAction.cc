@@ -114,11 +114,11 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
     }
   }
  
-   if ( step->GetTrack()->GetTrackID() == 1 && step->GetTrack()->GetCurrentStepNumber() == 1){
+   /*if ( step->GetTrack()->GetTrackID() == 1 && step->GetTrack()->GetCurrentStepNumber() == 1){
     // Function to save primary particle energy and name
     fEventAction->SavePrimaryParticle(step->GetTrack()->GetDefinition()->GetParticleName());
     fEventAction->SavePrimaryEnergy(step->GetTrack()->GetKineticEnergy());
-  }
+  }*/
 	////////////////////////////////////////////////////////////////////
 	//DECOMMENT if you want the tau decays products position information
 	
