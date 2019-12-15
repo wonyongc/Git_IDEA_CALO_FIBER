@@ -68,6 +68,8 @@ class B4aEventAction : public G4UserEventAction
     std::vector<G4double>& GetVectorSignalsCherL() {return VectorSignalsCherL;}
     std::vector<G4double>& GetVectorR() {return VectorR;}
     std::vector<G4double>& GetVectorL() {return VectorL;}
+    std::vector<G4double>& GetVectorR_loop() {return VectorR_loop;}
+    std::vector<G4double>& GetVectorL_loop() {return VectorL_loop;}
 
     //to fill vectors
     void AddVectorScinEnergyR(G4double de, G4int tower, G4int slice); //fill vector of scintillating fibers with energy deposition
@@ -76,6 +78,8 @@ class B4aEventAction : public G4UserEventAction
     void AddVectorCherPEL(G4int c_signal, G4int tower, G4int slice);
     void AddVectorR(G4double de, G4int tower, G4int slice);
     void AddVectorL(G4double de, G4int tower, G4int slice);
+    void AddVectorR_loop(G4double de, G4int tower, G4int slice);
+    void AddVectorL_loop(G4double de, G4int tower, G4int slice);
     
     typedef struct FiberInfo {
         G4double F_ID, F_E, F_X, F_Y, F_Z; //fiber saturated energy
@@ -107,6 +111,9 @@ class B4aEventAction : public G4UserEventAction
     G4double neutrinoleakage; //leakage neutrino
     G4double leakage; //leakage non neutrino
 
+    std::vector<G4double> VectorR_loop;
+    std::vector<G4double> VectorL_loop;
+
     std::vector<G4double> VectorSignalsR;//Vector filled with scintillating fibers energy deposits
     std::vector<G4double> VectorSignalsL;//vector filled for left side
     std::vector<G4double> VectorSignalsCherR;//Vector filled with Cherenkov fibers Cherenkov photoelectrons
@@ -134,6 +141,14 @@ inline void B4aEventAction::AddVectorL(G4double de, G4int tower, G4int slice){
 	VectorL.at(tower+(slice*75)) += de;
 }
 
+inline void B4aEventAction::AddVectorR_loop(G4double de, G4int tower, G4int slice){
+    VectorR_loop.at(tower+(slice*75)) = de; 
+}
+
+inline void B4aEventAction::AddVectorL_loop(G4double de, G4int tower, G4int slice){
+    tower = -1*tower;
+    VectorL_loop.at(tower+(slice*75)) = de;
+}
 
 inline void B4aEventAction::WriteFiber_Info(G4double FID, G4double FE, G4int FType, G4ThreeVector Fpos, G4int slice, G4int tower){
     int k=0;

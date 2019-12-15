@@ -60,6 +60,8 @@ B4aEventAction::B4aEventAction()
    VectorSignalsCherL(0.),
    VectorR(0.),
    VectorL(0.),
+   VectorR_loop(0.),
+   VectorL_loop(0.),
    Fiber_Hits{0.},
    Tracking_Hits{0.}
 {}
@@ -108,8 +110,14 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
     for (int i=0;i<VectorL.size();i++){
     VectorL.at(i)=0.;
     }
-    
-
+	
+	for (int i=0;i<VectorR_loop.size();i++){
+    VectorR_loop.at(i)=0.;
+    }
+    for (int i=0;i<VectorL_loop.size();i++){
+    VectorL_loop.at(i)=0.;
+    }
+       
     for (int i=0;i<VectorSignalsR.size();i++){
     VectorSignalsR.at(i)=0.;
     }
@@ -131,6 +139,13 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
         if(VectorL.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
     VectorL.push_back(0.);}}
     
+    for(int i=0;i<=fNbOfZRot*(fNbOfBarrel+fNbOfEndcap);i++){
+        if(VectorR_loop.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
+    VectorR_loop.push_back(0.);}}
+    for(int i=0;i<=fNbOfZRot*(fNbOfBarrel+fNbOfEndcap);i++){
+        if(VectorL_loop.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
+    VectorL_loop.push_back(0.);}}
+
     for(int i=0;i<=fNbOfZRot*(fNbOfBarrel+fNbOfEndcap);i++){
         if(VectorSignalsR.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
     VectorSignalsR.push_back(0.);}}

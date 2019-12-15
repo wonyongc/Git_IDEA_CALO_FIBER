@@ -162,6 +162,8 @@ void B4RunAction::BeginOfRunAction(const G4Run* run/*run*/)
   analysisManager->CreateNtupleDColumn("VectorSignalsCherL",eventAction->GetVectorSignalsCherL());
   analysisManager->CreateNtupleDColumn("VectorL", eventAction->GetVectorL());
   analysisManager->CreateNtupleDColumn("VectorR", eventAction->GetVectorR());
+  analysisManager->CreateNtupleDColumn("VectorL_loop", eventAction->GetVectorL_loop());
+  analysisManager->CreateNtupleDColumn("VectorR_loop", eventAction->GetVectorR_loop()); 
    //analysisManager->CreateNtupleDColumn("Position", eventAction->GetPosition());
 
   analysisManager->FinishNtuple();

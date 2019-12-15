@@ -44,6 +44,8 @@
 #include <chrono>
 #include <random>
 
+#include "TLorentzVector.h"
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B4aSteppingAction::B4aSteppingAction(
@@ -95,6 +97,30 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
         }
     }
   }
+  
+  //looper finding
+  if (step->GetTrack()->GetParentID() == 0 && PreStepVolume->GetLogicalVolume()->GetMaterial()->GetName() == "Copper"){
+  	auto p = step->GetTrack()->GetVertexMomentumDirection();
+  	auto e = step->GetTrack()->GetVertexKineticEnergy();
+  	auto m = step->GetTrack()->GetDynamicParticle()->GetMass();
+  	G4double pmodule = std::sqrt(e*e+2*e*m);
+  	G4double pt = std::sqrt(p[0]*pmodule*p[0]*pmodule+p[1]*pmodule*p[1]*pmodule);
+  	//G4cout<< p << " " << e <<" " << pt <<G4endl;
+  	//G4cout<<step->GetTrack()->GetMomentum()<<" "<<step->GetTrack()->GetKineticEnergy()<<" "<<step->GetTrack()->GetMomentumDirection()<<" "<<step->GetTrack()->GetVertexMomentumDirection()<<" "<<step->GetTrack()->GetDefinition()->GetPDGCharge()<<" "<<step->GetTrack()->GetDefinition()->GetParticleName()<<G4endl;
+  	if (pt<530. && step->GetTrack()->GetDefinition()->GetPDGCharge() != 0){	
+  		//G4cout<<"one looper found! "<<step->GetTrack()->GetVertexKineticEnergy()<<G4endl;
+  		//G4cout<<step->GetTrack()->GetDefinition()->GetParticleName()<<" "<<step->GetTrack()->GetTrackID()<<" "<<pt<<" "<<step->GetTrack()->GetDefinition()->GetParticleName()<<G4endl;
+		G4double copynumbertower = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(); 
+    	G4double copynumberslice = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1); 
+    	if (copynumbertower > 0){ //im in barrel right or endcap right
+     		fEventAction->AddVectorR_loop(pt,copynumbertower, copynumberslice);
+    	}
+  		if (copynumbertower < 0){ //im in barrel left or endcap left
+  	 		fEventAction->AddVectorL_loop(pt, copynumbertower, copynumberslice);
+        }
+  	}
+  }
+  //end og looper finding
 
   if (PreStepVolume->GetName() == "leakageabsorber"){
     auto name = step->GetTrack()->GetDefinition()->GetParticleName();
@@ -177,7 +203,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 	 //I want unique Fiber ID: 168750000 is the max of Sfibercopynumber
 	 S_fiber_ID = Sfibercopynumber-(168750000*copynumberslice);
 	}
-		
+	/*
 	// Fibers routine: fill the S fibres info 
 	if (saturatedenergydeposited>0.){
 	G4VPhysicalVolume* physVol=step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
@@ -207,7 +233,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
 		//TimeFile.open("Time.txt", std::ios_base::app);
 	  //	TimeFile<<"Scin "<< std::fixed << std::setprecision(8) <<S_fiber_ID<<" "<<12.5*saturatedenergydeposited<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
 		//TimeFile.close();
-	}
+	}*/
   }
 
   if ( strstr(Fiber.c_str(),C_fiber.c_str())){//it's a Cherenkov fiber
@@ -271,7 +297,7 @@ G4ProcessManager* OpManager =
 	 			 C_fiber_ID = Cfibercopynumber-(168750000*copynumberslice);
 			   }
 	    	   fEventAction->AddCherenkov(); // add one photoelectron from Cherenkov process in Cherenkov fibers                  
-				
+				/*
 				// Fibers routine: fill the C fibres info 
 				G4VPhysicalVolume* physVol=step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
 		
@@ -291,7 +317,7 @@ G4ProcessManager* OpManager =
 				G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
 	      if (c_signal>0){
 				  //fEventAction->WriteFiber_Info(C_fiber_ID,c_signal,0,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
-				};
+				};*/
 				step->GetTrack()->SetTrackStatus(fStopAndKill); //kill photon
 				// Extract info for z time
 				//std::ofstream TimeFile;

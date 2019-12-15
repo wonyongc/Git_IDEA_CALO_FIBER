@@ -239,7 +239,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
                           leakageabsorber,           // its solid
                           defaultMaterial,  // its material (Galactic or Air)
                           "leakageabsorber");         // its name
-       
+    
+    leakageabsorberLV->SetVisAttributes(G4VisAttributes::Invisible);   
     G4VPhysicalVolume* leakageabsorberPV
     = new G4PVPlacement(
                         0,                // no rotation
@@ -478,15 +479,14 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 	G4VisAttributes* MagnetAttributes = new G4VisAttributes(G4Colour(0.9,0.9,0.9));   // LightGray
 	fMagneticLogical->SetVisAttributes(MagnetAttributes);	
 	
-	
-	////////////// Tube Solenoid COIL //////////////////////// 
-	// I did it of 0.74 X0 IRON: X0 = 1.757 cm
+	////////////// Tube COIL //////////////////////// 
+	// I did it of 0.74 X0 IRON: X0 = 1.757 cm -> here 1X0 to take into account preshower
   	auto Solenoid = new G4Tubs("Solenoid",2.1*m,2.11757*m,2.5*m,0.,360.*deg);
   	G4LogicalVolume* SolenoidLV = new G4LogicalVolume(Solenoid, Fe, "SolenoidLV");
   	G4RotationMatrix* SolenoidRot = new G4RotationMatrix();
-  	/*new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
+  	new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
                     "SolenoidPV",worldLV,
-                    false,0,checkOverlaps);*/
+                    false,0,checkOverlaps);
 	G4VisAttributes* SolenoidAttributes = new G4VisAttributes(G4Colour(1.,0.,0.));   // LightGray
 	SolenoidLV->SetVisAttributes(SolenoidAttributes);	
 	
@@ -495,18 +495,18 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
   	auto PSDdx = new G4Tubs("PSDdx",250.8367*mm,2.1*m,(0.5612/2.0)*cm,0.,360.*deg);
   	G4LogicalVolume* PSDdxLV = new G4LogicalVolume(PSDdx, Pb, "PSDdxLV");
   	G4RotationMatrix* PSDdxRot = new G4RotationMatrix();
-  	//new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2.0)*cm),PSDdxLV,
-    //                "PSDdxPV",worldLV,
-    //                false,0,checkOverlaps);
+  	new G4PVPlacement(PSDdxRot,G4ThreeVector(0.,0.,(250-0.5612/2.0)*cm),PSDdxLV,
+                    "PSDdxPV",worldLV,
+                    false,0,checkOverlaps);
 	G4VisAttributes* PSDAttributes = new G4VisAttributes(G4Colour(0.,1.,0.));   // LightGray
 	PSDdxLV->SetVisAttributes(PSDAttributes);	
 	// I did it of 1 X0 LEAD: X0 = 0.5612 cm
 	auto PSDsx = new G4Tubs("PSDsx",250.8367*mm,2.1*m,(0.5612/2.0)*cm,0.,360.*deg);
   	G4LogicalVolume* PSDsxLV = new G4LogicalVolume(PSDsx, Pb, "PSDsxLV");
   	G4RotationMatrix* PSDsxRot = new G4RotationMatrix();
-  	//new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
-    //                "PSDsxPV",worldLV,
-    //                false,0,checkOverlaps);
+  	new G4PVPlacement(PSDsxRot,G4ThreeVector(0.,0.,(-250+0.5612/2)*cm),PSDsxLV,
+                    "PSDsxPV",worldLV,
+                    false,0,checkOverlaps);
 	PSDsxLV->SetVisAttributes(PSDAttributes);	
 	//////////////////////////////////////////////////////////
 	
@@ -621,18 +621,18 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     // Vis Attributes
     G4VisAttributes* phiVisAttr = new G4VisAttributes(G4Colour(0.8,0.8,0.8,0.3));
-    phiVisAttr->SetVisibility(false);
+    phiVisAttr->SetVisibility(true);
     phiBLog->SetVisAttributes(phiVisAttr);
     phiERLog->SetVisAttributes(phiVisAttr);
     phiELLog->SetVisAttributes(phiVisAttr);
     
     G4VisAttributes* towerVisAttr = new G4VisAttributes(G4Colour(0,0,1));
-    towerVisAttr->SetVisibility(true);
+    towerVisAttr->SetVisibility(false);
     towerVisAttr->SetDaughtersInvisible(false);
     towerVisAttr->SetForceWireframe(true);
     
     G4VisAttributes* towerVisAttr2 = new G4VisAttributes(G4Colour(0.9, 0.4, 0.1));
-    towerVisAttr2->SetVisibility(true);
+    towerVisAttr2->SetVisibility(false);
     towerVisAttr2->SetDaughtersInvisible(false);
     towerVisAttr2->SetForceWireframe(true);
     

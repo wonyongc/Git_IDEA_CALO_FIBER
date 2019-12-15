@@ -71,12 +71,12 @@ HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
 {
   HepMC::GenEvent* evt= asciiInput-> read_next_event();
   fill->fill_tuple(evt);
-  ////fill->write_tuple(); //dont know why here, probably wrong
+  //fill->write_tuple(); //dont know why here, probably wrong
   if(!evt){
     return 0; // no more event
   } 
   
-  if(verbose>0) evt-> print();
+  //if(verbose>0) evt-> print();
 
   return evt;
 }
