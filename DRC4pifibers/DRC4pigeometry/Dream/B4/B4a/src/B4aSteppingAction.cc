@@ -107,7 +107,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
   	G4double pt = std::sqrt(p[0]*pmodule*p[0]*pmodule+p[1]*pmodule*p[1]*pmodule);
   	//G4cout<< p << " " << e <<" " << pt <<G4endl;
   	//G4cout<<step->GetTrack()->GetMomentum()<<" "<<step->GetTrack()->GetKineticEnergy()<<" "<<step->GetTrack()->GetMomentumDirection()<<" "<<step->GetTrack()->GetVertexMomentumDirection()<<" "<<step->GetTrack()->GetDefinition()->GetPDGCharge()<<" "<<step->GetTrack()->GetDefinition()->GetParticleName()<<G4endl;
-  	if (pt<530. && step->GetTrack()->GetDefinition()->GetPDGCharge() != 0){	
+  	if (pt<630. && step->GetTrack()->GetDefinition()->GetPDGCharge() != 0){	
   		//G4cout<<"one looper found! "<<step->GetTrack()->GetVertexKineticEnergy()<<G4endl;
   		//G4cout<<step->GetTrack()->GetDefinition()->GetParticleName()<<" "<<step->GetTrack()->GetTrackID()<<" "<<pt<<" "<<step->GetTrack()->GetDefinition()->GetParticleName()<<G4endl;
 		G4double copynumbertower = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(); 
