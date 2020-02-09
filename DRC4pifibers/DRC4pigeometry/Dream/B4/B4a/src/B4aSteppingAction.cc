@@ -99,7 +99,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
   }
   
   //looper finding
-  if (step->GetTrack()->GetParentID() == 0 && PreStepVolume->GetLogicalVolume()->GetMaterial()->GetName() == "Copper"){
+  if (step->GetTrack()->GetParentID() < 10 && PreStepVolume->GetLogicalVolume()->GetMaterial()->GetName() == "Copper"){
   	auto p = step->GetTrack()->GetVertexMomentumDirection();
   	auto e = step->GetTrack()->GetVertexKineticEnergy();
   	auto m = step->GetTrack()->GetDynamicParticle()->GetMass();
