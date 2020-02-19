@@ -45,7 +45,7 @@ HepMCG4AsciiReader::HepMCG4AsciiReader()
   
   messenger= new HepMCG4AsciiReaderMessenger(this);
 
-  fill = new filltruth();
+  //fill = new filltruth();
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -63,14 +63,14 @@ void HepMCG4AsciiReader::Initialize()
 
   asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
   std::string out = "test.root";
-  fill->book_tuple(out);
+  //fill->book_tuple(out);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
 {
   HepMC::GenEvent* evt= asciiInput-> read_next_event();
-  fill->fill_tuple(evt);
+  //fill->fill_tuple(evt);
   if(!evt){
     return 0; // no more event
   } 
