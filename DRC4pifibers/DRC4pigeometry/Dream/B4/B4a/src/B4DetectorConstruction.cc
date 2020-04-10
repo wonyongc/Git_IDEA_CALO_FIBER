@@ -627,12 +627,12 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     phiELLog->SetVisAttributes(phiVisAttr);
     
     G4VisAttributes* towerVisAttr = new G4VisAttributes(G4Colour(0,0,1));
-    towerVisAttr->SetVisibility(false);
+    towerVisAttr->SetVisibility(true);
     towerVisAttr->SetDaughtersInvisible(false);
     towerVisAttr->SetForceWireframe(true);
     
     G4VisAttributes* towerVisAttr2 = new G4VisAttributes(G4Colour(0.9, 0.4, 0.1));
-    towerVisAttr2->SetVisibility(false);
+    towerVisAttr2->SetVisibility(true);
     towerVisAttr2->SetDaughtersInvisible(false);
     towerVisAttr2->SetForceWireframe(true);
     
