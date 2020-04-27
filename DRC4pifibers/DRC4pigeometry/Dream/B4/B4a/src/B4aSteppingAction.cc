@@ -120,7 +120,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
         }
   	}
   }
-  //end og looper finding
+  //end of looper finding
 
   if (PreStepVolume->GetName() == "leakageabsorber"){
     auto name = step->GetTrack()->GetDefinition()->GetParticleName();

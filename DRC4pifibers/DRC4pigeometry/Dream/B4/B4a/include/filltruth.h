@@ -45,6 +45,7 @@ public:
   vector<float>   mcs_vx_x;
   vector<float>   mcs_vx_y;
   vector<float>   mcs_vx_z;
+  bool isTree = false;
   //
   //  Methods for handling ntuple
   // 

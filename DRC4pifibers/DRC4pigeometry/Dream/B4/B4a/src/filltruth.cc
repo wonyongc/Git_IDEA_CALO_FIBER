@@ -30,7 +30,7 @@ void filltruth::book_tuple(string outfile) {
   std::cout << "Preparing Root Tree" << endl;
   fileout = new TFile(outfile.c_str(),"RECREATE");
   tree = new TTree("truth","truth tree");
-  
+  isTree = true;
   
   tree->Branch("mcs_n",&mcs_n,"mcs_n/i");
   tree->Branch("mcs_E",&mcs_E);
@@ -73,10 +73,11 @@ void filltruth::fill_tuple(HepMC::GenEvent* evt) {
 }
 //write the root tree to a file (hpp.root by default)
 void filltruth::write_tuple() { 
+  if (isTree){
   tree->GetCurrentFile();
   tree->Write();
   fileout->Close();
-  cout << "A root tree has been written to a file" << endl;
+  cout << "A root tree has been written to a file" << endl;}
 }
 void filltruth::fillstable( std::vector<HepMC::GenParticle*> evt ) {
   int nstab=0;
