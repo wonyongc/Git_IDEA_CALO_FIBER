@@ -184,7 +184,7 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
 	while(Fiber_Hits[v].F_ID!=0){
 	//G4cout<<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_X<<" "<<Fiber_Hits[v].F_Y<<" "<<Fiber_Hits[v].F_Z<<std::endl;
 	E = E+Fiber_Hits[v].F_E;
-	eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(8) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
+	eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(3) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
 	v++;}
 	//eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
 	eventFile.close();
