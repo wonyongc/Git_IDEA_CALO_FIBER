@@ -31,6 +31,7 @@
 #include "B4aEventAction.hh"
 #include "B4RunAction.hh"
 #include "B4Analysis.hh"
+#include "B4MyMaterials.hh"
 
 #include "G4RunManager.hh"
 #include "G4Event.hh"
