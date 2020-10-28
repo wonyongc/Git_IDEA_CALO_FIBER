@@ -42,6 +42,7 @@
 #include "dimensionE.hh"
 #include "G4Trap.hh"
 #include "G4Tubs.hh"
+#include "B4MyMaterials.hh"
 
 #include "G4VSolid.hh"
 #include "G4LogicalVolume.hh"
@@ -72,6 +73,10 @@ public:
     void fiberBL(G4int i,G4double deltatheta_);
     void fiberER(G4int i,G4double deltatheta_);
     void fiberEL(G4int i,G4double deltatheta_);
+    
+    void initializeMaterials();
+    void placeSCEPCal_Barrel();
+    
     
     virtual void ConstructSDandField();
     
@@ -122,15 +127,36 @@ private:
     G4double thetaofcenter;
     G4double fulltheta;
     G4double lastdeltatheta;
-    //G4ThreeVector pt[8]={G4ThreeVector()};
     G4ThreeVector pt[8];
+    
+    
+    G4double SCEP_innerR ;
+    G4double SCEP_xtal_L ;
+    G4int SCEP_NbOfBarrel;
+    G4int SCEP_NbOfEndcap;
+    G4int SCEP_NbOfZRot  ;
+    G4double SCEP_theta_unit;
+    G4double SCEP_phi_unit;
+    G4double FR_X0ratio;
+    
+    G4double SCEP_deltatheta;
+    G4double SCEP_thetaofcenter;
+    G4double SCEP_thetaofcenter2;
+    G4double SCEP_fulltheta;
+    G4double SCEP_lastdeltatheta;
+    G4ThreeVector SCEP_pt[8];
+    
+    
+    G4double solenoid_L ;
+    G4double solenoid_IR;
+    G4double solenoid_OR;
     
     G4double PMTT;
     
     dimensionB* dimB;
     dimensionE* dimE;
     
-    char name[20];
+    char name[80];
     G4Trap* tower;
     G4Trap* pmtg;
     G4Trap* pmtcath;
@@ -226,6 +252,18 @@ private:
     
     //--- Material for PMT Photocathod ---
     G4Material *PMTPC_Material;
+    
+    
+    //SCEPCal 
+    G4Trap* crystal_F;    
+    G4LogicalVolume* crystalLogicalF_B[200];
+    G4LogicalVolume* crystalLogicalF_E[100];
+    
+    
+    G4Trap* crystal_R;    
+    G4LogicalVolume* crystalLogicalR_B[200];    
+    G4LogicalVolume* crystalLogicalR_E[100];
+    
     
 };
 
