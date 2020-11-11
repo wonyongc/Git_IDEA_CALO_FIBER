@@ -58,7 +58,7 @@
 namespace {
   void PrintUsage() {
     G4cerr << " Usage: " << G4endl;
-    G4cerr << " exampleB4a [-m macro ] [-u UIsession] [-t nThreads]" << G4endl;
+    G4cerr << " exampleB4a [-m macro ] [-o outputFileName] [-u UIsession] [-t nThreads]" << G4endl;
     G4cerr << "   note: -t option is available only for multi-threaded mode."
            << G4endl;
   }
@@ -77,12 +77,14 @@ int main(int argc,char** argv)
   
   G4String macro;
   G4String session;
+  G4String outputFileName;
 #ifdef G4MULTITHREADED
   G4int nThreads = 0;
 #endif
   for ( G4int i=1; i<argc; i=i+2 ) {
     if      ( G4String(argv[i]) == "-m" ) macro = argv[i+1];
     else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
+    else if ( G4String(argv[i]) == "-o" ) outputFileName = argv[i+1];
 #ifdef G4MULTITHREADED
     else if ( G4String(argv[i]) == "-t" ) {
       nThreads = G4UIcommand::ConvertToInt(argv[i+1]);
@@ -127,8 +129,7 @@ int main(int argc,char** argv)
   G4String physName = "FTFP_BERT"; //"FTFP_BERT", "QGSP_BERT"
   runManager->SetUserInitialization(new PhysicsList(physName));
   
-  B4aActionInitialization* actionInitialization
-     = new B4aActionInitialization(detConstruction);
+  B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction);
   runManager->SetUserInitialization(actionInitialization);
   
   // Initialize visualization
