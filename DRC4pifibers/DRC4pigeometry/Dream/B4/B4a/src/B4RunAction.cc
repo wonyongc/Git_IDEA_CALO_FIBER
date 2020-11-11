@@ -44,6 +44,7 @@ using namespace std;
 #include "B4RunAction.hh"
 #include "B4Analysis.hh"
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B4RunAction::B4RunAction()
@@ -104,7 +105,8 @@ B4RunAction::~B4RunAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void B4RunAction::BeginOfRunAction(const G4Run* run/*run*/)
+// void B4RunAction::BeginOfRunAction(const G4Run* run, G4string outputFileName="B4")
+void B4RunAction::BeginOfRunAction(const G4Run* run)
 { 
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
@@ -119,7 +121,8 @@ void B4RunAction::BeginOfRunAction(const G4Run* run/*run*/)
   ss>>myrun;
   // Open an output file
   //
-  G4String fileName = "B4";
+//   G4String fileName = "root_files/" + outputFileName;
+  G4String fileName = "root_files/B4";
   analysisManager->OpenFile(fileName);
 
   // G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
@@ -152,9 +155,23 @@ void B4RunAction::BeginOfRunAction(const G4Run* run/*run*/)
   analysisManager->CreateNtupleDColumn("NofCherenkovDetected"); 
   analysisManager->CreateNtupleDColumn("EnergyTot");
   analysisManager->CreateNtupleDColumn("PrimaryParticleEnergy");
-  analysisManager->CreateNtupleSColumn("PrimaryParticleName");
+  analysisManager->CreateNtupleSColumn("PrimaryParticleName");  
   analysisManager->CreateNtupleDColumn("neutrinoleakage");
   analysisManager->CreateNtupleDColumn("leakage");
+  
+  analysisManager->CreateNtupleDColumn("SCEP_EnergyDepF");
+  analysisManager->CreateNtupleDColumn("SCEP_NCherProdF");
+  analysisManager->CreateNtupleDColumn("SCEP_EnergyDepR");
+  analysisManager->CreateNtupleDColumn("SCEP_NCherProdR");
+  
+  analysisManager->CreateNtupleDColumn("PrimaryParticleMomentum",  eventAction->GetPrimaryParticleMomentum());
+  analysisManager->CreateNtupleDColumn("VecHit_CrystalID",  eventAction->GetVecScep_CrystalID());
+  analysisManager->CreateNtupleDColumn("VecHit_ScepEneDepF",eventAction->GetVecScep_ScepEneDepF());
+  analysisManager->CreateNtupleDColumn("VecHit_ScepEneDepR",eventAction->GetVecScep_ScepEneDepR());
+  analysisManager->CreateNtupleDColumn("VecHit_ScepCherF",  eventAction->GetVecScep_ScepCherF());
+  analysisManager->CreateNtupleDColumn("VecHit_ScepCherR",  eventAction->GetVecScep_ScepCherR());
+  
+  
   //analysisManager->CreateNtupleDColumn("ID");
   analysisManager->CreateNtupleDColumn("VectorSignalsR",eventAction->GetVectorSignalsR());
   analysisManager->CreateNtupleDColumn("VectorSignalsL",eventAction->GetVectorSignalsL());

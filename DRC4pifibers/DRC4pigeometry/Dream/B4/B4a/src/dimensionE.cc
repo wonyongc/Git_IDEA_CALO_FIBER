@@ -74,19 +74,19 @@ dimensionE::~dimensionE()
 void dimensionE::CalBasic()
 {
 	
-	fcalbasicbool = 1;
+    fcalbasicbool = 1;
     
     finnerR_new = finnerR/(cos(fthetaofcenter)-sin(fthetaofcenter)*tan(fdeltatheta/2.));
     finnerR_new2 = finnerR/(cos(fthetaofcenter2)-sin(fthetaofcenter2)*tan(fdeltatheta2/2.));
     
-	G4double innerSide_half = finnerR_new*tan(fdeltatheta/2.);
-	G4double outerSide_half = (finnerR_new+ftower_height)*tan(fdeltatheta/2.);	
+    G4double innerSide_half = finnerR_new*tan(fdeltatheta/2.);
+    G4double outerSide_half = (finnerR_new+ftower_height)*tan(fdeltatheta/2.);	
     
     G4double innerSide_half2 = finnerR_new2*tan(fdeltatheta2/2.);
 
-	fTrns_Length = ftower_height/2.+finnerR_new;
-	
-	fTrns_Vector = G4ThreeVector(cos(fthetaofcenter)*fTrns_Length,0,sin(fthetaofcenter)*fTrns_Length);
+    fTrns_Length = ftower_height/2.+finnerR_new;
+    
+    fTrns_Vector = G4ThreeVector(cos(fthetaofcenter)*fTrns_Length,0,sin(fthetaofcenter)*fTrns_Length);
     
     G4double dx1=finnerR;
     G4double dxi=sin(fthetaofcenter)*finnerR_new+innerSide_half*cos(fthetaofcenter);
@@ -94,29 +94,29 @@ void dimensionE::CalBasic()
     Ratio=dxi/dx1;
     Ratio2=dxi2/dx1;
 	
-	fV1 = G4ThreeVector(
-			(Ratio2)*(cos(fthetaofcenter)*finnerR_new+sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)),
-			0,
-			sin(fthetaofcenter)*finnerR_new-sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)
-			);
+    fV1 = G4ThreeVector(
+                    (Ratio2)*(cos(fthetaofcenter)*finnerR_new+sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)),
+                    0,
+                    sin(fthetaofcenter)*finnerR_new-sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)
+                    );
+    
+    fV2 = G4ThreeVector(
+                    (Ratio2)*(cos(fthetaofcenter)*(finnerR_new+ftower_height)+sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)),
+                    0,
+                    sin(fthetaofcenter)*(finnerR_new+ftower_height)-sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)
+                    );
 	
-	fV2 = G4ThreeVector(
-			(Ratio2)*(cos(fthetaofcenter)*(finnerR_new+ftower_height)+sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)),
-			0,
-			sin(fthetaofcenter)*(finnerR_new+ftower_height)-sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)
-			);
+    fV3 = G4ThreeVector(
+                    (Ratio)*(cos(fthetaofcenter)*finnerR_new-sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)),
+                    0,
+                    sin(fthetaofcenter)*finnerR_new+sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)
+                    );
 	
-	fV3 = G4ThreeVector(
-			(Ratio)*(cos(fthetaofcenter)*finnerR_new-sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)),
-			0,
-			sin(fthetaofcenter)*finnerR_new+sin(fthetaofcenter)*finnerR_new*tan(fdeltatheta/2.)
-			);
-	
-	fV4 = G4ThreeVector(
-			(Ratio)*(cos(fthetaofcenter)*(finnerR_new+ftower_height)-sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)),
-			0,
-			sin(fthetaofcenter)*(finnerR_new+ftower_height)+sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)
-			);
+    fV4 = G4ThreeVector(
+                    (Ratio)*(cos(fthetaofcenter)*(finnerR_new+ftower_height)-sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)),
+                    0,
+                    sin(fthetaofcenter)*(finnerR_new+ftower_height)+sin(fthetaofcenter)*(finnerR_new+ftower_height)*tan(fdeltatheta/2.)
+                    );
 
 }
 

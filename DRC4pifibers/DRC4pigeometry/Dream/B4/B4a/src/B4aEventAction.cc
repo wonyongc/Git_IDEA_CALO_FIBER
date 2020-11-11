@@ -37,9 +37,20 @@
 #include "G4Event.hh"
 #include "G4UnitsTable.hh"
 
+
 #include "Randomize.hh"
 #include <iomanip>
 #include <vector>
+#include <map>
+
+#include "G4RunManager.hh"
+#include "G4EventManager.hh"
+#include "G4TrajectoryContainer.hh"
+#include "G4Trajectory.hh"
+#include "G4VVisManager.hh"
+#include "G4ios.hh"
+#include "G4SDManager.hh"
+
 
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -54,7 +65,21 @@ B4aEventAction::B4aEventAction()
    NofCherenkovDetected(0),
    //NofScintillationDetected(0),
    EnergyTot(0.),
+   
+   SCEP_EnergyDepF(0.),
+   SCEP_NCherProdF(0.),
+   SCEP_EnergyDepR(0.),
+   SCEP_NCherProdR(0.),
+   
+   VecHit_CrystalID(0.),
+   VecHit_ScepEneDepF(0.),
+   VecHit_ScepEneDepR(0.),
+   VecHit_ScepCherF(0.),
+   VecHit_ScepCherR(0.),
+
+
    PrimaryParticleEnergy(0.),
+   PrimaryParticleMomentum(0.),
    VectorSignalsR(0.),
    VectorSignalsL(0.),
    VectorSignalsCherR(0.),
@@ -65,6 +90,10 @@ B4aEventAction::B4aEventAction()
    VectorL_loop(0.),
    Fiber_Hits{0.},
    Tracking_Hits{0.}
+   
+   
+   
+   
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -74,13 +103,17 @@ B4aEventAction::~B4aEventAction()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
+void B4aEventAction::BeginOfEventAction(const G4Event* event)
 {  
-	//Time_distribution event
-	std::ofstream TimeFile;
-	TimeFile.open("Time.txt", std::ios_base::app);
-	TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
-	TimeFile.close();
+  //Time_distribution event
+  std::ofstream TimeFile;
+  TimeFile.open("Time.txt", std::ios_base::app);
+  TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
+  TimeFile.close();
+  
+ 
+  
+  
 	
   // initialisation per event
   Energyem = 0.;
@@ -92,6 +125,19 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
   neutrinoleakage = 0.;
   leakage = 0.;
   
+  SCEP_EnergyDepF = 0.;
+  SCEP_NCherProdF = 0.;
+  SCEP_EnergyDepR = 0.;
+  SCEP_NCherProdR = 0.;
+  
+  VecHit_CrystalID.clear();
+  VecHit_ScepEneDepF.clear();
+  VecHit_ScepEneDepR.clear();
+  VecHit_ScepCherF.clear();
+  VecHit_ScepCherR.clear();
+  PrimaryParticleMomentum.clear();
+  
+  
   int fNbOfBarrel = 40;
   int fNbOfEndcap = 35;
   int fNbOfZRot = 36;
@@ -99,11 +145,11 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
    Signalfibre[i]=0;
   }*///only if you want to use SignalFibre[64]
 	
-	for (int i=0;i<10000;i++)
-	Fiber_Hits[i]={0.};
+    for (int i=0;i<10000;i++)
+    Fiber_Hits[i]={0.};
 	
-	for (int i=0;i<200;i++)
-	Tracking_Hits[i]={0.};
+    for (int i=0;i<200;i++)
+    Tracking_Hits[i]={0.};
 
     for (int i=0;i<VectorR.size();i++){
     VectorR.at(i)=0.;
@@ -133,6 +179,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
     }
     PrimaryParticleEnergy = 0;  
     
+    
     for(int i=0;i<=fNbOfZRot*(fNbOfBarrel+fNbOfEndcap);i++){
         if(VectorR.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
     VectorR.push_back(0.);}}
@@ -160,6 +207,28 @@ void B4aEventAction::BeginOfEventAction(const G4Event* /*event*/)
     for(int k=0;k<=fNbOfZRot*(fNbOfBarrel+fNbOfEndcap);k++){
         if(VectorSignalsCherL.size() <= fNbOfZRot*(fNbOfBarrel+fNbOfEndcap)){
     VectorSignalsCherL.push_back(0.);}}
+    
+    
+  
+  // save info on primary particle  
+  G4PrimaryVertex* vertex = event->GetPrimaryVertex();
+  G4double x = vertex -> GetX0();
+  G4double y = vertex -> GetY0();
+  G4double z = vertex -> GetZ0();
+  
+  G4PrimaryParticle * particle = vertex -> GetPrimary();
+  G4double InitEnergy = particle -> GetTotalEnergy();
+  G4double px = particle -> GetPx();
+  G4double py = particle -> GetPy();
+  G4double pz = particle -> GetPz();
+  
+  SavePrimaryParticle(particle->GetParticleDefinition()->GetParticleName());
+  SavePrimaryEnergy(InitEnergy);
+  SavePrimaryMomentum(px, py, pz);
+  
+//   std::cout << "ene = " << InitEnergy << ", momentum = (" << px << ", " << py << ", " << pz << std::endl;
+  
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -172,32 +241,36 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   // get analysis manager
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
     
-	char namee[80];
 	
-	std::ofstream eventFile;
-	eventFile.open("Event.txt", std::ios_base::app);
-	/*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
-	G4cout<<"\t ID \t Energy(MeV) \t S/C \t Position \t slice \t tower"<<std::endl;
-	G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;*/
-	int v=0;
-	G4double E=0.;
-	if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile<<"EvtID\tFiberID\tEt\tXt\tYt\tZt\tFlagt\tslicet\ttowert"<<std::endl;
-	while(Fiber_Hits[v].F_ID!=0){
-	//G4cout<<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_X<<" "<<Fiber_Hits[v].F_Y<<" "<<Fiber_Hits[v].F_Z<<std::endl;
-	E = E+Fiber_Hits[v].F_E;
-	eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(3) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
-	v++;}
-	//eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
-	eventFile.close();
+    std::ofstream eventFile;
+    eventFile.open("Event.txt", std::ios_base::app);
+    /*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+    G4cout<<"\t ID \t Energy(MeV) \t S/C \t Position \t slice \t tower"<<std::endl;
+    G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;*/
+    int v=0;
+    G4double E=0.;
+    if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile<<"EvtID\tFiberID\tEt\tXt\tYt\tZt\tFlagt\tslicet\ttowert"<<std::endl;
+    while(Fiber_Hits[v].F_ID!=0)
+    {
+    //G4cout<<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_X<<" "<<Fiber_Hits[v].F_Y<<" "<<Fiber_Hits[v].F_Z<<std::endl;
+        E = E+Fiber_Hits[v].F_E;
+        eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(3) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
+        v++;        
+    }
+    //eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+    eventFile.close();
 	
-	std::ofstream eventFile1;
-	eventFile1.open("Event_Track.txt", std::ios_base::app);
-	if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile1<<"EvtIDtrack\tTrackID\tXtrackt\tYtrackt\tZtrackt\tparticlesnamet"<<std::endl;
-	for (v=0;v<200;v++){
-		if(Tracking_Hits[v].T_ID!=0){
-		eventFile1<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<Tracking_Hits[v].T_ID<<"\t"<<Tracking_Hits[v].T_X<<"\t"<<Tracking_Hits[v].T_Y<<"\t"<<Tracking_Hits[v].T_Z<<"\t"<<Tracking_Hits[v].T_Name<<std::endl;
-	}}
-	eventFile1.close();
+    std::ofstream eventFile1;
+    eventFile1.open("Event_Track.txt", std::ios_base::app);
+    if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile1<<"EvtIDtrack\tTrackID\tXtrackt\tYtrackt\tZtrackt\tparticlesnamet"<<std::endl;
+    for (v=0;v<200;v++)
+    {
+        if(Tracking_Hits[v].T_ID!=0)
+        {
+            eventFile1<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<Tracking_Hits[v].T_ID<<"\t"<<Tracking_Hits[v].T_X<<"\t"<<Tracking_Hits[v].T_Y<<"\t"<<Tracking_Hits[v].T_Z<<"\t"<<Tracking_Hits[v].T_Name<<std::endl;
+	}        
+    }
+    eventFile1.close();
 	//eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
 	
 	/*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
@@ -209,6 +282,7 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   //analysisManager->FillH1(2, TrackLmodule);
   //analysisManager->FillH1(3, EnergyScin);
   
+  std::cout << "filling ntuple with: " << SCEP_EnergyDepF  << " MeV in SCEPCal front and " << SCEP_EnergyDepR  << " MeV in SCEPCal rear" << std::endl;
   // fill ntuple event by event
   analysisManager->FillNtupleDColumn(0, Energyem);
   analysisManager->FillNtupleDColumn(1, EnergyScin);
@@ -219,7 +293,15 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillNtupleSColumn(6, PrimaryParticleName);
   analysisManager->FillNtupleDColumn(7, neutrinoleakage);
   analysisManager->FillNtupleDColumn(8, leakage);
+  
+  analysisManager->FillNtupleDColumn(9, SCEP_EnergyDepF);
+  analysisManager->FillNtupleDColumn(10,SCEP_NCherProdF);
+  analysisManager->FillNtupleDColumn(11,SCEP_EnergyDepR);
+  analysisManager->FillNtupleDColumn(12,SCEP_NCherProdR);
+  
   analysisManager->AddNtupleRow();//columns with vector are automatically filled with this function
+  
+  
 
   //print here if you need event by event some information of the screen
   //G4cout<<EnergyTot<<G4endl;

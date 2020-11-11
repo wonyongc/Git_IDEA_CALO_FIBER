@@ -72,14 +72,20 @@ void OpticalPhysics::ConstructProcess()
     
     //theWLSProcess = new G4OpWLS();
     
-    theScintProcess = new G4Scintillation();
-    theScintProcess->SetScintillationYieldFactor(1.);
-    //theScintProcess->SetTrackSecondariesFirst(true);
+//     theScintProcess = new G4Scintillation();
+    theScintProcess = new G4Scintillation("Scintillation");
+    theScintProcess->SetScintillationYieldFactor(1.);    
+    theScintProcess->SetScintillationExcitationRatio(0.0);
+    theScintProcess->SetTrackSecondariesFirst(true);
     
     
-    theCerenkovProcess = new G4Cerenkov();
-    theCerenkovProcess->SetMaxNumPhotonsPerStep(1000.);
-    //theCerenkovProcess->SetTrackSecondariesFirst(true);
+//     theCerenkovProcess = new G4Cerenkov();
+    theCerenkovProcess = new G4Cerenkov("Cerenkov");        
+    theCerenkovProcess->SetMaxNumPhotonsPerStep(20);
+    theCerenkovProcess->SetMaxBetaChangePerStep(10.0);
+    theCerenkovProcess->SetTrackSecondariesFirst(true);
+//     theCerenkovProcess->SetMaxNumPhotonsPerStep(1000.);
+    
     
     theAbsorptionProcess      = new G4OpAbsorption();
     //theRayleighScattering     = new G4OpRayleigh();
@@ -108,19 +114,16 @@ void OpticalPhysics::ConstructProcess()
     
     //pManager->AddDiscreteProcess(theWLSProcess);
     
+        
     
-    //theScintProcess->SetScintillationYieldFactor(1.);
-    theScintProcess->SetScintillationExcitationRatio(0.0);
-    theScintProcess->SetTrackSecondariesFirst(true);
     
-    // Use Birks Correction in the Scintillation process
-    
+    // Use Birks Correction in the Scintillation process    
     G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
     theScintProcess->AddSaturation(emSaturation);
     
-
     auto theParticleIterator = GetParticleIterator();
     theParticleIterator->reset();
+    
     while ( (*theParticleIterator)() ){
         
         G4ParticleDefinition* particle = theParticleIterator->value();
@@ -137,16 +140,16 @@ void OpticalPhysics::ConstructProcess()
         // photons comment if body
         if(theCerenkovProcess->IsApplicable(*particle))
         {
-            pManager->AddProcess(theCerenkovProcess);
-            pManager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
+//             pManager->AddProcess(theCerenkovProcess);
+//             pManager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
         }
         // Scintillation photons production, if you don't want to produce scintillation
         // photons comment if body
         if(theScintProcess->IsApplicable(*particle))
         {
-            //pManager->AddProcess(theScintProcess);
-            //pManager->SetProcessOrderingToLast(theScintProcess,idxAtRest);
-            //pManager->SetProcessOrderingToLast(theScintProcess,idxPostStep);
+//             pManager->AddProcess(theScintProcess);
+//             pManager->SetProcessOrderingToLast(theScintProcess,idxAtRest);
+//             pManager->SetProcessOrderingToLast(theScintProcess,idxPostStep);
         }
         
     }
