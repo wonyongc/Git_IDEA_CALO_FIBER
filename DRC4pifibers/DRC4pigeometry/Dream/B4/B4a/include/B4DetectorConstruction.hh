@@ -50,6 +50,7 @@
 #include "G4Material.hh"
 #include "G4VSensitiveDetector.hh"
 #include "G4IntersectionSolid.hh"
+#include "G4VPVParameterisation.hh"
 
 class B4MagneticField;
 class G4VPhysicalVolume;
@@ -255,14 +256,33 @@ private:
     
     
     //SCEPCal 
-    G4Trap* crystal_F;    
-    G4LogicalVolume* crystalLogicalF_B[200];
-    G4LogicalVolume* crystalLogicalF_E[100];
+    G4Material* SCEPCalMaterial;
+    
+    G4Trap* crystal_BF;    
+    G4Trap* crystal_BR;    
+    G4LogicalVolume* crystalLogicalF_B;
+    G4LogicalVolume* crystalLogicalR_B;    
+    
+            
+    
+    G4Cons *SCEP_EndcapRing_F;
+    G4Cons *SCEP_EndcapRing_R;
+    
+    G4Cons* crystal_EF;
+    G4Cons* crystal_ER;   
+    G4LogicalVolume* SCEP_endcapRingLog_F;
+    G4LogicalVolume* SCEP_endcapRingLog_R;
     
     
-    G4Trap* crystal_R;    
-    G4LogicalVolume* crystalLogicalR_B[200];    
-    G4LogicalVolume* crystalLogicalR_E[100];
+    G4Cons *SCEP_EndcapRing_F_L;
+    G4Cons *SCEP_EndcapRing_R_L;
+    
+    G4Cons* crystal_EF_L;
+    G4Cons* crystal_ER_L;   
+    G4LogicalVolume* SCEP_endcapRingLog_F_L;
+    G4LogicalVolume* SCEP_endcapRingLog_R_L;
+    
+    
     
     
 };
@@ -273,6 +293,44 @@ inline const G4VPhysicalVolume* B4DetectorConstruction::GetmodulePV() const {
     return modulePV;
 }
 
+
+
+class BarrelPhiParameterisation : public G4VPVParameterisation
+{
+    G4double fInnerR;
+    G4double fPhiUnit;
+    G4double fHeight;
+    G4double fOffset;
+        
+    public:
+        
+        BarrelPhiParameterisation(G4double inner_R, G4double phi_unit, G4double height, G4double offset);
+        
+        ~BarrelPhiParameterisation(){};
+        
+        void ComputeTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) const;                
+        
+};
+
+
+class EndcapThetaParameterisation : public G4VPVParameterisation
+{
+    G4double fInnerR;
+    G4double fThetaUnit;
+    G4double fHeight;
+    G4double fThetaB;
+        
+    public:
+        
+        EndcapThetaParameterisation(G4double inner_R, G4double theta_unit, G4double height, G4double thetaB);
+        
+        ~EndcapThetaParameterisation(){};
+        
+        void ComputeTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) const;                
+        
+        void ComputeDimensions (G4Cons& endcapRing, const G4int copyNo, const G4VPhysicalVolume* physVol) const;
+        
+};
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
