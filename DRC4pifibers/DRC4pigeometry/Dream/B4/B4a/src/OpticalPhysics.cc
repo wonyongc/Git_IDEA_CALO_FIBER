@@ -140,8 +140,8 @@ void OpticalPhysics::ConstructProcess()
         // photons comment if body
         if(theCerenkovProcess->IsApplicable(*particle))
         {
-//             pManager->AddProcess(theCerenkovProcess);
-//             pManager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
+            pManager->AddProcess(theCerenkovProcess);
+            pManager->SetProcessOrdering(theCerenkovProcess,idxPostStep);
         }
         // Scintillation photons production, if you don't want to produce scintillation
         // photons comment if body
