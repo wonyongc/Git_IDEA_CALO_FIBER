@@ -448,6 +448,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //PMTT = 1*mm;
     PMTT = 0*mm;
     fulltheta = 0;
+    bool placeFIBERS = true;
     
     //2*pi/number of tower to complete a rotation around the center
     phi_unit = 2*M_PI/(G4double)NbOfZRot;
@@ -779,7 +780,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
         //VERY IMPORTANT TO PLACE FIBERS
-//         fiberBR(i,deltatheta_barrel[i]);
+        if (placeFIBERS) fiberBR(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
@@ -811,7 +812,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
        
     	dimB->Getpt(pt);
     	sprintf(name,"fiber%d",volnum);
-//     	fiberBL(i,deltatheta_barrel[i]);
+    	if (placeFIBERS) fiberBL(i,deltatheta_barrel[i]);
 
     	fulltheta = fulltheta+deltatheta_barrel[i];
     	volnum++;
@@ -855,7 +856,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalER[i],name,phiERLog,false,NbOfBarrel+i+1,checkOverlaps);
         
         dimE->Getpt(pt);
-//         if (i<35) fiberER(i,deltatheta_endcap[i]);
+        if (i<35 && placeFIBERS) fiberER(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
     }
@@ -888,7 +889,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         if(i<35)new G4PVPlacement(rm,c_new,towerLogicalEL[i],name,phiELLog,false,-NbOfBarrel-i-1,checkOverlaps);
         
         dimE->Getpt(pt);
-//         if(i<35) fiberEL(i,deltatheta_endcap[i]);
+        if(i<35 && placeFIBERS) fiberEL(i,deltatheta_endcap[i]);
         fulltheta = fulltheta-deltatheta_endcap[i];
         volnum++;
     }
