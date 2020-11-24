@@ -255,7 +255,7 @@ private:
     G4Material *PMTPC_Material;
     
     
-    //SCEPCal 
+    //SCEPCal ECAL
     G4Material* SCEPCalMaterial;
     
     G4Trap* crystal_BF;    
@@ -283,6 +283,9 @@ private:
     G4LogicalVolume* SCEP_endcapRingLog_R_L;
     
     
+    //SCEPCal Timing
+    G4Material* SCEP_TimingMaterial;
+    
     
     
 };
@@ -307,6 +310,24 @@ class BarrelPhiParameterisation : public G4VPVParameterisation
         BarrelPhiParameterisation(G4double inner_R, G4double phi_unit, G4double height, G4double offset);
         
         ~BarrelPhiParameterisation(){};
+        
+        void ComputeTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) const;                
+        
+};
+
+
+class BarrelTimingPhiParameterisation : public G4VPVParameterisation
+{
+    G4double fInnerR;
+    G4double fPhiUnit;
+    G4double fHeight;
+    G4double fOffset;
+        
+    public:
+        
+        BarrelTimingPhiParameterisation(G4double inner_R, G4double phi_unit, G4double height, G4double offset);
+        
+        ~BarrelTimingPhiParameterisation(){};
         
         void ComputeTransformation (const G4int copyNo, G4VPhysicalVolume* physVol) const;                
         

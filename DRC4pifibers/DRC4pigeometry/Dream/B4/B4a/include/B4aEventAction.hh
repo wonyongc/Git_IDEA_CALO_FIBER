@@ -58,8 +58,11 @@ class B4aEventAction : public G4UserEventAction
     
     void AddScepEneF(G4double de);   //Add hit for given SCEPCal crystals
     void AddScepEneR(G4double de);   //Add hit for given SCEPCal crystals
-    void AddScepCherF();              //Add hit for given SCEPCal crystals
-    void AddScepCherR();              //Add hit for given SCEPCal crystals
+    void AddScepCherF();             //Add hit for given SCEPCal crystals
+    void AddScepCherR();             //Add hit for given SCEPCal crystals
+    
+    void AddScepTimingEneTime(G4double de, G4double time_hit, G4double layerID);   //Add hit for given SCEPCal Timing crystals
+    
     
     
     //void AddScintillation();
@@ -87,6 +90,15 @@ class B4aEventAction : public G4UserEventAction
     std::vector<G4double>& GetVecScep_ScepCherF()   {return VecHit_ScepCherF;}
     std::vector<G4double>& GetVecScep_ScepCherR()   {return VecHit_ScepCherR;}
     
+    std::vector<G4double>& GetVecScep_Timing_CrystalID_F() {return VecHit_Timing_CrystalID_F;}
+    std::vector<G4double>& GetVecScep_Timing_CrystalID_R() {return VecHit_Timing_CrystalID_R;}
+    std::vector<G4double>& GetVecScep_Timing_ScepEneDepF() {return VecHit_Timing_ScepEneDepF;}
+    std::vector<G4double>& GetVecScep_Timing_ScepEneDepR() {return VecHit_Timing_ScepEneDepR;}
+    std::vector<G4double>& GetVecScep_Timing_ScepTimeF()   {return VecHit_Timing_ScepTimeF;}
+    std::vector<G4double>& GetVecScep_Timing_ScepTimeR()   {return VecHit_Timing_ScepTimeR;}
+    
+    
+    
 
     //to fill vectors
     void AddVectorScinEnergyR(G4double de, G4int tower, G4int slice);   //fill vector of scintillating fibers with energy deposition
@@ -99,6 +111,7 @@ class B4aEventAction : public G4UserEventAction
     void AddVectorL_loop(G4double de, G4int tower, G4int slice);
     
     void AddScepHit(G4double chId, G4double de, G4String hitType);
+    void AddScepTimingHit(G4double chId, G4double de, G4double time_hit, G4double layerID);
     
     
     typedef struct FiberInfo {
@@ -136,12 +149,24 @@ class B4aEventAction : public G4UserEventAction
     G4int     SCEP_NCherProdF; //total number of cherenkov photons produced in the SCEPCal volume
     G4double  SCEP_EnergyDepR; //total energy deposited in the crystal SCEPCal volume due to ionization
     G4int     SCEP_NCherProdR; //total number of cherenkov photons produced in the SCEPCal volume
-
+    
+    G4double  SCEP_Timing_EnergyDepF; //total energy deposited in the crystal SCEPCal timing volume due to ionization
+    G4double  SCEP_Timing_EnergyDepR; //total energy deposited in the crystal SCEPCal timing volume due to ionization
+    G4double  SCEP_Timing_TimeF; //time stamp of the hit in the crystal SCEPCal timing volume due to ionization
+    G4double  SCEP_Timing_TimeR; //time stamp of the hit in the crystal SCEPCal timing volume due to ionization
+    
     std::vector<G4double> VecHit_CrystalID;   //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
     std::vector<G4double> VecHit_ScepEneDepF; //for each crystal with hits --> total energy deposited in the crystal SCEPCal volume due to ionization
     std::vector<G4double> VecHit_ScepEneDepR; //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
     std::vector<G4double> VecHit_ScepCherF;   //for each crystal with hits --> total energy deposited in the crystal SCEPCal volume due to ionization
     std::vector<G4double> VecHit_ScepCherR;   //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
+    
+    std::vector<G4double> VecHit_Timing_CrystalID_F;   //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
+    std::vector<G4double> VecHit_Timing_CrystalID_R;   //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
+    std::vector<G4double> VecHit_Timing_ScepEneDepF; //for each crystal with hits --> total energy deposited in the crystal SCEPCal volume due to ionization
+    std::vector<G4double> VecHit_Timing_ScepEneDepR; //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
+    std::vector<G4double> VecHit_Timing_ScepTimeF;   //for each crystal with hits --> total energy deposited in the crystal SCEPCal volume due to ionization
+    std::vector<G4double> VecHit_Timing_ScepTimeR;   //for each crystal with hits --> total number of cherenkov photons produced in the SCEPCal volume
     
     std::vector<G4double> VectorR_loop;
     std::vector<G4double> VectorL_loop;
@@ -265,23 +290,31 @@ inline void B4aEventAction::AddScepEneR(G4double de)   {SCEP_EnergyDepR += de;}
 inline void B4aEventAction::AddScepCherR()             {SCEP_NCherProdR = SCEP_NCherProdR + 1;}
 
 
-inline void B4aEventAction::AddScepHit(G4double chId, G4double de, G4String hitType) 
-{    
+inline void B4aEventAction::AddScepTimingEneTime(G4double de, G4double time_hit, G4double layerID)
+{ 
+    if (layerID == 1) 
+    {
+        SCEP_Timing_EnergyDepF += de;
+        SCEP_Timing_TimeF += de*time_hit;
+    }
+    else //if (layerID == 2) 
+    {
+        SCEP_Timing_EnergyDepR += de;
+        SCEP_Timing_TimeR += de*time_hit;
+    }
+}
 
-//     std::vector<int>::iterator it;    
-//     it = find(VecHit_CrystalID.begin(), VecHit_CrystalID.end(), chId);
+
+
+inline void B4aEventAction::AddScepHit(G4double chId, G4double de, G4String hitType) 
+{
     bool found = false;
     for (long unsigned int it = 0; it<VecHit_CrystalID.size(); it++)
     {
     
         if (VecHit_CrystalID.at(it) == chId)
         {
-//     for (auto it : VecHit_CrystalID)
-//     {
-//         if (it!=VecHit_CrystalID.end()) //increment the quantity corresponding to the hit
-//         {
             found = true;
-//             if (chId ==  0 ) std::cout << "found hit in chId = " << chId << std::endl;
         
             if      (hitType == "FrontEne")  VecHit_ScepEneDepF.at(it) += de;
             else if (hitType == "RearEne")   VecHit_ScepEneDepR.at(it) += de;
@@ -289,10 +322,8 @@ inline void B4aEventAction::AddScepHit(G4double chId, G4double de, G4String hitT
             else if (hitType == "RearCher")  VecHit_ScepCherR.at(it)   += de;
             break;
         }
-    }
-    
-    if (!found)
-//     else    //first we get a hit in this detector location (either front or rear) --> add de to hit segment and set entry initialized to 0 also on all the other vectors
+    }    
+    if (!found)  //first we get a hit in this detector location (either front or rear) --> add de to hit segment and set entry initialized to 0 also on all the other vectors
     {
         VecHit_CrystalID.push_back(chId);    
         
@@ -324,13 +355,54 @@ inline void B4aEventAction::AddScepHit(G4double chId, G4double de, G4String hitT
             VecHit_ScepCherF.push_back(0.);    
             VecHit_ScepCherR.push_back(de);    
         }
-    }
-
-    
+    }    
 //     std::cout << "added hit @ " << chId << " with Ene = " << de << std::endl;
 }
 
 
+inline void B4aEventAction::AddScepTimingHit(G4double chId, G4double de, G4double time_hit, G4double layerID) 
+{    
+//     std::cout << "chId  = " << chId << " :: de = " << de << " :: time_hit = " << time_hit << " :: layerID = " << layerID << std::endl;    
+    bool found = false;
+    if (layerID == 1)
+    {
+        for (long unsigned int it = 0; it<VecHit_Timing_CrystalID_F.size(); it++)
+        {
+            if (VecHit_Timing_CrystalID_F.at(it) == chId)
+            {
+                found = true;                    
+                VecHit_Timing_ScepEneDepF.at(it) += de;
+                VecHit_Timing_ScepTimeF.at(it) += time_hit*de;                
+                break;
+            }
+        }    
+        if (!found)
+        {
+            VecHit_Timing_CrystalID_F.push_back(chId);    
+            VecHit_Timing_ScepEneDepF.push_back(de);
+            VecHit_Timing_ScepTimeF.push_back(time_hit*de);            
+        }
+    }
+    else
+    {
+        for (long unsigned int it = 0; it<VecHit_Timing_CrystalID_R.size(); it++)
+        {
+            if (VecHit_Timing_CrystalID_R.at(it) == chId)
+            {
+                found = true;                    
+                VecHit_Timing_ScepEneDepR.at(it) += de;
+                VecHit_Timing_ScepTimeR.at(it) += time_hit*de;                
+                break;
+            }
+        }    
+        if (!found)
+        {
+            VecHit_Timing_CrystalID_R.push_back(chId);    
+            VecHit_Timing_ScepEneDepR.push_back(de);
+            VecHit_Timing_ScepTimeR.push_back(time_hit*de);            
+        }        
+    }
+}
 
 /*inline void B4aEventAction::AddScintillation(){
   NofScintillationDetected = NofScintillationDetected +1;

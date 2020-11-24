@@ -21,7 +21,7 @@ public:
   static G4Material* OpticalGrease155();
   static G4Material* MeltMount168();
   
-  static G4Material* LYSO();
+  static G4Material* LSO();
   static G4Material* PWO();
   static G4Material* BGO();
   static G4Material* CsI();
