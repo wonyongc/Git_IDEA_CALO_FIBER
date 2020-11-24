@@ -70,12 +70,23 @@ B4aEventAction::B4aEventAction()
    SCEP_NCherProdF(0.),
    SCEP_EnergyDepR(0.),
    SCEP_NCherProdR(0.),
+   SCEP_Timing_EnergyDepF(0.),
+   SCEP_Timing_EnergyDepR(0.),   
+   SCEP_Timing_TimeF(0.),
+   SCEP_Timing_TimeR(0.),   
    
    VecHit_CrystalID(0.),
    VecHit_ScepEneDepF(0.),
    VecHit_ScepEneDepR(0.),
    VecHit_ScepCherF(0.),
    VecHit_ScepCherR(0.),
+   
+   VecHit_Timing_CrystalID_F(0.),
+   VecHit_Timing_CrystalID_R(0.),
+   VecHit_Timing_ScepEneDepF(0.),
+   VecHit_Timing_ScepEneDepR(0.),
+   VecHit_Timing_ScepTimeF(0.),
+   VecHit_Timing_ScepTimeR(0.),
 
 
    PrimaryParticleEnergy(0.),
@@ -130,11 +141,24 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
   SCEP_EnergyDepR = 0.;
   SCEP_NCherProdR = 0.;
   
+  SCEP_Timing_EnergyDepF = 0.;
+  SCEP_Timing_EnergyDepR = 0.;
+  SCEP_Timing_TimeF = 0.;
+  SCEP_Timing_TimeR = 0.;
+  
   VecHit_CrystalID.clear();
   VecHit_ScepEneDepF.clear();
   VecHit_ScepEneDepR.clear();
   VecHit_ScepCherF.clear();
   VecHit_ScepCherR.clear();
+  
+  VecHit_Timing_CrystalID_F.clear();
+  VecHit_Timing_CrystalID_R.clear();
+  VecHit_Timing_ScepEneDepF.clear();
+  VecHit_Timing_ScepEneDepR.clear();
+  VecHit_Timing_ScepTimeF.clear();
+  VecHit_Timing_ScepTimeR.clear();
+    
   PrimaryParticleMomentum.clear();
   
   
@@ -282,7 +306,12 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   //analysisManager->FillH1(2, TrackLmodule);
   //analysisManager->FillH1(3, EnergyScin);
   
-  std::cout << "filling ntuple with: " << SCEP_EnergyDepF  << " MeV in SCEPCal front and " << SCEP_EnergyDepR  << " MeV in SCEPCal rear" << std::endl;
+  std::cout << "filling ntuple with: " 
+            << SCEP_Timing_EnergyDepF  << " MeV in T1 and "  << SCEP_Timing_EnergyDepR  << " MeV in T2 :: " 
+            << SCEP_EnergyDepF         << " MeV in E1 and " << SCEP_EnergyDepR         << " MeV in E2" 
+            << std::endl;
+            
+            
   // fill ntuple event by event
   analysisManager->FillNtupleDColumn(0, Energyem);
   analysisManager->FillNtupleDColumn(1, EnergyScin);
@@ -298,6 +327,11 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   analysisManager->FillNtupleDColumn(10,SCEP_NCherProdF);
   analysisManager->FillNtupleDColumn(11,SCEP_EnergyDepR);
   analysisManager->FillNtupleDColumn(12,SCEP_NCherProdR);
+  
+  analysisManager->FillNtupleDColumn(13,SCEP_Timing_EnergyDepF);
+  analysisManager->FillNtupleDColumn(14,SCEP_Timing_EnergyDepR);
+  analysisManager->FillNtupleDColumn(15,SCEP_Timing_TimeF);
+  analysisManager->FillNtupleDColumn(16,SCEP_Timing_TimeR);
   
   analysisManager->AddNtupleRow();//columns with vector are automatically filled with this function
   

@@ -283,14 +283,12 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
   
   
   //***************************************************************
-  //                    SCEPCal scoring
+  //                    SCEPCal ECAL scoring
   //***************************************************************
   
   
-  if ( PreStepVolume->GetName().contains("crystal") )
-  {
-    
-      
+  if (PreStepVolume->GetName().contains("crystalECAL"))
+  {          
     int nBarrelEtaSeg = 180;
     int nBarrelPhiSeg = 1130;
     
@@ -300,10 +298,10 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
     int chOffset = 1000000; //to make sure endcap numbering does not overlap with barrel
     int crystal_0IDR[162] = {0, 1121, 2232, 3333, 4425, 5507, 6580, 7643, 8697, 9742, 10778, 11805, 12823, 13832, 14832, 15823, 16806, 17780, 18745, 19702, 20650, 21590, 22522, 23446, 24361, 25268, 26167, 27058, 27941, 28816, 29683, 30543, 31395, 32239, 33075, 33904, 34725, 35539, 36345, 37144, 37935, 38719, 39496, 40266, 41028, 41783, 42531, 43272, 44006, 44733, 45453, 46166, 46872, 47571, 48264, 48950, 49629, 50301, 50967, 51626, 52278, 52924, 53563, 54196, 54822, 55442, 56056, 56663, 57264, 57859, 58447, 59029, 59605, 60175, 60738, 61295, 61846, 62391, 62930, 63463, 63990, 64511, 65026, 65535, 66038, 66535, 67026, 67511, 67991, 68465, 68933, 69395, 69851, 70302, 70747, 71186, 71620, 72048, 72470, 72887, 73298, 73704, 74104, 74498, 74887, 75270, 75648, 76020, 76387, 76749, 77105, 77456, 77801, 78141, 78476, 78805, 79129, 79447, 79760, 80068, 80371, 80668, 80960, 81247, 81528, 81804, 82075, 82341, 82602, 82857, 83107, 83352, 83592, 83827, 84057, 84281, 84500, 84714, 84923, 85127, 85326, 85520, 85709, 85893, 86072, 86246, 86415, 86578, 86736, 86889, 87037, 87180, 87318, 87451, 87579, 87702, 87820, 87933, 88041, 88144, 88242, 88335};
 
-    G4double chId = 0.;
-        
+    G4double chId = 0.;        
     G4String logVolumeName = PreStepVolume->GetLogicalVolume()->GetName();
     
+    //in ECAL barrel
     if (PreStepVolume->GetName().contains("Barrel"))
     {
         //number of crystal within phi slice
@@ -313,10 +311,9 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
         //define crystal absolute ID number                        
         G4int sign    = crystal_copy_ID/fabs(crystal_copy_ID);
         chId = sign*(fabs(crystal_copy_ID) + nBarrelEtaSeg*phi_slice_ID );     
-//         if (fabs(chId)<1 || fabs(chId)>3000000)          std::cout << "hit in barrel: " << logVolumeName << "(" << PreStepVolume->GetName() << ") --> crystal_copy_ID = " << crystal_copy_ID << " :: phi_slice_ID = " << phi_slice_ID << " :: chId = " << chId << std::endl;                
     }
     
-    
+    //in ECAL endcap
     else if (PreStepVolume->GetName().contains("Endcap"))
     {        
         //number of crystal within eta ring
@@ -325,55 +322,34 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
         G4double eta_ring_ID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);                 
         //define crystal absolute ID number                        
         G4int sign    = eta_ring_ID/fabs(eta_ring_ID);
-        chId = sign*(crystal_copy_ID + crystal_0IDR[int(abs(eta_ring_ID))-1] + chOffset);     
-//         float tempChId = sign*(crystal_copy_ID + nEndcapMaxSeg*fabs(eta_ring_ID));
-//         if (fabs(chId)<1 || fabs(chId)>2000000) std::cout << "hit in endcap: " << logVolumeName << "(" << PreStepVolume->GetName() << ") --> crystal_copy_ID = " << crystal_copy_ID << " :: eta_ring_ID = " << eta_ring_ID << " :: chId = " << chId/fabs(chId)*(fabs(chId)-chOffset) << std::endl;                
+        chId = sign*(crystal_copy_ID + crystal_0IDR[int(abs(eta_ring_ID))-1] + chOffset);             
     }
-    
-    else 
-    {
-        std::cout << "attention! crystal hit in unidentified position!" << std::endl;
-    }
-    
 
-    if (fabs(chId)<1 || fabs(chId)>2000000)        
-    {
-        std::cout << "attention! channel id number has weird value: " << chId << " --> volume is:" << logVolumeName <<   " :: phys = " << PreStepVolume->GetName() << std::endl ;
-    }
-    
     //count energy deposited through ionization
     if (energydeposited>0)
     {
-        
-//         std::cout << "hit in crystal! :: " << logVolumeName << std::endl;
-                
         if (PreStepVolume->GetName().contains("Front")) 
         {
-//             std::cout << " chId = " << chId << std::endl;
             fEventAction->AddScepEneF(energydeposited);
             fEventAction->AddScepHit(chId, energydeposited, "FrontEne");
         }
         if (PreStepVolume->GetName().contains("Rear") ) 
         {
-//             std::cout << " chId = " << chId << std::endl;
             fEventAction->AddScepEneR(energydeposited); 
             fEventAction->AddScepHit(chId, energydeposited, "RearEne");
         }    
     }
-    
-    
+        
     // count cherenkov photons
     G4Track* theTrack = step->GetTrack () ;
-    G4int nStep = theTrack -> GetCurrentStepNumber();
-    
-//     std::cout << "preparing for cherenkov counting: step(" << nStep << ") :: particle name(" << theTrack->GetDefinition()->GetParticleName() << ")" << std::endl;
+    G4int nStep = theTrack -> GetCurrentStepNumber();    
     
     if( (nStep == 1) && (theTrack->GetDefinition()->GetParticleName() == "opticalphoton") )
     {
         G4String processName = theTrack->GetCreatorProcess()->GetProcessName();
         
         if (processName == "Cerenkov")
-        {            
+        {
             //kill very long or short wavelengths
             float photWL = MyMaterials::fromEvToNm(theTrack->GetTotalEnergy()/eV);                
             if (photWL> 1000 ||  photWL< 300)  theTrack->SetTrackStatus(fKillTrackAndSecondaries); 
@@ -394,7 +370,63 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
                 theTrack->SetTrackStatus(fKillTrackAndSecondaries); 
             }
         }
+    }
+  }
+  
+  
+  
+  //***************************************************************
+  //                    SCEPCal Timing scoring
+  //***************************************************************
+  
+  if (PreStepVolume->GetName().contains("crystalTiming"))
+  {          
+      
+    int nBarrelTiming_Z = 29;   //number of modules along z inside a half barrel phi slice (tray)        
+    int nBars = 20;
+    int chOffset = 1000000; //to make sure endcap numbering does not overlap with barrel
+    
+    G4double chId = 0.;        
+    G4String logVolumeName = PreStepVolume->GetLogicalVolume()->GetName();    
+    // bar ID in the array, from to 0 to 19 (bars)
+    G4double crystal_copy_ID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(0);          
+    // front layer is 1 , rear layer is 2
+    G4double layer_ID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(1);          
+    // module number
+    G4double module_ID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(2);              
+    // mother envelope volume name (e.g. was module inside endcap or inside barrel?)
+    G4String motherEnv_volume = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume(2)->GetName();
+//     std::cout << "motherEnv_volume = "  << motherEnv_volume << std::endl;
+    
+    //in Timing barrel
+    if (motherEnv_volume.contains("Barrel"))
+    {
+        //number of phi slice within barrel               
+        G4double phi_slice_ID = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);                         
+        //define crystal absolute ID number                        
+        G4int barrel_sign    = module_ID/fabs(module_ID);
+        chId = barrel_sign*(crystal_copy_ID + nBars*fabs(module_ID) + nBars*nBarrelTiming_Z*phi_slice_ID );     
+//         std::cout << " hit in timing barrel at chId = " << chId << std::endl;
+        
+    }
+    
+    //in Timing endcap
+    if (motherEnv_volume.contains("Endcap"))
+    {        
+        //endcap sign
+        G4double endcap_sign = step->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber(3);                         
+        //define crystal absolute ID number                                
+        chId = endcap_sign*(crystal_copy_ID + nBars*fabs(module_ID) + chOffset);             
+//         std::cout << " hit in timing endcap at chId = " << chId << std::endl;
+    }
 
+    //count energy deposited through ionization
+    if (energydeposited>0)
+    {            
+        G4double time_hit = step->GetPreStepPoint()->GetGlobalTime()/picosecond;
+        fEventAction->AddScepTimingEneTime(energydeposited, time_hit, layer_ID);
+        fEventAction->AddScepTimingHit(chId, energydeposited, time_hit, layer_ID);        
+//         std::cout << "layer: " << layer_ID << " :: ene = " << energydeposited << " :: time " << time_hit << std::endl;
     }
   }
   

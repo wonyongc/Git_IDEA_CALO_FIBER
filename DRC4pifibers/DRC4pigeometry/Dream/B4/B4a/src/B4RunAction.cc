@@ -164,13 +164,25 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   analysisManager->CreateNtupleDColumn("SCEP_EnergyDepR");
   analysisManager->CreateNtupleDColumn("SCEP_NCherProdR");
   
-  analysisManager->CreateNtupleDColumn("PrimaryParticleMomentum",  eventAction->GetPrimaryParticleMomentum());
+  analysisManager->CreateNtupleDColumn("SCEP_Timing_EnergyDepF");
+  analysisManager->CreateNtupleDColumn("SCEP_Timing_EnergyDepR");
+  analysisManager->CreateNtupleDColumn("SCEP_Timing_TimeF");
+  analysisManager->CreateNtupleDColumn("SCEP_Timing_TimeR");
+  
   analysisManager->CreateNtupleDColumn("VecHit_CrystalID",  eventAction->GetVecScep_CrystalID());
   analysisManager->CreateNtupleDColumn("VecHit_ScepEneDepF",eventAction->GetVecScep_ScepEneDepF());
   analysisManager->CreateNtupleDColumn("VecHit_ScepEneDepR",eventAction->GetVecScep_ScepEneDepR());
   analysisManager->CreateNtupleDColumn("VecHit_ScepCherF",  eventAction->GetVecScep_ScepCherF());
   analysisManager->CreateNtupleDColumn("VecHit_ScepCherR",  eventAction->GetVecScep_ScepCherR());
   
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_CrystalID_F",  eventAction->GetVecScep_Timing_CrystalID_F());
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_CrystalID_R",  eventAction->GetVecScep_Timing_CrystalID_R());
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_ScepEneDepF",eventAction->GetVecScep_Timing_ScepEneDepF());
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_ScepEneDepR",eventAction->GetVecScep_Timing_ScepEneDepR());
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_ScepTimeF",  eventAction->GetVecScep_Timing_ScepTimeF());
+  analysisManager->CreateNtupleDColumn("VecHit_Timing_ScepTimeR",  eventAction->GetVecScep_Timing_ScepTimeR());
+  
+  analysisManager->CreateNtupleDColumn("PrimaryParticleMomentum",  eventAction->GetPrimaryParticleMomentum());
   
   //analysisManager->CreateNtupleDColumn("ID");
   analysisManager->CreateNtupleDColumn("VectorSignalsR",eventAction->GetVectorSignalsR());

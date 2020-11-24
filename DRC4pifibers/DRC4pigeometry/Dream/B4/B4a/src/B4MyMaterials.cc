@@ -97,17 +97,15 @@ G4Material* MyMaterials::MeltMount168()
 }
 
 
-G4Material* MyMaterials::LYSO()
+G4Material* MyMaterials::LSO()
 {
   G4double a, z, density;
   G4Element*  O = new G4Element("Oxygen",   "O",  z= 8., a= 16.00 *g/mole);
-  G4Element* Lu = new G4Element("Lutetium", "Lu", z=71., a= 174.97*g/mole);
-  G4Element* Y  = new G4Element("Yttrium",  "Y",  z=39., a= 88.91 *g/mole);
+  G4Element* Lu = new G4Element("Lutetium", "Lu", z=71., a= 174.97*g/mole);  
   G4Element* Si = new G4Element("Silicon",  "Si", z=14., a= 28.09 *g/mole);
   
-  G4Material* mat = new G4Material("LYSO", density=7.1*g/cm3, 3, kStateSolid);
-  mat->AddElement(Lu,1.8);
-  mat->AddElement(Y,0.2);
+  G4Material* mat = new G4Material("LYSO", density=7.4*g/cm3, 3, kStateSolid);
+  mat->AddElement(Lu,2);  
   mat->AddElement(Si,1);
   mat->AddElement(O,5);
   
@@ -186,8 +184,11 @@ G4Material* MyMaterials::LYSO()
   
   G4MaterialPropertiesTable* myMPT = new G4MaterialPropertiesTable();
   myMPT->AddProperty("FASTCOMPONENT", PhotonEnergy_FAST, FastComponent,  nEntries_FAST);
-  myMPT->AddProperty("RINDEX",        PhotonEnergy_RI,   RefractiveIndex, nEntries_RI);
+  
+  //comment rindex to avoid cherenkov generation in timing layers
+//   myMPT->AddProperty("RINDEX",        PhotonEnergy_RI,   RefractiveIndex, nEntries_RI);
   //myMPT->AddProperty("RAYLEIGH",      PhotonEnergy_ABS,  Rayleigh,        nEntries_RI);
+  
   myMPT->AddProperty("ABSLENGTH",     PhotonEnergy_ABS,  Absorption,      nEntries_ABS);
   myMPT->AddConstProperty("SCINTILLATIONYIELD",40000./MeV);
   myMPT->AddConstProperty("RESOLUTIONSCALE",3.4);
