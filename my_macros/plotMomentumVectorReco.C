@@ -85,40 +85,58 @@ int main(int argc, char** argv)
   TH1F * hNHits_T1Endcap[NFILES];
   TH1F * hNHits_T2Endcap[NFILES];
   
+  TH1F * hDeltaPhi_Tower[NFILES];
+  TH1F * hDeltaEta_Tower[NFILES];
+  TH1F * hDeltaTheta_Tower[NFILES];
+  
   TH1F * hDeltaPhi_Barrel[NFILES];
   TH1F * hDeltaEta_Barrel[NFILES];
+  TH1F * hDeltaTheta_Barrel[NFILES];
   TH1F * hDeltaPhi_Endcap[NFILES];
   TH1F * hDeltaEta_Endcap[NFILES];  
+  TH1F * hDeltaTheta_Endcap[NFILES];  
   
   TH1F * hDeltaPhi_Barrel_wGravity[NFILES];
   TH1F * hDeltaEta_Barrel_wGravity[NFILES];
+  TH1F * hDeltaTheta_Barrel_wGravity[NFILES];
   TH1F * hDeltaPhi_Endcap_wGravity[NFILES];
   TH1F * hDeltaEta_Endcap_wGravity[NFILES];
+  TH1F * hDeltaTheta_Endcap_wGravity[NFILES];
   
   TH1F * hDeltaPhi_TimingBarrel_Comb[NFILES];
   TH1F * hDeltaEta_TimingBarrel_Comb[NFILES];
+  TH1F * hDeltaTheta_TimingBarrel_Comb[NFILES];
   TH1F * hDeltaPhi_TimingEndcap_Comb[NFILES];
   TH1F * hDeltaEta_TimingEndcap_Comb[NFILES];  
+  TH1F * hDeltaTheta_TimingEndcap_Comb[NFILES];  
   
   TH1F * hDeltaPhi_TimingBarrel_F[NFILES];
   TH1F * hDeltaEta_TimingBarrel_F[NFILES];
+  TH1F * hDeltaTheta_TimingBarrel_F[NFILES];
   TH1F * hDeltaPhi_TimingEndcap_F[NFILES];
   TH1F * hDeltaEta_TimingEndcap_F[NFILES];
+  TH1F * hDeltaTheta_TimingEndcap_F[NFILES];
   
   TH1F * hDeltaPhi_TimingBarrel_R[NFILES];
   TH1F * hDeltaEta_TimingBarrel_R[NFILES];
+  TH1F * hDeltaTheta_TimingBarrel_R[NFILES];
   TH1F * hDeltaPhi_TimingEndcap_R[NFILES];
   TH1F * hDeltaEta_TimingEndcap_R[NFILES];    
+  TH1F * hDeltaTheta_TimingEndcap_R[NFILES];
     
   TH1F * hDeltaPhi_TimingBarrel_W_F[NFILES];
   TH1F * hDeltaEta_TimingBarrel_W_F[NFILES];
+  TH1F * hDeltaTheta_TimingBarrel_W_F[NFILES];
   TH1F * hDeltaPhi_TimingEndcap_W_F[NFILES];
   TH1F * hDeltaEta_TimingEndcap_W_F[NFILES];
+  TH1F * hDeltaTheta_TimingEndcap_W_F[NFILES];
   
   TH1F * hDeltaPhi_TimingBarrel_W_R[NFILES];
   TH1F * hDeltaEta_TimingBarrel_W_R[NFILES];
+  TH1F * hDeltaTheta_TimingBarrel_W_R[NFILES];
   TH1F * hDeltaPhi_TimingEndcap_W_R[NFILES];
   TH1F * hDeltaEta_TimingEndcap_W_R[NFILES];
+  TH1F * hDeltaTheta_TimingEndcap_W_R[NFILES];
   
   TH2F * hScatterTOF_TimingBarrel[NFILES];    
   TH2F * hScatterTOF_TimingEndcap[NFILES];
@@ -130,6 +148,7 @@ int main(int argc, char** argv)
   
   
   int NBINS = 1000;
+  double scale = 34;
   
   for (int iFile = 0; iFile<NFILES; iFile++)
   {
@@ -143,42 +162,58 @@ int main(int argc, char** argv)
       hNHits_T1Endcap[iFile] = new TH1F (Form("hNHits_T1Endcap_%d", energies[iFile]), Form("hNHits_T1Endcap_%d", energies[iFile]), 100, -0.5, 100-0.5);
       hNHits_T2Endcap[iFile] = new TH1F (Form("hNHits_T2Endcap_%d", energies[iFile]), Form("hNHits_T2Endcap_%d", energies[iFile]), 100, -0.5, 100-0.5);
       
+      hDeltaPhi_Tower[iFile] = new TH1F (Form("hDeltaPhi_Tower_%d", energies[iFile]), Form("hDeltaPhi_Tower_%d", energies[iFile]), NBINS, -0.3*scale, 0.3*scale);
+      hDeltaEta_Tower[iFile] = new TH1F (Form("hDeltaEta_Tower_%d", energies[iFile]), Form("hDeltaEta_Tower_%d", energies[iFile]), NBINS, -0.3*scale, 0.3*scale);
+      hDeltaTheta_Tower[iFile] = new TH1F (Form("hDeltaTheta_Tower_%d", energies[iFile]), Form("hDeltaTheta_Tower_%d", energies[iFile]), NBINS, -0.3*scale, 0.3*scale);
       
       hDeltaPhi_Barrel[iFile] = new TH1F (Form("hDeltaPhi_Barrel_%d", energies[iFile]), Form("hDeltaPhi_Barrel_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_Barrel[iFile] = new TH1F (Form("hDeltaEta_Barrel_%d", energies[iFile]), Form("hDeltaEta_Barrel_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_Barrel[iFile] = new TH1F (Form("hDeltaTheta_Barrel_%d", energies[iFile]), Form("hDeltaTheta_Barrel_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaPhi_Endcap[iFile] = new TH1F (Form("hDeltaPhi_Endcap_%d", energies[iFile]), Form("hDeltaPhi_Endcap_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_Endcap[iFile] = new TH1F (Form("hDeltaEta_Endcap_%d", energies[iFile]), Form("hDeltaEta_Endcap_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_Endcap[iFile] = new TH1F (Form("hDeltaTheta_Endcap_%d", energies[iFile]), Form("hDeltaTheta_Endcap_%d", energies[iFile]), NBINS, -0.1, 0.1);
       
       hDeltaPhi_Barrel_wGravity[iFile] = new TH1F (Form("hDeltaPhi_Barrel_wGravity_%d", energies[iFile]), Form("hDeltaPhi_Barrel_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_Barrel_wGravity[iFile] = new TH1F (Form("hDeltaEta_Barrel_wGravity_%d", energies[iFile]), Form("hDeltaEta_Barrel_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_Barrel_wGravity[iFile] = new TH1F (Form("hDeltaTheta_Barrel_wGravity_%d", energies[iFile]), Form("hDeltaTheta_Barrel_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaPhi_Endcap_wGravity[iFile] = new TH1F (Form("hDeltaPhi_Endcap_wGravity_%d", energies[iFile]), Form("hDeltaPhi_Endcap_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_Endcap_wGravity[iFile] = new TH1F (Form("hDeltaEta_Endcap_wGravity_%d", energies[iFile]), Form("hDeltaEta_Endcap_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_Endcap_wGravity[iFile] = new TH1F (Form("hDeltaTheta_Endcap_wGravity_%d", energies[iFile]), Form("hDeltaTheta_Endcap_wGravity_%d", energies[iFile]), NBINS, -0.1, 0.1);
       
-      hDeltaPhi_TimingBarrel_Comb[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_Comb_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_Comb_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaPhi_TimingBarrel_Comb[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_Comb_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_Comb_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingBarrel_Comb[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_Comb_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_Comb_%d", energies[iFile]), NBINS, -0.1, 0.1);
-      hDeltaPhi_TimingEndcap_Comb[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_Comb_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_Comb_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingBarrel_Comb[iFile] = new TH1F (Form("hDeltaTheta_TimingBarrel_Comb_%d", energies[iFile]), Form("hDeltaTheta_TimingBarrel_Comb_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
+      hDeltaPhi_TimingEndcap_Comb[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_Comb_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_Comb_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingEndcap_Comb[iFile] = new TH1F (Form("hDeltaEta_TimingEndcap_Comb_%d", energies[iFile]), Form("hDeltaEta_TimingEndcap_Comb_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingEndcap_Comb[iFile] = new TH1F (Form("hDeltaTheta_TimingEndcap_Comb_%d", energies[iFile]), Form("hDeltaTheta_TimingEndcap_Comb_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       
-      hDeltaPhi_TimingBarrel_F[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_F_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaPhi_TimingBarrel_F[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_F_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_F_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingBarrel_F[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_F_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
-//       hDeltaEta_TimingBarrel_F[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_F_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_F_%d", energies[iFile]), NBINS, -5, 5);
-      hDeltaPhi_TimingEndcap_F[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_F_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingBarrel_F[iFile] = new TH1F (Form("hDeltaTheta_TimingBarrel_F_%d", energies[iFile]), Form("hDeltaTheta_TimingBarrel_F_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
+      hDeltaPhi_TimingEndcap_F[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_F_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_F_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingEndcap_F[iFile] = new TH1F (Form("hDeltaEta_TimingEndcap_F_%d", energies[iFile]), Form("hDeltaEta_TimingEndcap_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingEndcap_F[iFile] = new TH1F (Form("hDeltaTheta_TimingEndcap_F_%d", energies[iFile]), Form("hDeltaTheta_TimingEndcap_F_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       
-      hDeltaPhi_TimingBarrel_R[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_R_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaPhi_TimingBarrel_R[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_R_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_R_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingBarrel_R[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_R_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
-      hDeltaPhi_TimingEndcap_R[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_R_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingBarrel_R[iFile] = new TH1F (Form("hDeltaTheta_TimingBarrel_R_%d", energies[iFile]), Form("hDeltaTheta_TimingBarrel_R_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
+      hDeltaPhi_TimingEndcap_R[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_R_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_R_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
       hDeltaEta_TimingEndcap_R[iFile] = new TH1F (Form("hDeltaEta_TimingEndcap_R_%d", energies[iFile]), Form("hDeltaEta_TimingEndcap_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingEndcap_R[iFile] = new TH1F (Form("hDeltaTheta_TimingEndcap_R_%d", energies[iFile]), Form("hDeltaTheta_TimingEndcap_R_%d", energies[iFile]), NBINS, -0.1*scale, 0.1*scale);
                   
       hDeltaPhi_TimingBarrel_W_F[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_W_F_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_TimingBarrel_W_F[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_W_F_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingBarrel_W_F[iFile] = new TH1F (Form("hDeltaTheta_TimingBarrel_W_F_%d", energies[iFile]), Form("hDeltaTheta_TimingBarrel_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaPhi_TimingEndcap_W_F[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_W_F_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_TimingEndcap_W_F[iFile] = new TH1F (Form("hDeltaEta_TimingEndcap_W_F_%d", energies[iFile]), Form("hDeltaEta_TimingEndcap_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingEndcap_W_F[iFile] = new TH1F (Form("hDeltaTheta_TimingEndcap_W_F_%d", energies[iFile]), Form("hDeltaTheta_TimingEndcap_W_F_%d", energies[iFile]), NBINS, -0.1, 0.1);
       
       hDeltaPhi_TimingBarrel_W_R[iFile] = new TH1F (Form("hDeltaPhi_TimingBarrel_W_R_%d", energies[iFile]), Form("hDeltaPhi_TimingBarrel_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_TimingBarrel_W_R[iFile] = new TH1F (Form("hDeltaEta_TimingBarrel_W_R_%d", energies[iFile]), Form("hDeltaEta_TimingBarrel_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingBarrel_W_R[iFile] = new TH1F (Form("hDeltaTheta_TimingBarrel_W_R_%d", energies[iFile]), Form("hDeltaTheta_TimingBarrel_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaPhi_TimingEndcap_W_R[iFile] = new TH1F (Form("hDeltaPhi_TimingEndcap_W_R_%d", energies[iFile]), Form("hDeltaPhi_TimingEndcap_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
       hDeltaEta_TimingEndcap_W_R[iFile] = new TH1F (Form("hDeltaEta_TimingEndcap_W_R_%d", energies[iFile]), Form("hDeltaEta_TimingEndcap_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
+      hDeltaTheta_TimingEndcap_W_R[iFile] = new TH1F (Form("hDeltaTheta_TimingEndcap_W_R_%d", energies[iFile]), Form("hDeltaTheta_TimingEndcap_W_R_%d", energies[iFile]), NBINS, -0.1, 0.1);
       
       hTOF_TimingBarrel[iFile] = new TH1F (Form("hTOF_TimingBarrel_%d", energies[iFile]), Form("hTOF_TimingBarrel_%d", energies[iFile]), 1000, -100, 100);
       hTOF_TimingEndcap[iFile] = new TH1F (Form("hTOF_TimingEndcap_%d", energies[iFile]), Form("hTOF_TimingEndcap_%d", energies[iFile]), 1000, -100, 100);
@@ -222,14 +257,14 @@ int main(int argc, char** argv)
       int NEVENTS = TreeRun->GetEntries();
       std::cout << "NEVENTS = " << NEVENTS << std::endl;
 
-      NEVENTS = 50000;
+      NEVENTS = 1000;
       
       for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
       {
-                                        
-          TreeRun->GetEntry(iEvt);
           
-//           if (iEcv
+          TreeRun->GetEntry(iEvt);
+          std::cout << "processing event: " << iEvt << "\r" << std::flush;
+          
 //           double eneF   = myTV.SCEP_EnergyDepF/1000.;
 //           double eneR   = myTV.SCEP_EnergyDepR/1000.;          
           
@@ -241,11 +276,69 @@ int main(int argc, char** argv)
           py/= P;
           pz/= P;
           
-//           double theta = atan(px/pz);
+          
           double phi   = atan(py/px);
           if (px<0. && py <0.)   {phi = phi - M_PI;}
           if (px<0. && py >0.)   {phi = M_PI + phi;}
           double eta   = -atanh(pz);
+          
+          double theta = 2*atan(exp(-eta));
+          
+          //**************************************************************//
+          //                             HCAL
+          //**************************************************************//
+          
+          // find hit with max energy (seed)
+          int tower_maxHit_index_L;
+          int tower_maxHit_index_R;
+          double tower_phi_seed = 0.;
+          double tower_eta_seed = 0.;
+          double tower_theta_seed = 0.;
+                    
+          std::vector<double>::iterator max_ene_TL;
+          std::vector<double>::iterator max_ene_TR;
+          
+          if (myTV.VectorL->size()>0 || myTV.VectorR->size()>0 )
+          {
+              float this_ene_L = -999;
+              float this_ene_R = -999;
+              if (myTV.VectorL->size()>0) 
+              {                
+                  max_ene_TL = std::max_element(myTV.VectorL->begin(), myTV.VectorL->end());
+                  tower_maxHit_index_L = std::distance(myTV.VectorL->begin(), max_ene_TL);
+                  this_ene_L = myTV.VectorL->at(tower_maxHit_index_L);
+              }              
+              if (myTV.VectorR->size()>0) 
+              {
+                  max_ene_TR = std::max_element(myTV.VectorR->begin(), myTV.VectorR->end());
+                  tower_maxHit_index_R = std::distance(myTV.VectorR->begin(), max_ene_TR);
+                  this_ene_R = myTV.VectorR->at(tower_maxHit_index_R);
+              }
+              
+              TVector3 seed_vec;              
+              
+              
+              if (this_ene_L>=this_ene_R) 
+              {                                                    
+                  seed_vec =  myGeometry.GetTowerVec(tower_maxHit_index_L, 'l');
+              }
+              else
+              {
+                  seed_vec =  myGeometry.GetTowerVec(tower_maxHit_index_R, 'r');
+              }
+                                                                                                                
+              tower_phi_seed = seed_vec.Phi();
+              tower_eta_seed = seed_vec.Eta();
+              tower_theta_seed = seed_vec.Theta();
+          }
+          
+          if (!(tower_phi_seed ==0 && tower_eta_seed ==0 && tower_theta_seed ==0 ))
+          {              
+              hDeltaPhi_Tower[iFile]->Fill(tower_phi_seed-phi);
+              hDeltaEta_Tower[iFile]->Fill(tower_eta_seed-eta);                                                                          
+              hDeltaTheta_Tower[iFile]->Fill(tower_theta_seed-theta);            
+          }
+          
           
           
           //**************************************************************//
@@ -257,6 +350,7 @@ int main(int argc, char** argv)
           int seed_crystal_ID = 0;
           double phi_seed = 0.;
           double eta_seed = 0.;
+          double theta_seed = 0.;
           
           std::vector<double>::iterator max_ene;
           if (myTV.VecHit_CrystalID->size()>0)
@@ -267,11 +361,13 @@ int main(int argc, char** argv)
               TVector3 seed_vec =  myGeometry.GetCrystalVec(seed_crystal_ID);
               phi_seed = seed_vec.Phi();
               eta_seed = seed_vec.Eta();
+              theta_seed = seed_vec.Theta();
           }
                                         
           //find center of gravity for phi and eta
           double phi_weighed = 0.;
           double eta_weighed = 0.;
+          double theta_weighed = 0.;
           double w_tot = 0.;
           
           for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
@@ -279,15 +375,18 @@ int main(int argc, char** argv)
               TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
               double this_phi = this_vec.Phi();
               double this_eta = this_vec.Eta();
+              double this_theta = this_vec.Theta();
               double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;
               
               phi_weighed += this_phi*this_ene;
               eta_weighed += this_eta*this_ene;
+              theta_weighed += this_theta*this_ene;
               w_tot += this_ene;              
 //               std::cout << "iEvt = " << iEvt << " :: ene_hit[" << i << "] = " << myTV.VecHit_ScepEneDepR->at(i)/1000. << " :: while max_ene is at " << maxHit_index << std::endl;              
           }
           phi_weighed/=w_tot;
           eta_weighed/=w_tot;
+          theta_weighed/=w_tot;
           
           if (maxHit_index!= -1)
           {
@@ -299,8 +398,10 @@ int main(int argc, char** argv)
               //                 std::cout << " input direction: phi = " << phi << " :: theta = "  << theta << " :: eta = " << eta << std::endl;                                
                 hDeltaPhi_Barrel[iFile]->Fill(phi_seed-phi);
                 hDeltaEta_Barrel[iFile]->Fill(eta_seed-eta);                                                            
+                hDeltaTheta_Barrel[iFile]->Fill(theta_seed-theta);            
                 hDeltaPhi_Barrel_wGravity[iFile]->Fill(phi_weighed-phi);
                 hDeltaEta_Barrel_wGravity[iFile]->Fill(eta_weighed-eta);     
+                hDeltaTheta_Barrel_wGravity[iFile]->Fill(theta_weighed-theta);     
             }            
             else if (fabs(seed_crystal_ID)>1000000  && max_hit_ene>0.2)
             {              
@@ -308,8 +409,10 @@ int main(int argc, char** argv)
 //                 std::cout << " input direction: phi = " << phi << " :: eta = " << eta << std::endl;                  
                 hDeltaPhi_Endcap[iFile]->Fill(phi_seed-phi);
                 hDeltaEta_Endcap[iFile]->Fill(eta_seed-eta);                
+                hDeltaTheta_Endcap[iFile]->Fill(theta_seed-theta);            
                 hDeltaPhi_Endcap_wGravity[iFile]->Fill(phi_weighed-phi);
                 hDeltaEta_Endcap_wGravity[iFile]->Fill(eta_weighed-eta);              
+                hDeltaTheta_Endcap_wGravity[iFile]->Fill(theta_weighed-theta);              
             }
           }
                  
@@ -328,7 +431,7 @@ int main(int argc, char** argv)
           
           double c_speed = 1./299792458*1e9; //mm per picosecond
           
-//           double time_acceptance = 3; //time window to reject out of time hits
+          double time_acceptance = 3; //time window to reject out of time hits
           
           //**********//
           //front layer
@@ -336,9 +439,10 @@ int main(int argc, char** argv)
           int    T1_seed_crystal_ID = 0;
           double T1_phi_seed = 0.;
           double T1_eta_seed = 0.;
-//           double T1_maxHit_ene = 0;
-//           double T1_maxHit_time = 0;
-//           double T1_distance = 0;
+          double T1_theta_seed = 0.;
+          double T1_maxHit_ene = 0;
+          double T1_maxHit_time = 0;
+          double T1_distance = 0;
           
 //           std::cout << "getting here? with vec size = " << myTV.VecHit_Timing_CrystalID_F->size() << std::endl;
           //get first coordinate (phi?) from front layer
@@ -347,37 +451,42 @@ int main(int argc, char** argv)
               max_ene         = std::max_element(myTV.VecHit_Timing_ScepEneDepF->begin(), myTV.VecHit_Timing_ScepEneDepF->end());
               T1_maxHit_index = std::distance(myTV.VecHit_Timing_ScepEneDepF->begin(), max_ene);
               T1_seed_crystal_ID = myTV.VecHit_Timing_CrystalID_F->at(T1_maxHit_index);
-//               T1_maxHit_ene      = myTV.VecHit_Timing_ScepEneDepF->at(T1_maxHit_index);              
-//               T1_maxHit_time     = myTV.VecHit_Timing_ScepTimeF->at(T1_maxHit_index);              
+              T1_maxHit_ene      = myTV.VecHit_Timing_ScepEneDepF->at(T1_maxHit_index);              
+              T1_maxHit_time     = myTV.VecHit_Timing_ScepTimeF->at(T1_maxHit_index);              
                                           
               TVector3 seed_vec =  myGeometry.GetCrystalTimingVec(T1_seed_crystal_ID, 1);
               T1_phi_seed = seed_vec.Phi();
               T1_eta_seed = seed_vec.Eta();                            
-//               T1_distance =  sqrt(pow(seed_vec.X(),2) + pow(seed_vec.Y(),2) + pow(seed_vec.Z(),2));              
+              T1_theta_seed = seed_vec.Theta();          
+              T1_distance =  sqrt(pow(seed_vec.X(),2) + pow(seed_vec.Y(),2) + pow(seed_vec.Z(),2));              
 //               std::cout << "phi = " << phi << " :: T1_phi_seed = " << T1_phi_seed << " :: deltaPhi = " << T1_phi_seed-phi << " :: eta = " << eta << " :: T1_eta_seed = " << eta_seed << std::endl;
           }
           
           //find center of gravity for phi and eta
           double T1_phi_weighed = 0.;
           double T1_eta_weighed = 0.;
+          double T1_theta_weighed = 0.;
           double T1_w_tot = 0.;
           
           for (long unsigned int i = 0; i<myTV.VecHit_Timing_CrystalID_F->size(); i++)
           {                            
-              TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_Timing_CrystalID_F->at(i));
+              TVector3 this_vec =  myGeometry.GetCrystalTimingVec(myTV.VecHit_Timing_CrystalID_F->at(i),1);
               double this_phi = this_vec.Phi();
               double this_eta = this_vec.Eta();
+              double this_theta = this_vec.Theta();
               double this_ene = myTV.VecHit_Timing_ScepEneDepF->at(i);
               
               if (this_ene > minEneHitTiming && this_ene < maxEneHitTiming)
               {
                   T1_phi_weighed += this_phi*this_ene;
                   T1_eta_weighed += this_eta*this_ene;
+                  T1_theta_weighed += this_theta*this_ene;
                   T1_w_tot += this_ene;              
               }
           }
           T1_phi_weighed/=T1_w_tot;
           T1_eta_weighed/=T1_w_tot;
+          T1_theta_weighed/=T1_w_tot;
 
           
           
@@ -388,6 +497,7 @@ int main(int argc, char** argv)
           int    T2_seed_crystal_ID = 0;
           double T2_phi_seed = 0.;
           double T2_eta_seed = 0.;
+          double T2_theta_seed = 0.;
 //           double T2_maxHit_ene = 0;
 //           double T2_maxHit_time = 0;
           
@@ -402,36 +512,42 @@ int main(int argc, char** argv)
               TVector3 seed_vec =  myGeometry.GetCrystalTimingVec(T2_seed_crystal_ID, 2);
               T2_phi_seed = seed_vec.Phi();
               T2_eta_seed = seed_vec.Eta();                                          
+              T2_theta_seed = seed_vec.Theta();
 //               std::cout << "phi = " << phi << " :: T2_phi_seed = " << T2_phi_seed << " :: deltaPhi = " << T2_phi_seed-phi << " :: eta = " << eta << " :: T2_eta_seed = " << T2_eta_seed << std::endl;
           }
            
           //find center of gravity for phi and eta
           double T2_phi_weighed = 0.;
           double T2_eta_weighed = 0.;
+          double T2_theta_weighed = 0.;
           double T2_w_tot = 0.;
           
           for (long unsigned int i = 0; i<myTV.VecHit_Timing_CrystalID_R->size(); i++)
           {                            
-              TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_Timing_CrystalID_R->at(i));
+              TVector3 this_vec =  myGeometry.GetCrystalTimingVec(myTV.VecHit_Timing_CrystalID_R->at(i),2);
               double this_phi = this_vec.Phi();
               double this_eta = this_vec.Eta();
+              double this_theta = this_vec.Theta();
               double this_ene = myTV.VecHit_Timing_ScepEneDepR->at(i);
 //               std::cout << "this_ene = " << this_ene << std::endl;
               if (this_ene > minEneHitTiming && this_ene < maxEneHitTiming)
               {
                   T2_phi_weighed += this_phi*this_ene;
                   T2_eta_weighed += this_eta*this_ene;
+                  T2_theta_weighed += this_theta*this_ene;
                   T2_w_tot += this_ene;              
               }
           }
           T2_phi_weighed/=T2_w_tot;
           T2_eta_weighed/=T2_w_tot;
+          T2_theta_weighed/=T2_w_tot;
           
           
           //**********//
           //combined layers                    
           double TT_phi_seed = 0.;
           double TT_eta_seed = 0.;          
+          double TT_theta_seed = 0.;      
           double TT_maxHit_time = 0;
           double TT_maxHit_distance = 0;
           
@@ -451,6 +567,7 @@ int main(int argc, char** argv)
               TVector3 seed_vec =  myGeometry.GetCrystalTimingBothVec(T1_seed_crystal_ID_temp, T2_seed_crystal_ID_temp);              
               TT_phi_seed = seed_vec.Phi();
               TT_eta_seed = seed_vec.Eta();
+              TT_theta_seed = seed_vec.Theta();
               TT_maxHit_distance =  sqrt(pow(seed_vec.X(),2) + pow(seed_vec.Y(),2) + pow(seed_vec.Z(),2));                                          
                                           
           }
@@ -459,7 +576,7 @@ int main(int argc, char** argv)
           if (      true
 //                    && myTV.VecHit_Timing_CrystalID_F->size()>0 && myTV.VecHit_Timing_CrystalID_F->size()<maxTimingHits
 //                 && myTV.VecHit_Timing_CrystalID_R->size()>0 && myTV.VecHit_Timing_CrystalID_R->size()<maxTimingHits
-//                 && fabs(T1_maxHit_time/T1_maxHit_ene - c_speed*T1_distance ) < time_acceptance
+                && fabs(T1_maxHit_time/T1_maxHit_ene - c_speed*T1_distance ) < time_acceptance
                )
           {
               if (fabs(T1_seed_crystal_ID)<1000000)// && T1_seed_crystal_ID<0)
@@ -469,18 +586,25 @@ int main(int argc, char** argv)
                   
                   hDeltaPhi_TimingBarrel_Comb[iFile]->Fill(TT_phi_seed-phi);              
                   hDeltaEta_TimingBarrel_Comb[iFile]->Fill(TT_eta_seed-eta);
+                  hDeltaTheta_TimingBarrel_Comb[iFile]->Fill(TT_theta_seed-theta);
+                                    
+                  if (fabs(T2_phi_seed)>3.14) std::cout << "T2_phi_seed = " << T2_phi_seed << std::endl;
                   
                   hDeltaPhi_TimingBarrel_F[iFile]->Fill(T1_phi_seed-phi);              
                   hDeltaEta_TimingBarrel_F[iFile]->Fill(T1_eta_seed-eta);
+                  hDeltaTheta_TimingBarrel_F[iFile]->Fill(T1_theta_seed-theta);
                   
                   hDeltaPhi_TimingBarrel_W_F[iFile]->Fill(T1_phi_weighed-phi);            
                   hDeltaEta_TimingBarrel_W_F[iFile]->Fill(T1_eta_weighed-eta);          
+                  hDeltaTheta_TimingBarrel_W_F[iFile]->Fill(T1_theta_weighed-theta);          
                   
                   hDeltaPhi_TimingBarrel_R[iFile]->Fill(T2_phi_seed-phi);
                   hDeltaEta_TimingBarrel_R[iFile]->Fill(T2_eta_seed-eta);
+                  hDeltaTheta_TimingBarrel_R[iFile]->Fill(T2_theta_seed-theta);
                   
                   hDeltaPhi_TimingBarrel_W_R[iFile]->Fill(T2_phi_weighed-phi);
                   hDeltaEta_TimingBarrel_W_R[iFile]->Fill(T2_eta_weighed-eta);                                
+                  hDeltaTheta_TimingBarrel_W_R[iFile]->Fill(T2_theta_weighed-theta);                                
                   
                   if (myTV.VecHit_Timing_CrystalID_F->size() == 1) 
                   {
@@ -506,20 +630,27 @@ int main(int argc, char** argv)
                 hNHits_T1Endcap[iFile]->Fill(myTV.VecHit_Timing_CrystalID_F->size());
                 hNHits_T2Endcap[iFile]->Fill(myTV.VecHit_Timing_CrystalID_R->size());
                 
+//                 if (fabs(T1_phi_seed)>3.14) std::cout << "T1_phi_seed = " << T1_phi_seed << std::endl;
+                
                 hDeltaPhi_TimingEndcap_Comb[iFile]->Fill(TT_phi_seed-phi);              
                 hDeltaEta_TimingEndcap_Comb[iFile]->Fill(TT_eta_seed-eta);
+                hDeltaTheta_TimingEndcap_Comb[iFile]->Fill(TT_theta_seed-theta);
                 
                 hDeltaPhi_TimingEndcap_F[iFile]->Fill(T1_phi_seed-phi);              
                 hDeltaEta_TimingEndcap_F[iFile]->Fill(T1_eta_seed-eta);
+                hDeltaTheta_TimingEndcap_F[iFile]->Fill(T1_theta_seed-theta);
                 
                 hDeltaPhi_TimingEndcap_W_F[iFile]->Fill(T1_phi_weighed-phi);            
                 hDeltaEta_TimingEndcap_W_F[iFile]->Fill(T1_eta_weighed-eta);          
+                hDeltaTheta_TimingEndcap_W_F[iFile]->Fill(T1_theta_weighed-theta);          
                 
                 hDeltaPhi_TimingEndcap_R[iFile]->Fill(T2_phi_seed-phi);
                 hDeltaEta_TimingEndcap_R[iFile]->Fill(T2_eta_seed-eta);
+                hDeltaTheta_TimingEndcap_R[iFile]->Fill(T2_theta_seed-theta);
                 
                 hDeltaPhi_TimingEndcap_W_R[iFile]->Fill(T2_phi_weighed-phi);
                 hDeltaEta_TimingEndcap_W_R[iFile]->Fill(T2_eta_weighed-eta);
+                hDeltaTheta_TimingEndcap_W_R[iFile]->Fill(T2_theta_weighed-theta);
                 
                 if (myTV.VecHit_Timing_CrystalID_F->size() == 1) 
                 {
@@ -534,6 +665,42 @@ int main(int argc, char** argv)
 //           std::cout << "phi = " << phi << " :: T2_phi_weighed = " << T2_phi_weighed << " :: deltaPhi = " << T2_phi_seed-phi << " :: eta = " << eta << " :: T2_eta_weighed = " << T2_eta_weighed << std::endl;          
       }
   }
+  
+  
+  
+  
+  
+  // PLOTTING
+  
+  float tower_range = 0.3;
+  TCanvas * cDeltaPhiTower = new TCanvas ("cDeltaPhiTower", "cDeltaPhiTower", 600, 500);
+  cDeltaPhiTower->cd();
+  hDeltaPhi_Tower[NFILES-1]->Draw();
+  hDeltaPhi_Tower[NFILES-1]->SetStats(0);
+  hDeltaPhi_Tower[NFILES-1]->SetTitle(Form("DR Tower: %d GeV %s",energies[0], particle_name.c_str()));
+  hDeltaPhi_Tower[NFILES-1]->GetXaxis()->SetRangeUser(-tower_range, tower_range);
+  hDeltaPhi_Tower[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaPhi_Tower[NFILES-1]->GetMaximum()*1.5);
+  hDeltaPhi_Tower[NFILES-1]->GetXaxis()->SetTitle("#phi_{reco} - #phi_{truth@VTX} [rad]");
+  hDeltaPhi_Tower[NFILES-1]->GetYaxis()->SetTitle("Counts");
+  hDeltaPhi_Tower[NFILES-1]->SetLineColor(kBlack);
+  
+//   leg = new TLegend(0.15,0.68,0.58,0.88,NULL,"brNDC");
+
+//   for (int iFile = NFILES-1; iFile>=0; iFile--)
+//   {
+            
+/*      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", -tower_range, tower_range);
+      fitGaus->SetLineColor(kBlack);
+      hDeltaPhi_Tower[iFile]->Fit(fitGaus, "QR");
+      std::cout << "---- BARREL ----" << std::endl;      
+      std::cout << "phi mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      float res = fitGaus->GetParameter(2);
+      
+      leg->AddEntry(hDeltaPhi_Tower[iFile],          Form("Seed:~#sigma_{#phi}=%.2f mrad",res*1000), "lp");         */ 
+//   }
+//   leg->Draw();
+  if (SAVEPLOTS) cDeltaPhiTower->SaveAs("plots/cDeltaPhi_Tower.png");
+  
   
   
   float fit_range = 0.01;
@@ -712,6 +879,89 @@ int main(int argc, char** argv)
   
   
   
+  TCanvas * cDeltaTheta = new TCanvas ("cDeltaTheta", "cDeltaTheta", 600, 500);
+  cDeltaTheta->cd();
+  hDeltaTheta_Barrel[NFILES-1]->Draw();
+  hDeltaTheta_Barrel[NFILES-1]->SetStats(0);
+  hDeltaTheta_Barrel[NFILES-1]->SetTitle(Form("Barrel: %d GeV %s",energies[0], particle_name.c_str()));
+  hDeltaTheta_Barrel[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaTheta_Barrel[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaTheta_Barrel_wGravity[NFILES-1]->GetMaximum()*1.5);
+  hDeltaTheta_Barrel[NFILES-1]->GetXaxis()->SetTitle("#theta_{reco} - #theta_{truth@VTX} [rad]");
+  hDeltaTheta_Barrel[NFILES-1]->GetYaxis()->SetTitle("Counts");
+  hDeltaTheta_Barrel[NFILES-1]->SetLineColor(kBlack);
+  
+  hDeltaTheta_Barrel_wGravity[NFILES-1]->SetLineColor(kGreen+1);
+  hDeltaTheta_Barrel_wGravity[NFILES-1]->Draw("same");
+  
+  leg = new TLegend(0.15,0.68,0.58,0.88,NULL,"brNDC");
+
+  for (int iFile = NFILES-1; iFile>=0; iFile--)
+  {
+      
+      std::cout << "---- BARREL ----" << std::endl;      
+      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", -fit_range, fit_range);
+      fitGaus->SetLineColor(kBlack);
+      hDeltaTheta_Barrel[iFile]->Fit(fitGaus, "QR");
+      std::cout << "eta mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      eta_res_b = fitGaus->GetParameter(2);
+//       eta_res_b = hDeltaTheta_Barrel[iFile]->GetRMS();      
+      
+      fitGaus->SetLineColor(kGreen);
+      hDeltaTheta_Barrel_wGravity[iFile]->Fit(fitGaus, "QR");
+      std::cout << "WEIGHTED: eta mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      eta_res_b_cg = fitGaus->GetParameter(2);
+//       eta_res_b_cg = hDeltaTheta_Barrel_wGravity[iFile]->GetRMS();      
+
+//       leg->AddEntry(hDeltaTheta_Barrel[iFile],           Form("Seed:~RMS_{#eta}=%.1fx10^{-3}",eta_res_b*1000), "lp");          
+//       leg->AddEntry(hDeltaTheta_Barrel_wGravity[iFile],  Form("CoG:~~RMS_{#eta}=%.1fx10^{-3}",eta_res_b_cg*1000),  "lp");       
+      
+      leg->AddEntry(hDeltaTheta_Barrel[iFile],           Form("Seed:~#sigma_{#theta}=%.2f mrad",eta_res_b*1000), "lp");          
+      leg->AddEntry(hDeltaTheta_Barrel_wGravity[iFile],  Form("CoG:~~#sigma_{#theta}=%.2f mrad",eta_res_b_cg*1000),  "lp");      
+  }
+  leg->Draw();
+  if (SAVEPLOTS) cDeltaTheta->SaveAs("plots/cDeltaTheta_Barrel.png");
+  
+    TCanvas * cDeltaTheta_Endcap = new TCanvas ("cDeltaTheta_Endcap", "cDeltaTheta_Endcap", 600, 500);
+  cDeltaTheta_Endcap->cd();
+  hDeltaTheta_Endcap[NFILES-1]->Draw();
+  hDeltaTheta_Endcap[NFILES-1]->SetStats(0);
+  hDeltaTheta_Endcap[NFILES-1]->SetTitle(Form("Endcaps: %d GeV %s",energies[0], particle_name.c_str()));
+  hDeltaTheta_Endcap[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaTheta_Endcap[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaTheta_Endcap_wGravity[NFILES-1]->GetMaximum()*1.5);
+  hDeltaTheta_Endcap[NFILES-1]->GetXaxis()->SetTitle("#theta_{reco} - #theta_{truth@VTX} [rad]");
+  hDeltaTheta_Endcap[NFILES-1]->GetYaxis()->SetTitle("Counts");
+  hDeltaTheta_Endcap[NFILES-1]->SetLineColor(kBlack);
+  
+  hDeltaTheta_Endcap_wGravity[NFILES-1]->SetLineColor(kGreen+1);
+  hDeltaTheta_Endcap_wGravity[NFILES-1]->Draw("same");
+  
+  leg = new TLegend(0.15,0.68,0.58,0.88,NULL,"brNDC");
+
+  for (int iFile = NFILES-1; iFile>=0; iFile--)
+  {
+      std::cout << "---- ENDCAP ----" << std::endl;
+      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", -fit_range, fit_range);
+      fitGaus->SetLineColor(kBlack);
+      hDeltaTheta_Endcap[iFile]->Fit(fitGaus, "QR");
+      std::cout << "eta mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      eta_res_e = fitGaus->GetParameter(2);
+//       eta_res_e = hDeltaTheta_Endcap[iFile]->GetRMS();      
+      
+      fitGaus->SetLineColor(kGreen);
+      hDeltaTheta_Endcap_wGravity[iFile]->Fit(fitGaus, "QR");
+      std::cout << "WEIGHTED: eta mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      eta_res_e_cg = fitGaus->GetParameter(2);
+//       eta_res_e_cg = hDeltaTheta_Endcap_wGravity[iFile]->GetRMS();      
+      
+//       leg->AddEntry(hDeltaTheta_Endcap[iFile],           Form("Seed:~RMS_{#eta}=%.1fx10^{-3}",eta_res_e*1000), "lp");  
+//       leg->AddEntry(hDeltaTheta_Endcap_wGravity[iFile],  Form("CoG:~~RMS_{#eta}=%.1fx10^{-3}",eta_res_e_cg*1000),  "lp");     
+      
+      leg->AddEntry(hDeltaTheta_Endcap[iFile],           Form("Seed:~#sigma_{#theta}=%.2f mrad",eta_res_e*1000), "lp");  
+      leg->AddEntry(hDeltaTheta_Endcap_wGravity[iFile],  Form("CoG:~~#sigma_{#theta}=%.2f marad",eta_res_e_cg*1000),  "lp");     
+  }
+  leg->Draw();
+  if (SAVEPLOTS) cDeltaTheta_Endcap->SaveAs("plots/cDeltaTheta_Endcap.png");
+  
   
   //*********************************************************************************//
   //                                Timing layers
@@ -724,7 +974,7 @@ int main(int argc, char** argv)
   hDeltaPhi_TimingBarrel_F[NFILES-1]->Draw();
   hDeltaPhi_TimingBarrel_F[NFILES-1]->SetStats(0);
   hDeltaPhi_TimingBarrel_F[NFILES-1]->SetTitle(Form("Barrel: %d GeV %s",energies[0], particle_name.c_str()));
-  hDeltaPhi_TimingBarrel_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaPhi_TimingBarrel_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
   hDeltaPhi_TimingBarrel_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaPhi_TimingBarrel_Comb[NFILES-1]->GetMaximum()*1.5);
   hDeltaPhi_TimingBarrel_F[NFILES-1]->GetXaxis()->SetTitle("#phi_{reco} - #phi_{truth@VTX} [rad]");
   hDeltaPhi_TimingBarrel_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
@@ -764,7 +1014,7 @@ int main(int argc, char** argv)
   hDeltaEta_TimingBarrel_F[NFILES-1]->Draw();
   hDeltaEta_TimingBarrel_F[NFILES-1]->SetStats(0);
   hDeltaEta_TimingBarrel_F[NFILES-1]->SetTitle(Form("Barrel: %d GeV %s",energies[0], particle_name.c_str()));
-  hDeltaEta_TimingBarrel_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaEta_TimingBarrel_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
   hDeltaEta_TimingBarrel_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaEta_TimingBarrel_Comb[NFILES-1]->GetMaximum()*1.5);
   hDeltaEta_TimingBarrel_F[NFILES-1]->GetXaxis()->SetTitle("#eta_{reco} - #eta_{truth@VTX} [rad]");
   hDeltaEta_TimingBarrel_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
@@ -798,6 +1048,45 @@ int main(int argc, char** argv)
   leg->Draw();
   if (SAVEPLOTS) cDeltaEta_Timing->SaveAs("plots/cDeltaEta_TimingBarrel.png");
   
+  TCanvas * cDeltaTheta_Timing = new TCanvas ("cDeltaTheta_Timing", "cDeltaTheta_Timing", 600, 500);
+  cDeltaTheta_Timing->cd();
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->Draw();
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->SetStats(0);
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->SetTitle(Form("Barrel: %d GeV %s",energies[0], particle_name.c_str()));
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaTheta_TimingBarrel_Comb[NFILES-1]->GetMaximum()*1.5);
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->GetXaxis()->SetTitle("#theta_{reco} - #theta_{truth@VTX} [rad]");
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
+  hDeltaTheta_TimingBarrel_F[NFILES-1]->SetLineColor(kBlack);
+  
+  hDeltaTheta_TimingBarrel_R[NFILES-1]->SetLineColor(kRed+1);
+  hDeltaTheta_TimingBarrel_R[NFILES-1]->Draw("same");
+  
+  hDeltaTheta_TimingBarrel_Comb[NFILES-1]->SetLineColor(kGreen+2);
+  hDeltaTheta_TimingBarrel_Comb[NFILES-1]->SetFillColor(kGreen+1);
+  hDeltaTheta_TimingBarrel_Comb[NFILES-1]->SetFillStyle(3004);
+  hDeltaTheta_TimingBarrel_Comb[NFILES-1]->Draw("same");
+
+  leg = new TLegend(0.15,0.73,0.5,0.88,NULL,"brNDC");
+
+  for (int iFile = NFILES-1; iFile>=0; iFile--)
+  {
+            
+      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", -fit_range/10, fit_range/10);
+      fitGaus->SetNpx(100);
+      fitGaus->SetLineColor(kGreen);
+      hDeltaTheta_TimingBarrel_Comb[iFile]->Fit(fitGaus, "0SQR");
+      std::cout << "---- BARREL ----" << std::endl;      
+      std::cout << "phi mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      phi_res_b = fitGaus->GetParameter(2);
+      
+      leg->AddEntry(hDeltaTheta_TimingBarrel_F[iFile],          "T1 Seed (front)", "lp");          
+      leg->AddEntry(hDeltaTheta_TimingBarrel_R[iFile],          "T2 Seed (rear)", "lp");          
+      leg->AddEntry(hDeltaTheta_TimingBarrel_Comb[iFile],  Form("Combined: #sigma_{#theta}=%.2f mrad",phi_res_b*1000), "lp");          
+  }
+  leg->Draw();
+  if (SAVEPLOTS) cDeltaTheta_Timing->SaveAs("plots/cDeltaTheta_TimingBarrel.png");
+  
   
   
   TCanvas * cDeltaPhi_TimingEndcap = new TCanvas ("cDeltaPhi_TimingEndcap", "cDeltaPhi_TimingEndcap", 600, 500);
@@ -805,7 +1094,7 @@ int main(int argc, char** argv)
   hDeltaPhi_TimingEndcap_F[NFILES-1]->Draw();
   hDeltaPhi_TimingEndcap_F[NFILES-1]->SetStats(0);
   hDeltaPhi_TimingEndcap_F[NFILES-1]->SetTitle(Form("Endcap: %d GeV %s",energies[0], particle_name.c_str()));
-  hDeltaPhi_TimingEndcap_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaPhi_TimingEndcap_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
   hDeltaPhi_TimingEndcap_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaPhi_TimingEndcap_Comb[NFILES-1]->GetMaximum()*1.5);
   hDeltaPhi_TimingEndcap_F[NFILES-1]->GetXaxis()->SetTitle("#phi_{reco} - #phi_{truth@VTX} [rad]");
   hDeltaPhi_TimingEndcap_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
@@ -845,7 +1134,7 @@ int main(int argc, char** argv)
   hDeltaEta_TimingEndcap_F[NFILES-1]->Draw();
   hDeltaEta_TimingEndcap_F[NFILES-1]->SetStats(0);
   hDeltaEta_TimingEndcap_F[NFILES-1]->SetTitle(Form("Endcap: %d GeV %s",energies[0], particle_name.c_str()));
-  hDeltaEta_TimingEndcap_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range, fit_range);
+  hDeltaEta_TimingEndcap_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
   hDeltaEta_TimingEndcap_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaEta_TimingEndcap_Comb[NFILES-1]->GetMaximum()*1.5);
   hDeltaEta_TimingEndcap_F[NFILES-1]->GetXaxis()->SetTitle("#eta_{reco} - #eta_{truth@VTX} [rad]");
   hDeltaEta_TimingEndcap_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
@@ -881,7 +1170,50 @@ int main(int argc, char** argv)
   if (SAVEPLOTS) cDeltaEta_TimingEndcap->SaveAs("plots/cDeltaEta_TimingEndcap.png");
   
   
+  TCanvas * cDeltaTheta_TimingEndcap = new TCanvas ("cDeltaTheta_TimingEndcap", "cDeltaTheta_TimingEndcap", 600, 500);
+  cDeltaTheta_TimingEndcap->cd();
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->Draw();
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->SetStats(0);
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->SetTitle(Form("Endcap: %d GeV %s",energies[0], particle_name.c_str()));
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->GetXaxis()->SetRangeUser(-fit_range*scale, fit_range*scale);
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->GetYaxis()->SetRangeUser(0,hDeltaTheta_TimingEndcap_Comb[NFILES-1]->GetMaximum()*1.5);
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->GetXaxis()->SetTitle("#theta_{reco} - #theta_{truth@VTX} [rad]");
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->GetYaxis()->SetTitle("Counts");
+  hDeltaTheta_TimingEndcap_F[NFILES-1]->SetLineColor(kBlack);
   
+  hDeltaTheta_TimingEndcap_R[NFILES-1]->SetLineColor(kRed+1);
+  hDeltaTheta_TimingEndcap_R[NFILES-1]->Draw("same");
+  
+  hDeltaTheta_TimingEndcap_Comb[NFILES-1]->SetLineColor(kGreen+2);
+  hDeltaTheta_TimingEndcap_Comb[NFILES-1]->SetFillColor(kGreen+1);
+  hDeltaTheta_TimingEndcap_Comb[NFILES-1]->SetFillStyle(3004);
+  hDeltaTheta_TimingEndcap_Comb[NFILES-1]->Draw("same");
+  
+  leg = new TLegend(0.15,0.73,0.5,0.88,NULL,"brNDC");
+
+  for (int iFile = NFILES-1; iFile>=0; iFile--)
+  {
+            
+      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", -fit_range/10, fit_range/10);
+      fitGaus->SetNpx(100);
+      fitGaus->SetLineColor(kGreen);
+      hDeltaTheta_TimingEndcap_Comb[iFile]->Fit(fitGaus, "0SQR");
+      std::cout << "---- ENDCAP ----" << std::endl;      
+      std::cout << "phi mean = " << fitGaus->GetParameter(1) << " :: resolution = " << fitGaus->GetParameter(2) << " rad  (" << fitGaus->GetParameter(2)/TMath::DegToRad() << " deg)" << std::endl;
+      phi_res_b = fitGaus->GetParameter(2);
+      
+      leg->AddEntry(hDeltaTheta_TimingEndcap_F[iFile],          "T1 Seed (front)", "lp");          
+      leg->AddEntry(hDeltaTheta_TimingEndcap_R[iFile],          "T2 Seed (rear)", "lp");          
+      leg->AddEntry(hDeltaTheta_TimingEndcap_Comb[iFile],  Form("Combined: #sigma_{#theta}=%.2f mrad",phi_res_b*1000), "lp");        
+      
+  }
+  leg->Draw();
+  if (SAVEPLOTS) cDeltaTheta_TimingEndcap->SaveAs("plots/cDeltaTheta_TimingEndcap.png");
+  
+  
+  
+  
+  /// other plots
   
   TCanvas * cNHitsTiming = new TCanvas ("cNHitsTiming", "cNHitsTiming", 600, 500);
   cNHitsTiming->cd();
@@ -906,7 +1238,7 @@ int main(int argc, char** argv)
   hScatterTOF_TimingBarrel[0]->GetYaxis()->SetTitle("Time of hit at timing layer [ns]");
   hScatterTOF_TimingBarrel[0]->GetXaxis()->SetRangeUser(1760,2440);
   hScatterTOF_TimingBarrel[0]->GetYaxis()->SetRangeUser(5.5,8.5);
-    cScatterTOF_barrel->SaveAs("plots/cScatterTOF_barrel.png");
+  if (SAVEPLOTS)   cScatterTOF_barrel->SaveAs("plots/cScatterTOF_barrel.png");
   
   
     TCanvas * cScatterTOF_endcap = new TCanvas("cScatterTOF_endcap", "cScatterTOF_endcap", 600, 500);
@@ -918,7 +1250,7 @@ int main(int argc, char** argv)
   hScatterTOF_TimingEndcap[0]->GetYaxis()->SetTitle("Time of hit at timing layer [ns]");
   hScatterTOF_TimingEndcap[0]->GetXaxis()->SetRangeUser(1760,2440);
   hScatterTOF_TimingEndcap[0]->GetYaxis()->SetRangeUser(5.5,8.5);
-    cScatterTOF_endcap->SaveAs("plots/cScatterTOF_endcap.png");
+  if (SAVEPLOTS)   cScatterTOF_endcap->SaveAs("plots/cScatterTOF_endcap.png");
   
   
     TCanvas * cTimeRes_TOF_barrel = new TCanvas("cTimeRes_TOF_barrel", "cTimeRes_TOF_barrel", 600, 500);
@@ -931,7 +1263,7 @@ int main(int argc, char** argv)
   hTOF_TimingBarrel[0]->GetYaxis()->SetTitle("Counts");
   hTOF_TimingBarrel[0]->GetXaxis()->SetRangeUser( -40, 40  );
 //   hTOF_TimingBarrel[0]->Fit("gaus");
-  cTimeRes_TOF_barrel->SaveAs("plots/cTimeRes_TOF_barrel.png");
+  if (SAVEPLOTS) cTimeRes_TOF_barrel->SaveAs("plots/cTimeRes_TOF_barrel.png");
     
     
   TCanvas * cTimeRes_TOF_endcap = new TCanvas("cTimeRes_TOF_endcap", "cTimeRes_TOF_endcap", 600, 500);
@@ -944,7 +1276,7 @@ int main(int argc, char** argv)
   hTOF_TimingEndcap[0]->GetYaxis()->SetTitle("Counts");
   hTOF_TimingEndcap[0]->GetXaxis()->SetRangeUser( -40, 40  );
 //   hTOF_TimingEndcap[0]->Fit("gaus");
-  cTimeRes_TOF_endcap->SaveAs("plots/cTimeRes_TOF_endcap.png");
+  if (SAVEPLOTS) cTimeRes_TOF_endcap->SaveAs("plots/cTimeRes_TOF_endcap.png");
    
    theApp->Run();
 }
