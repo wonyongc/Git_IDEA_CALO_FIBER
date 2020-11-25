@@ -47,7 +47,6 @@ struct myG4TreeVars
     
     std::vector<double> *PrimaryParticleMomentum;
     
- /*   
     std::vector<double> *VectorR_loop;
     std::vector<double> *VectorL_loop;
 
@@ -57,7 +56,7 @@ struct myG4TreeVars
     std::vector<double> *VectorSignalsCherL;//vector filled for left side
     
     std::vector<double> *VectorR; //vector with energy deposited in towers right
-    std::vector<double> *VectorL;   */ 
+    std::vector<double> *VectorL;   
   
 };
 
