@@ -9,7 +9,15 @@ class SCEPCal_GeometryHelper
         SCEPCal_GeometryHelper();
         virtual ~SCEPCal_GeometryHelper(){};
         
-                
+        // Dual readout HCAL
+        int m_NbOfBarrel;
+        int m_NbOfEndCap;
+        int m_NZrot;        
+        int m_totTower;
+        double m_deltaTheta;                              
+        double m_phiUnit;
+  
+        //SCEPCal
         double m_innerR;
         int m_nBarrelEtaSeg;
         int m_nBarrelPhiSeg;
@@ -31,6 +39,8 @@ class SCEPCal_GeometryHelper
         int m_nEndcapModulePerLine;
         int m_endOIDR[162];
         
+        
+        TVector3 GetTowerVec(unsigned int index, char side);
         TVector3 GetCrystalVec(long int index);
         TVector3 GetCrystalTimingVec(long int index, int layer_ID);
         TVector3 GetCrystalTimingBothVec(long int index_1, long int index_2);

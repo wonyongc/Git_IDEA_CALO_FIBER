@@ -3,6 +3,11 @@
 #include <iostream>
 
 SCEPCal_GeometryHelper::SCEPCal_GeometryHelper():
+// Dual readout HCAL
+  m_NbOfBarrel(40),
+  m_NbOfEndCap(35),
+  m_NZrot(36),
+  //SCEPCal
   m_innerR(1800),
   m_nBarrelEtaSeg(180),
   m_nBarrelPhiSeg(1130),
@@ -17,13 +22,43 @@ SCEPCal_GeometryHelper::SCEPCal_GeometryHelper():
   m_nBars(20),  
   m_nEndcapModulePerLine(59),
   m_endOIDR{0, 1121, 2232, 3333, 4425, 5507, 6580, 7643, 8697, 9742, 10778, 11805, 12823, 13832, 14832, 15823, 16806, 17780, 18745, 19702, 20650, 21590, 22522, 23446, 24361, 25268, 26167, 27058, 27941, 28816, 29683, 30543, 31395, 32239, 33075, 33904, 34725, 35539, 36345, 37144, 37935, 38719, 39496, 40266, 41028, 41783, 42531, 43272, 44006, 44733, 45453, 46166, 46872, 47571, 48264, 48950, 49629, 50301, 50967, 51626, 52278, 52924, 53563, 54196, 54822, 55442, 56056, 56663, 57264, 57859, 58447, 59029, 59605, 60175, 60738, 61295, 61846, 62391, 62930, 63463, 63990, 64511, 65026, 65535, 66038, 66535, 67026, 67511, 67991, 68465, 68933, 69395, 69851, 70302, 70747, 71186, 71620, 72048, 72470, 72887, 73298, 73704, 74104, 74498, 74887, 75270, 75648, 76020, 76387, 76749, 77105, 77456, 77801, 78141, 78476, 78805, 79129, 79447, 79760, 80068, 80371, 80668, 80960, 81247, 81528, 81804, 82075, 82341, 82602, 82857, 83107, 83352, 83592, 83827, 84057, 84281, 84500, 84714, 84923, 85127, 85326, 85520, 85709, 85893, 86072, 86246, 86415, 86578, 86736, 86889, 87037, 87180, 87318, 87451, 87579, 87702, 87820, 87933, 88041, 88144, 88242, 88335}
-{  
+{ 
+  // Dual readout HCAL
+  m_totTower = m_NbOfBarrel + m_NbOfEndCap;
+  m_deltaTheta = 45./(m_NbOfBarrel);                              
+  m_phiUnit = 360./m_NZrot;
+  //SCEPCal
   m_deltaThetaBarrel    = 45./m_nBarrelEtaSeg;
   m_phiUnitBarrel       = 360./m_nBarrelPhiSeg;
   m_deltaThetaEndcap    = 45./m_nBarrelEtaSeg;
   m_phiUnitTimingBarrel = 360./m_nBarrelTiming_PhiSeg;
 }
   
+// Dual readout HCAL
+TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side)
+{  
+  // Create an empty TLorentzVector
+
+  TVector3 tower;
+  if (side != 'l' && side != 'r') return tower;
+  if (index == 0) return tower;
+
+  --index;
+
+  unsigned int sliceindex = index/m_totTower;
+  unsigned int towerindex = index-(sliceindex*m_totTower);
+  double theta = towerindex*m_deltaTheta+m_deltaTheta/2.;
+  double phi = ((double)sliceindex) * m_phiUnit;
+
+  if (side == 'r') theta = theta + 90.;
+  else if (side == 'l') theta = 90. - theta;
+  else std::cout << "What the hell??????" << std::endl;
+  
+  tower.SetMagThetaPhi(1,TMath::DegToRad()*(theta),TMath::DegToRad()*phi);
+
+  return tower;
+}
+
 
   
 // ECAL
@@ -135,6 +170,7 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingVec(long int index, int layer_I
       {          
           //use center of module for phi
           phi = ((double)phi_slice_ID) * m_phiUnitTimingBarrel - 90.;          
+          
           //use bar position for z
           if (sign<0)      z_pos = -sign*((module_id)*m_barLength + sign*(crystal_id+0.5)*m_barWidth);          
           else if (sign>0) z_pos = -sign*((module_id-1)*m_barLength + sign*(crystal_id+0.5)*m_barWidth);          
@@ -146,11 +182,14 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingVec(long int index, int layer_I
       else if (layer_ID == 2)
       {
           //use bar position for phi
-          phi = ((double)phi_slice_ID+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id+0.5)*m_phiUnitTimingBarrel/m_nBars;          
+          phi = ((double)phi_slice_ID+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id+0.5)*m_phiUnitTimingBarrel/m_nBars;         
+          
+//           if (fabs(phi*TMath::DegToRad()) > 3.14) std::cout << "phi = " << phi*TMath::DegToRad() << " at : " << fabs(index) << std::endl;
+//           if (phi*TMath::DegToRad() < 0 && phi*TMath::DegToRad()>-2 ) std::cout << "phi = " << phi << " at : " << fabs(index) << std::endl;
           //use center of module for z
           z_pos = -sign*(module_id-0.5)*m_barLength;          
-          x_pos = (timing_radius+m_barWidth/2)*cos(phi*TMath::DegToRad());
-          y_pos = (timing_radius+m_barWidth/2)*sin(phi*TMath::DegToRad());          
+          x_pos = (timing_radius-m_barWidth/2)*cos(phi*TMath::DegToRad());
+          y_pos = (timing_radius-m_barWidth/2)*sin(phi*TMath::DegToRad()); 
       }                    
   }
   
@@ -204,7 +243,8 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
       int module_id_2    = floor((fabs(index_2) - m_nBarrelTiming_Z*m_nBars*phi_slice_ID_2)/m_nBars);      
       int crystal_id_2   = fabs(index_2) - m_nBarrelTiming_Z*m_nBars*phi_slice_ID_2 - m_nBars*module_id_2;
       
-      if (module_id_1==module_id_2) 
+//       if (module_id_1==module_id_2) 
+      if (true)
       {                                      
         //front layer gives fine granularity along z      
         
@@ -217,10 +257,10 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
         y_pos = (timing_radius-m_barWidth/2)*sin(phi*TMath::DegToRad());
       }
 //       else
-      {
+//       {
 //           std::cout << "Attention front and rear hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
-      }
-      if (module_id_1!=module_id_2) std::cout << "Attention front and rear BARREL hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
+//       }
+//       if (module_id_1!=module_id_2) std::cout << "Attention front and rear BARREL hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
       
   }
   
@@ -244,7 +284,7 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
       x_pos = sign*((module_X_2+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id_2+0.5)*m_barWidth);      
       z_pos = -sign*(timing_radius);
       
-      if (module_id_1!=module_id_2) std::cout << "Attention front and rear ENDCAP hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
+//       if (module_id_1!=module_id_2) std::cout << "Attention front and rear ENDCAP hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
 
 //       std:: cout << "endcap_index = " << endcap_index << " :: module_id = " << module_id << " ::  module_X = " << module_X  << " :: module_Y = " << module_Y  << " :: posX = " << x_pos << " :: posY = " << y_pos << " :: posZ = " << z_pos <<  std::endl;
       
