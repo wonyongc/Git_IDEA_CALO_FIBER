@@ -915,9 +915,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal barrel with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> eta segmentation (nChannels) = " << 2*SCEP_NbOfBarrel << " " << std::endl;    
-    std::cout << "  --> phi segmentation (nChannels) = " << SCEP_NbOfZRot << " " << std::endl;    
-    std::cout << "  --> total barrel channel count   = " << 2*(2*SCEP_NbOfBarrel * SCEP_NbOfZRot) << " " << std::endl;
+    std::cout << "  --> eta segmentation (nChannels) = " << char(2*SCEP_NbOfBarrel) << " " << std::endl;    
+    std::cout << "  --> phi segmentation (nChannels) = " << char(SCEP_NbOfZRot) << " " << std::endl;    
+    std::cout << "  --> total barrel channel count   = " << char(2*(2*SCEP_NbOfBarrel * SCEP_NbOfZRot)) << " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << std::endl;
@@ -1131,7 +1131,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal endcaps with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> eta segmentation (Nb of Rings) = " << SCEP_NbOfEndcap <<  " " << std::endl;
+    std::cout << "  --> eta segmentation (Nb of Rings) = " << char(SCEP_NbOfEndcap) <<  " " << std::endl;
                 
     int nTotEndcapChannels = 0;
     int crystal_0IDR [SCEP_NbOfEndcap];
@@ -1282,8 +1282,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal timing barrel with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> Nb of modules along Z = " << nBarrelTiming_Z      <<  " " << std::endl;
-    std::cout << "  --> Nb of rotation in phi = " << SCEP_Timing_NbOfPhiRot <<  " " << std::endl;
+    std::cout << "  --> Nb of modules along Z = " << char(nBarrelTiming_Z)      <<  " " << std::endl;
+    std::cout << "  --> Nb of rotation in phi = " << char(SCEP_Timing_NbOfPhiRot) <<  " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;
     std::cout << std::endl;
