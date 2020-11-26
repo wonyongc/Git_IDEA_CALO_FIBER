@@ -1352,7 +1352,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     std::cout << "building SCEPCal timing endcaps with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> Nb of modules per line = " << nEndcapModulePerLine      <<  " " << std::endl;
+    std::cout << "  --> Nb of modules per line = " << char(nEndcapModulePerLine)      <<  " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;
     std::cout << std::endl;
