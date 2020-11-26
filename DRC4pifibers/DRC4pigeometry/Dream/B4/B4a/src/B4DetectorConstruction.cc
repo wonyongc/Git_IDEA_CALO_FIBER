@@ -439,7 +439,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);*/
     
-    bool placeFIBERS  = false;
+    bool placeFIBERS  = true;
     bool placeHCAL    = true;
     bool placeSCEPCAL = true;
     bool placeTiming  = true;
@@ -915,9 +915,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal barrel with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> eta segmentation (nChannels) = " << 2*SCEP_NbOfBarrel <<std::endl;    
-    std::cout << "  --> phi segmentation (nChannels) = " << SCEP_NbOfZRot <<std::endl;    
-    std::cout << "  --> total barrel channel count   = " << 2*(2*SCEP_NbOfBarrel * SCEP_NbOfZRot) <<std::endl;
+    std::cout << "  --> eta segmentation (nChannels) = " << 2*SCEP_NbOfBarrel << " " << std::endl;    
+    std::cout << "  --> phi segmentation (nChannels) = " << SCEP_NbOfZRot << " " << std::endl;    
+    std::cout << "  --> total barrel channel count   = " << 2*(2*SCEP_NbOfBarrel * SCEP_NbOfZRot) << " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << std::endl;
@@ -1131,7 +1131,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal endcaps with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> eta segmentation (Nb of Rings) = " << SCEP_NbOfEndcap <<std::endl;
+    std::cout << "  --> eta segmentation (Nb of Rings) = " << SCEP_NbOfEndcap <<  " " << std::endl;
                 
     int nTotEndcapChannels = 0;
     int crystal_0IDR [SCEP_NbOfEndcap];
@@ -1239,7 +1239,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         }
     }
     
-    std::cout << "  --> total endcaps (x2) channel count   = " << 2*(2*nTotEndcapChannels) <<std::endl;
+    std::cout << "  --> total endcaps (x2) channel count   = " << 2*(2*nTotEndcapChannels) << " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << std::endl;
@@ -1282,8 +1282,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     std::cout << "*****************************************************************************" << std::endl;    
     std::cout << "building SCEPCal timing barrel with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> Nb of modules along Z = " << nBarrelTiming_Z      << std::endl;
-    std::cout << "  --> Nb of rotation in phi = " << SCEP_Timing_NbOfPhiRot << std::endl;
+    std::cout << "  --> Nb of modules along Z = " << nBarrelTiming_Z      <<  " " << std::endl;
+    std::cout << "  --> Nb of rotation in phi = " << SCEP_Timing_NbOfPhiRot <<  " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;
     std::cout << std::endl;
@@ -1352,7 +1352,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     std::cout << "building SCEPCal timing endcaps with: " << std::endl;
     std::cout << std::endl;
-    std::cout << "  --> Nb of modules per line = " << nEndcapModulePerLine      << std::endl;
+    std::cout << "  --> Nb of modules per line = " << nEndcapModulePerLine      <<  " " << std::endl;
     std::cout << std::endl;
     std::cout << "*****************************************************************************" << std::endl;
     std::cout << std::endl;
