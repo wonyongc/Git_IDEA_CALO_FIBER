@@ -158,6 +158,8 @@ int main(int argc,char** argv)
     ui->SessionStart();
     delete ui;
   }
+  
+  
 
   // Job termination
   // Free the store: user actions, physics_list and detector_description are
@@ -166,6 +168,7 @@ int main(int argc,char** argv)
 
   delete visManager;
   delete runManager;
+  
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
