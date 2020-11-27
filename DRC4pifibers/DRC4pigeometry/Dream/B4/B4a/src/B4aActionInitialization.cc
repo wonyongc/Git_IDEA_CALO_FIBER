@@ -37,18 +37,19 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B4aActionInitialization::B4aActionInitialization
-                            (B4DetectorConstruction* detConstruction)
+B4aActionInitialization::B4aActionInitialization (B4DetectorConstruction* detConstruction)
  : G4VUserActionInitialization(),
    fDetConstruction(detConstruction)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
 B4aActionInitialization::~B4aActionInitialization()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
 
 void B4aActionInitialization::BuildForMaster() const
 {
@@ -57,9 +58,11 @@ void B4aActionInitialization::BuildForMaster() const
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+
 void B4aActionInitialization::Build() const
 {
-  SetUserAction(new B4PrimaryGeneratorAction);
+  SetUserAction(new B4PrimaryGeneratorAction);    
   SetUserAction(new B4RunAction);
   B4aEventAction* eventAction = new B4aEventAction;
   SetUserAction(eventAction);

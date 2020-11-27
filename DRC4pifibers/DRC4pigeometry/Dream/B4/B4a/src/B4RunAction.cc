@@ -41,9 +41,6 @@ using namespace std;
 #include "B4aEventAction.hh"
 #include <sstream>
 
-#include "B4RunAction.hh"
-#include "B4Analysis.hh"
-
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -110,45 +107,37 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
 { 
   //inform the runManager to save random number seed
   //G4RunManager::GetRunManager()->SetRandomNumberStore(true);
-  
-  // Get analysis manager
-  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+    
   G4cout<< "run " <<run->GetRunID()<<G4endl;
 
+  const B4aEventAction* constEventAction = static_cast<const B4aEventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
+  B4aEventAction* eventAction = const_cast<B4aEventAction*>(constEventAction);
+            
   std::stringstream ss;
   std::string myrun;
   ss<<run->GetRunID();
   ss>>myrun;
-  // Open an output file
-  //
-//   G4String fileName = "root_files/" + outputFileName;
-  G4String fileName = "root_files/B4";
-  analysisManager->OpenFile(fileName);
-
-  // G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  G4cout << "Using " << analysisManager->GetType() << G4endl;
-
-  const B4aEventAction* constEventAction = static_cast<const B4aEventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
-  B4aEventAction* eventAction = const_cast<B4aEventAction*>(constEventAction);
-
-
-  // Create directories 
-  //analysisManager->SetHistoDirectoryName("histograms");
-  //analysisManager->SetNtupleDirectoryName("ntuple");
-  analysisManager->SetVerboseLevel(0);
-  analysisManager->SetFirstHistoId(0);
-
-  // Book histograms, ntuple
-  //
   
-  // Creating histograms
-  //analysisManager->CreateH1("1","Edep in module", 100, 0., 1000*MeV);
-  //analysisManager->CreateH1("2","trackL in module", 100, 0., 1*m);
-  //analysisManager->CreateH1("3", "Edep in scintillating fibers", 100, 0., 1000*MeV);
   
   // Creating ntuple
+  G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
+  G4cout << "Using " << analysisManager->GetType() << G4endl;
+  
+//   Open an output file
+//   G4String fileName = outputFileName;    
+  G4String fileName = "B4.root";    
+  analysisManager->OpenFile(fileName);    
+  
+  analysisManager->SetVerboseLevel(0);
+  analysisManager->SetFirstHistoId(0);
+  
+  // Create directories 
+  //analysisManager->SetHistoDirectoryName("histograms");
+  //analysisManager->SetNtupleDirectoryName("ntuple");              
+  // Creating histograms
+  //analysisManager->CreateH1("1","Edep in module", 100, 0., 1000*MeV);       
+  
   analysisManager->CreateNtuple("B4", "edep");
-	//TTree *tree = new TTree("B4","edep")
   analysisManager->CreateNtupleDColumn("Energyem");
   analysisManager->CreateNtupleDColumn("EnergyScin");
   analysisManager->CreateNtupleDColumn("EnergyCher");
@@ -158,12 +147,12 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   analysisManager->CreateNtupleSColumn("PrimaryParticleName");  
   analysisManager->CreateNtupleDColumn("neutrinoleakage");
   analysisManager->CreateNtupleDColumn("leakage");
-  
+   
   analysisManager->CreateNtupleDColumn("SCEP_EnergyDepF");
   analysisManager->CreateNtupleDColumn("SCEP_NCherProdF");
   analysisManager->CreateNtupleDColumn("SCEP_EnergyDepR");
   analysisManager->CreateNtupleDColumn("SCEP_NCherProdR");
-  
+   
   analysisManager->CreateNtupleDColumn("SCEP_Timing_EnergyDepF");
   analysisManager->CreateNtupleDColumn("SCEP_Timing_EnergyDepR");
   analysisManager->CreateNtupleDColumn("SCEP_Timing_TimeF");
@@ -183,8 +172,7 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   analysisManager->CreateNtupleDColumn("VecHit_Timing_ScepTimeR",  eventAction->GetVecScep_Timing_ScepTimeR());
   
   analysisManager->CreateNtupleDColumn("PrimaryParticleMomentum",  eventAction->GetPrimaryParticleMomentum());
-  
-  //analysisManager->CreateNtupleDColumn("ID");
+    
   analysisManager->CreateNtupleDColumn("VectorSignalsR",eventAction->GetVectorSignalsR());
   analysisManager->CreateNtupleDColumn("VectorSignalsL",eventAction->GetVectorSignalsL());
   analysisManager->CreateNtupleDColumn("VectorSignalsCherR",eventAction->GetVectorSignalsCherR());
@@ -193,10 +181,10 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   analysisManager->CreateNtupleDColumn("VectorR", eventAction->GetVectorR());
   analysisManager->CreateNtupleDColumn("VectorL_loop", eventAction->GetVectorL_loop());
   analysisManager->CreateNtupleDColumn("VectorR_loop", eventAction->GetVectorR_loop()); 
-   //analysisManager->CreateNtupleDColumn("Position", eventAction->GetPosition());
+  analysisManager->FinishNtuple();                
+    
+  
 
-  analysisManager->FinishNtuple();
-  //analysisManager->CreateNtupleDColumn("Scinintheglass");//if you want scintillating photons
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
