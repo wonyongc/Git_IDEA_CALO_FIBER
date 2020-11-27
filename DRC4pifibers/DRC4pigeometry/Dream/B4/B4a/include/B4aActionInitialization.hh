@@ -41,8 +41,8 @@ class B4aActionInitialization : public G4VUserActionInitialization
 {
   public:
     B4aActionInitialization(B4DetectorConstruction*);
+    
     virtual ~B4aActionInitialization();
-
     virtual void BuildForMaster() const;
     virtual void Build() const;
 

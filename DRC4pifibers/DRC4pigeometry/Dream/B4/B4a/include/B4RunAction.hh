@@ -44,9 +44,8 @@ class B4RunAction : public G4UserRunAction
     B4RunAction();
     virtual ~B4RunAction();
 
-//     virtual void BeginOfRunAction(const G4Run*, G4string outputFileName);
     virtual void BeginOfRunAction(const G4Run*);
-    virtual void   EndOfRunAction(const G4Run*);
+    virtual void EndOfRunAction(const G4Run*);
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
