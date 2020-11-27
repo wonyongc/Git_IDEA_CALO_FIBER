@@ -1,4 +1,4 @@
-//
+
 // ********************************************************************
 // * License and Disclaimer                                           *
 // *                                                                  *
@@ -166,7 +166,7 @@ void B4DetectorConstruction::DefineMaterials()
     new G4Material("Fluorinated_Polymer", 1.43*g/cm3, 2);
     fluorinatedPolymer->AddElement(elC,2);
     fluorinatedPolymer->AddElement(elF,2);
-    //fluorinatedPolymer->AddElement(H,2); //Fluorinated Polymer building complete
+   //fluorinatedPolymer->AddElement(H,2); //Fluorinated Polymer building complete
     
     // create Glass (SiO2)
     G4Material* Glass = new G4Material("Glass", 2.4*g/cm3, 2);
@@ -713,7 +713,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         new G4PVPlacement(rmER,G4ThreeVector(0,0,(innerR)*tan(thetaB)+length/2.),phiERLog,"phiERPhys",worldLV,false,j,false);
         new G4PVPlacement(rmEL,G4ThreeVector(0,0,-(innerR)*tan(thetaB)-length/2.),phiELLog,"phiELPhys",worldLV,false,j,false);  
     }
- 
+
     
         
             
@@ -1261,8 +1261,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //                Define and place the SCEPCal timing layers 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
     
-    G4double SCEP_Timing_InnerR = 1775*mm;
-    G4double SCEP_Timing_OuterR = 1795*mm;
+    G4double SCEP_Timing_InnerR = 1775.*mm;
+    G4double SCEP_Timing_OuterR = 1795.*mm;
     G4double SCEP_Timing_Length = SCEP_Timing_InnerR;
     
     
@@ -1292,9 +1292,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //barrel envelopes (non pointing, a flat layer)
     
     //full timing barrel mother envelope
-    G4Tubs         * Timing_Barrel_S = new G4Tubs("TimingBarrel_S", SCEP_Timing_InnerR, SCEP_Timing_OuterR, SCEP_Timing_Length, 0., 360.);            
+    G4Tubs         * Timing_Barrel_S = new G4Tubs("TimingBarrel_S", SCEP_Timing_InnerR, SCEP_Timing_OuterR, SCEP_Timing_Length, 0., 2.* M_PI * rad);            
     G4LogicalVolume* Timing_Barrel_L = new G4LogicalVolume(Timing_Barrel_S, Air, "TimingBarrel_L");
-//     if (placeSCEPTime)     
     new G4PVPlacement(0,G4ThreeVector(0,0,0),Timing_Barrel_L,"TimingBarrel_P",fMagneticLogical,false,0,checkOverlaps);                            
 //     Timing_Barrel_L->SetVisAttributes(barrelEnvAttr);    
     Timing_Barrel_L->SetVisAttributes(motherEnvelopesVisAttr);    
@@ -1305,8 +1304,6 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4LogicalVolume* TimingBarrel_PhiSlice_L = new G4LogicalVolume(TimingBarrel_PhiSlice_S,Air,"TimingBarrel_PhiSlice_L");
     TimingBarrel_PhiSlice_L->SetVisAttributes(motherEnvelopesVisAttr);
     
-//     new G4PVPlacement(0,G4ThreeVector(0,0,0),TimingBarrel_PhiSlice_L,"TimingBarrel_PhiSlice_P",Timing_Barrel_L,false,1,checkOverlaps);                            
-    
     G4VPVParameterisation* barrelTimingPhiParam = new BarrelTimingPhiParameterisation( SCEP_Timing_InnerR, SCEP_Timing_phi_unit, SCEP_Timing_OuterR-SCEP_Timing_InnerR, 0);            
     G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, SCEP_Timing_NbOfPhiRot, barrelTimingPhiParam);
 //     G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, 1, barrelTimingPhiParam);
@@ -1314,16 +1311,17 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     
     //endcap envelopes (non pointing, flat disk, filled as lines of modules)
-    G4Tubs         * Timing_Endcap_S = new G4Tubs("TimingEndcap_S", 0, SCEP_Timing_OuterR, (SCEP_Timing_OuterR-SCEP_Timing_InnerR)/2., 0., 360.);            
+    G4Tubs         * Timing_Endcap_S = new G4Tubs("TimingEndcap_S", 0, SCEP_Timing_OuterR, (SCEP_Timing_OuterR-SCEP_Timing_InnerR)/2., 0., 2.* M_PI * rad);            
     G4LogicalVolume* Timing_Endcap_L = new G4LogicalVolume(Timing_Endcap_S, Air, "TimingEndcap_L");
-//     if (placeSCEPTime)     
+
     G4RotationMatrix * rotEndcap = new G4RotationMatrix();
     rotEndcap->rotateX(M_PI);   
-    new G4PVPlacement(rotEndcap,G4ThreeVector(0,0, (SCEP_Timing_OuterR+SCEP_Timing_InnerR)/2.),Timing_Endcap_L,"TimingEndcap_P_R",fMagneticLogical,false, 1,checkOverlaps);                            
-//     new G4PVPlacement(0,G4ThreeVector(0,0,-(SCEP_Timing_OuterR+SCEP_Timing_InnerR)/2.),Timing_Endcap_L,"TimingEndcap_P_L",fMagneticLogical,false,-1,checkOverlaps);                            
+    new G4PVPlacement(rotEndcap,G4ThreeVector(0,0, (SCEP_Timing_OuterR+SCEP_Timing_InnerR)/2.),Timing_Endcap_L,"TimingEndcap_P_R",fMagneticLogical,false, 1,checkOverlaps);
+    new G4PVPlacement(0,G4ThreeVector(0,0,-(SCEP_Timing_OuterR+SCEP_Timing_InnerR)/2.),Timing_Endcap_L,"TimingEndcap_P_L",fMagneticLogical,false,-1,checkOverlaps);           
 //     Timing_Endcap_L->SetVisAttributes(barrelEnvAttr);    
     Timing_Endcap_L->SetVisAttributes(motherEnvelopesVisAttr);    
     
+
             
     //************************************************************************************************************************************
     //mother module envelope of 60x60x6mm^3 containing the two timing layers
@@ -1341,8 +1339,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 //         for (int iZ = 0; iZ < 1; iZ++)
 //     for (int iZ = 0; iZ < 1; iZ++)        
     {        
-        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0,  bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,    iZ+1, checkOverlaps);
-        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0, -bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,  -(iZ+1), checkOverlaps);        
+      if (placeTiming)        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0,  bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,    iZ+1, checkOverlaps);
+      if (placeTiming)        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0, -bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,  -(iZ+1), checkOverlaps);        
     }
     
     
@@ -1378,7 +1376,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
             
             if (radius_min>SCEP_Timing_Endcap_InnerR && radius_max< SCEP_Timing_OuterR)
             {
-                new G4PVPlacement(rotModuleEndcap, G4ThreeVector(posX, posY, 0.), Timing_Module_Env_L, name, Timing_Endcap_L, false, iX*nEndcapModulePerLine+iY, checkOverlaps);
+	      if (placeTiming)    new G4PVPlacement(rotModuleEndcap, G4ThreeVector(posX, posY, 0.), Timing_Module_Env_L, name, Timing_Endcap_L, false, iX*nEndcapModulePerLine+iY, checkOverlaps);
             }
             
         }
