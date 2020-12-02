@@ -129,8 +129,12 @@ int main(int argc,char** argv)
   G4String physName = "FTFP_BERT"; //"FTFP_BERT", "QGSP_BERT"
   runManager->SetUserInitialization(new PhysicsList(physName));
   
-  B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction);
+//   B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction);
+  char c[200];
+  strcpy(c, outputFileName.c_str());
+  B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction, c);
   runManager->SetUserInitialization(actionInitialization);
+  
   
   // Initialize visualization
   //
