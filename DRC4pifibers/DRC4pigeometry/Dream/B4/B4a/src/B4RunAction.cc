@@ -44,12 +44,13 @@ using namespace std;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B4RunAction::B4RunAction()
+B4RunAction::B4RunAction(char* outputFileName)
  : G4UserRunAction()
 { 
   // set printing event number per each event
-  G4RunManager::GetRunManager()->SetPrintProgress(1);     
+//   G4RunManager::GetRunManager()->SetPrintProgress(1);     
 
+    m_outputFileName = outputFileName;
   // Create analysis manager
   // The choice of analysis technology is done via selectin of a namespace
   // in B4Analysis.hh
@@ -124,8 +125,8 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   G4cout << "Using " << analysisManager->GetType() << G4endl;
   
 //   Open an output file
-//   G4String fileName = outputFileName;    
-  G4String fileName = "B4.root";    
+  G4String fileName = m_outputFileName;    
+//   G4String fileName = "B4.root";    
   analysisManager->OpenFile(fileName);    
   
   analysisManager->SetVerboseLevel(0);
