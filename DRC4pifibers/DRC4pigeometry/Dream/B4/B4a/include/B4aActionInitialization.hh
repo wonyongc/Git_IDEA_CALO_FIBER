@@ -40,7 +40,7 @@ class B4DetectorConstruction;
 class B4aActionInitialization : public G4VUserActionInitialization
 {
   public:
-    B4aActionInitialization(B4DetectorConstruction*);
+    B4aActionInitialization(B4DetectorConstruction*, char*);
     
     virtual ~B4aActionInitialization();
     virtual void BuildForMaster() const;
@@ -48,6 +48,8 @@ class B4aActionInitialization : public G4VUserActionInitialization
 
   private:
     B4DetectorConstruction* fDetConstruction;
+    char* m_outputFileName;
+    
 };
 
 #endif

@@ -41,11 +41,13 @@ class G4Run;
 class B4RunAction : public G4UserRunAction
 {
   public:
-    B4RunAction();
+    B4RunAction(char*);
     virtual ~B4RunAction();
 
     virtual void BeginOfRunAction(const G4Run*);
     virtual void EndOfRunAction(const G4Run*);
+    
+    char* m_outputFileName;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
