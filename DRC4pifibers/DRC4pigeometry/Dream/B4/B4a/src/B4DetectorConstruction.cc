@@ -439,7 +439,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);*/
     
-    bool placeFIBERS  = false;
+    bool placeFIBERS  = true;
     bool placeHCAL    = true;
     bool placeSCEPCAL = true;
     bool placeTiming  = true;

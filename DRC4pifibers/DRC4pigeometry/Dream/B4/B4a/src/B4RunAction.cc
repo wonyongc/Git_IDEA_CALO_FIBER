@@ -126,7 +126,9 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   
 //   Open an output file    
 //   G4String fileName = "B4.root";    
-  G4String fileName = m_outputFileName;    
+  G4String fileName_temp = m_outputFileName;
+  std::string fileName = fileName_temp;
+  fileName += ".root";    
 //   G4String fileName = "out.root";    
   analysisManager->OpenFile(fileName);    
   
