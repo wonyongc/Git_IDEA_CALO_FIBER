@@ -11,7 +11,9 @@ void InitG4Tree (TTree * TreeRun, myG4TreeVars& treeVars)
     TreeRun->SetBranchAddress("EnergyTot",              &treeVars.EnergyTot);    
     
     TreeRun->SetBranchAddress("PrimaryParticleEnergy",  &treeVars.PrimaryParticleEnergy);    
-    TreeRun->SetBranchAddress("PrimaryParticleName",    &treeVars.PrimaryParticleName);    
+    
+    
+    TreeRun->SetBranchAddress("PrimaryParticleName",    treeVars.PrimaryParticleName);    
     TreeRun->SetBranchAddress("neutrinoleakage",        &treeVars.neutrinoleakage);    
     TreeRun->SetBranchAddress("leakage",                &treeVars.leakage);    
         

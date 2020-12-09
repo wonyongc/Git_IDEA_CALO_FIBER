@@ -22,7 +22,8 @@ struct myG4TreeVars
     Double_t NofCherenkovDetected;
     double EnergyTot;
     double PrimaryParticleEnergy;
-    Char_t PrimaryParticleName;
+    Char_t *PrimaryParticleName;
+//     std::string PrimaryParticleName;
     double neutrinoleakage;
     double leakage;
     
