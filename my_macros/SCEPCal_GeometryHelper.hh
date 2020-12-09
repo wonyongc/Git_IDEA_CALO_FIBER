@@ -14,7 +14,7 @@ class SCEPCal_GeometryHelper
         int m_NbOfEndCap;
         int m_NZrot;        
         int m_totTower;
-        double m_deltaTheta;                              
+        double m_deltaTheta;
         double m_phiUnit;
   
         //SCEPCal
