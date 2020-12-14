@@ -107,7 +107,7 @@ B4RunAction::~B4RunAction()
 void B4RunAction::BeginOfRunAction(const G4Run* run)
 { 
   //inform the runManager to save random number seed
-  G4RunManager::GetRunManager()->SetRandomNumberStore(true);
+//   G4RunManager::GetRunManager()->SetRandomNumberStore(true);
     
   G4cout<< "run " <<run->GetRunID()<<G4endl;
 
