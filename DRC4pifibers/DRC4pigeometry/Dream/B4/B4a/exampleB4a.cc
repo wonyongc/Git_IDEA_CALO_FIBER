@@ -52,6 +52,13 @@
 #include "G4VisExecutive.hh"
 #include "G4UIExecutive.hh"
 //#include "Fiber_Info.hh"
+#include "TRandom3.h"
+
+
+
+
+long int CreateSeed();
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -78,18 +85,18 @@ int main(int argc,char** argv)
   G4String macro;
   G4String session;
   G4String outputFileName;
-#ifdef G4MULTITHREADED
-  G4int nThreads = 0;
-#endif
+// #ifdef G4MULTITHREADED
+//   G4int nThreads = 0;
+// #endif
   for ( G4int i=1; i<argc; i=i+2 ) {
     if      ( G4String(argv[i]) == "-m" ) macro = argv[i+1];
     else if ( G4String(argv[i]) == "-u" ) session = argv[i+1];
     else if ( G4String(argv[i]) == "-o" ) outputFileName = argv[i+1];
-#ifdef G4MULTITHREADED
-    else if ( G4String(argv[i]) == "-t" ) {
-      nThreads = G4UIcommand::ConvertToInt(argv[i+1]);
-    }
-#endif
+// #ifdef G4MULTITHREADED
+//     else if ( G4String(argv[i]) == "-t" ) {
+//       nThreads = G4UIcommand::ConvertToInt(argv[i+1]);
+//     }
+// #endif
     else {
       PrintUsage();
       return 1;
@@ -103,20 +110,28 @@ int main(int argc,char** argv)
     ui = new G4UIExecutive(argc, argv, session);
   }
 
+  
+  
+    // Seed the random number generator manually
+  //
+  G4long myseed = myseed = CreateSeed();
+  G4cout << "Random seed : " << myseed << G4endl;
+  CLHEP::HepRandom::setTheSeed(myseed);
+  
   // Choose the Random engine
   //
-  G4Random::setTheEngine(new CLHEP::RanecuEngine);
+//   G4Random::setTheEngine(new CLHEP::RanecuEngine);
   
   // Construct the default run manager
   //
-#ifdef G4MULTITHREADED
-  G4MTRunManager * runManager = new G4MTRunManager;
-  if ( nThreads > 0 ) { 
-    runManager->SetNumberOfThreads(nThreads);
-  }  
-#else
+// #ifdef G4MULTITHREADED
+//   G4MTRunManager * runManager = new G4MTRunManager;
+//   if ( nThreads > 0 ) { 
+//     runManager->SetNumberOfThreads(nThreads);
+//   }  
+// #else
   G4RunManager * runManager = new G4RunManager;
-#endif
+// #endif
 
   // Set mandatory initialization classes
   //
@@ -174,5 +189,43 @@ int main(int argc,char** argv)
   delete runManager;
   
 }
+
+
+
+
+long int CreateSeed()
+{
+  TRandom3 rangen;
+  
+  long int sec = time(0);
+  G4cout << "Time : " << sec << G4endl;
+  
+  sec += getpid();
+  G4cout << "PID  : " << getpid() << G4endl;
+  
+  FILE* fp = fopen ("/proc/uptime", "r");
+  int upsecs = 0;
+  if( fp != NULL )
+  {
+    char buf[BUFSIZ];
+    char *b = fgets(buf,BUFSIZ,fp);
+    if( b == buf )
+    {
+      /* The following sscanf must use the C locale.  */
+      setlocale(LC_NUMERIC, "C");
+      setlocale(LC_NUMERIC, "");
+    }
+    fclose(fp);
+  }
+  G4cout << "Upsecs: " << upsecs << G4endl;
+  sec += upsecs;
+  
+  G4cout << "Seed for srand: " << sec << G4endl;
+  srand(sec);
+  rangen.SetSeed(rand());
+  long int seed = round(1000000*rangen.Uniform());
+  return seed;
+}
+
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo.....
