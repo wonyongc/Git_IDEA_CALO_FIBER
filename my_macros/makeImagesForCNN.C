@@ -144,9 +144,15 @@ int main(int argc, char** argv)
 //   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Uniform1-100.root");
   
 
-  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
-  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
+//  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
+//  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
+
+  filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
+  filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
   
+  // filenames.push_back("../root_files/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV_job_1.root");
+  // filenames.push_back("../root_files/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV_job_1.root");
+
   
   TChain * TreeRun = new TChain("B4", "B4");
   for (long unsigned int iFile = 0; iFile < filenames.size(); iFile++)
@@ -186,7 +192,8 @@ int main(int argc, char** argv)
   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
   {
                                         
-     
+    std::cout <<"iEvt = " << iEvt << std::endl;
+      
       TreeRun->GetEntry(iEvt);
       if (iEvt%100 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
       
