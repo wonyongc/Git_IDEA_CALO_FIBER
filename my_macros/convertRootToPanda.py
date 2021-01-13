@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 
-cols = ['PrimaryParticleEnergy','image_E1', 'image_E2', 'image_DRT_S', 'image_DRT_C', 'image_TT']
+cols = ['PrimaryParticleEnergy','image_E1', 'image_E2', 'image_DRT_S', 'image_DRT_C', 'image_TT', 'theta_seed', 'phi_seed']
 
 #for i in xrange(20*20): #change 20 to gridSize to change grid size 
     #cols.append('pixel_%i' % i)
