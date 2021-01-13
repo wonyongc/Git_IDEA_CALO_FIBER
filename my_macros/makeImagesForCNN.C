@@ -67,7 +67,8 @@ int main(int argc, char** argv)
     
   
   
-  bool SAVEPLOTS = false;  
+  bool SAVEPLOTS = true;  
+  bool WRITEOUTPUT = false;  
 //   int energy = 100;
   
   std::string particle_name = "K^{0L}, 0T";
@@ -179,7 +180,7 @@ int main(int argc, char** argv)
   int NEVENTS = TreeRun->GetEntries();
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
 
-  int MAX_EVENTS = 220000;
+  int MAX_EVENTS = 10000;
   if (MAX_EVENTS<NEVENTS) NEVENTS = MAX_EVENTS;
    
      
@@ -594,11 +595,11 @@ int main(int argc, char** argv)
   cImage_EC_R->cd();
   hImage_EC_R->Draw("COLZ");
   hImage_EC_R->SetStats(0);
-  hImage_EC_R->SetTitle("E1");
+  hImage_EC_R->SetTitle("E2");
   hImage_EC_R->GetXaxis()->SetTitle("pixelX");
   hImage_EC_R->GetYaxis()->SetTitle("pixelY");  
   gPad->SetLogz();
-  if (SAVEPLOTS)   cImage_EC_F->SaveAs(Form("plots/cImage_EC_R_%s.png", output_tag.c_str()));
+  if (SAVEPLOTS)   cImage_EC_R->SaveAs(Form("plots/cImage_EC_R_%s.png", output_tag.c_str()));
   
   
   
@@ -659,12 +660,15 @@ int main(int argc, char** argv)
   if (SAVEPLOTS)   cImage_TT->SaveAs(Form("plots/cImage_TT_%s.png", output_tag.c_str()));
   
   
+  if (WRITEOUTPUT)
+  {
+    outputFile->cd();
+    outputTree->Write();
+    outputFile->Close();
+    std::cout << "done writing output file!" << std::endl;
+  }
   
-  outputFile->cd();
-  outputTree->Write();
-  outputFile->Close();
   
-  std::cout << "done writing output file!" << std::endl;
   theApp->Run();
   
   
