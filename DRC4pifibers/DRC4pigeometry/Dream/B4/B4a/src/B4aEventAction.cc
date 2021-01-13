@@ -247,6 +247,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
   G4double pz = particle -> GetPz();
   
   SavePrimaryParticle(particle->GetParticleDefinition()->GetParticleName());
+  std::cout << "primary particle name is: " << particle->GetParticleDefinition()->GetParticleName() << std::endl;
   SavePrimaryEnergy(InitEnergy);
   SavePrimaryMomentum(px, py, pz);
   
