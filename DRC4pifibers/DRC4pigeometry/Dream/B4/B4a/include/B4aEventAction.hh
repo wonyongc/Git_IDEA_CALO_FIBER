@@ -130,7 +130,7 @@ class B4aEventAction : public G4UserEventAction
     
   private:
     G4int cont;
-    Fiber_Info Fiber_Hits[10000];
+    Fiber_Info Fiber_Hits[1000000];
     Tracking_Info Tracking_Hits[200];
     G4double  Energyem; //Energy of em component
     G4double  EnergyScin; //Energy in scintillating fibers

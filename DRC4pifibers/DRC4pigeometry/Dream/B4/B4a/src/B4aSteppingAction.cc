@@ -232,19 +232,19 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
     	GetTopTransform().Inverse().TransformPoint(origin);
         G4ThreeVector direction = theTouchable->GetHistory()->
     	GetTopTransform().Inverse().TransformAxis(zdir);
-        G4double lengthfiber = atof(LengthFibr.c_str());
-        G4ThreeVector Halffibervect = direction*lengthfiber/2;
-        // Fibre tip position
-        G4ThreeVector vectPostip = vectPos-Halffibervect;
-        // SiPM position
-        G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
-        if (s_signal>0.0)
-        {
-            fEventAction->WriteFiber_Info(S_fiber_ID,s_signal,1,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
-            // Extract info for z time
-            std::ofstream TimeFile;
-            TimeFile.open("Time.txt", std::ios_base::app);
-            TimeFile<<"Scin "<< std::fixed << std::setprecision(3) <<S_fiber_ID<<" "<<vectPostip.getX()<<" "<<vectPostip.getY()<<" "<<vectPostip.getZ()<<" "<<s_signal<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
+
+		G4double lengthfiber = atof(LengthFibr.c_str());
+		G4ThreeVector Halffibervect = direction*lengthfiber/2;
+		// Fibre tip position
+		G4ThreeVector vectPostip = vectPos-Halffibervect;
+		// SiPM position
+		G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
+		if (s_signal>0.0){
+		  fEventAction->WriteFiber_Info(S_fiber_ID,s_signal,1,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
+		// Extract info for z time
+		//std::ofstream TimeFile;
+		//TimeFile.open("Time.txt", std::ios_base::app);
+		//TimeFile<<"Scin "<< std::fixed << std::setprecision(3) <<S_fiber_ID<<" "<<vectPostip.getX()<<" "<<vectPostip.getY()<<" "<<vectPostip.getZ()<<" "<<s_signal<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
 		//TimeFile.close();
         }
     }
@@ -475,29 +475,30 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
                 // Fibers routine: fill the C fibres info 
                 G4VPhysicalVolume* physVol=step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
 		
-                G4int k=0;
-                G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
-                G4ThreeVector origin(0.,0.,0.);
-                G4ThreeVector zdir(0.,0.,1.);
-                G4ThreeVector vectPos = theTouchable->GetHistory()->
-                GetTopTransform().Inverse().TransformPoint(origin);
-                G4ThreeVector direction = theTouchable->GetHistory()->
-                GetTopTransform().Inverse().TransformAxis(zdir);
-                G4double lengthfiber = atof(LengthFibr.c_str());
-                G4ThreeVector Halffibervect = direction*lengthfiber/2;
-                // Fibre tip position
-                G4ThreeVector vectPostip = vectPos-Halffibervect;
-                // SiPM position
-                G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
-                if (c_signal>0){
-                    fEventAction->WriteFiber_Info(C_fiber_ID,c_signal,0,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
-                    // Extract info for z time
-                    std::ofstream TimeFile;
-                    TimeFile.open("Time.txt", std::ios_base::app);
-                    TimeFile<<"Cher "<<std::fixed << std::setprecision(3) <<C_fiber_ID<<" "<<vectPostip.getX()<<" "<<vectPostip.getY()<<" "<<vectPostip.getZ()<<" "<<c_signal<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
-                    //TimeFile.close();
-                }
-                step->GetTrack()->SetTrackStatus(fStopAndKill); //kill photon
+
+				G4int k=0;
+				G4TouchableHandle theTouchable = step->GetPreStepPoint()->GetTouchableHandle();
+  				G4ThreeVector origin(0.,0.,0.);
+				G4ThreeVector zdir(0.,0.,1.);
+  				G4ThreeVector vectPos = theTouchable->GetHistory()->
+    			GetTopTransform().Inverse().TransformPoint(origin);
+				G4ThreeVector direction = theTouchable->GetHistory()->
+    			GetTopTransform().Inverse().TransformAxis(zdir);
+				G4double lengthfiber = atof(LengthFibr.c_str());
+				G4ThreeVector Halffibervect = direction*lengthfiber/2;
+				// Fibre tip position
+				G4ThreeVector vectPostip = vectPos-Halffibervect;
+				// SiPM position
+				G4ThreeVector SiPMvecPos = vectPos+Halffibervect;
+	      if (c_signal>0){
+				  fEventAction->WriteFiber_Info(C_fiber_ID,c_signal,0,vectPostip,copynumberslice,copynumbertower);// 1 == S 0 == C
+				  // Extract info for z time
+				  //std::ofstream TimeFile;
+				  //TimeFile.open("Time.txt", std::ios_base::app);
+	  		  //TimeFile<<"Cher "<<std::fixed << std::setprecision(3) <<C_fiber_ID<<" "<<vectPostip.getX()<<" "<<vectPostip.getY()<<" "<<vectPostip.getZ()<<" "<<c_signal<<" "<<sqrt((SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())*(SiPMvecPos[0]-step->GetTrack()->GetPosition().getX())+(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())*(SiPMvecPos[1]-step->GetTrack()->GetPosition().getY())+(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ())*(SiPMvecPos[2]-step->GetTrack()->GetPosition().getZ()))<<" "<<step->GetTrack()->GetGlobalTime()<<G4endl;
+				//TimeFile.close();
+        }
+        step->GetTrack()->SetTrackStatus(fStopAndKill); //kill photon
 				
             }
             break;
