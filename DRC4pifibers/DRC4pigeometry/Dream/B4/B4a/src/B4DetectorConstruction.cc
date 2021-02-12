@@ -439,10 +439,14 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);*/
     
-    bool placeFIBERS  = true;
+    bool placeFIBERS  = false;
     bool placeHCAL    = true;
     bool placeSCEPCAL = true;
     bool placeTiming  = true;
+    
+    bool displaySlice = false;    
+    bool displayECALHalfSlice = false;
+    bool displayTimingModule  = false;
     
     
     ////////////// Calorimeter parameters
@@ -563,6 +567,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 //     auto Solenoid = new G4Tubs("Solenoid",2.1*m,2.11757*m,2.5*m,0.,360.*deg);
     G4double solenoid_X0 = 0.7*1.757*cm;
     auto Solenoid = new G4Tubs("Solenoid",2.1*m, 2.1*m+solenoid_X0, 2.5*m,0.,360.*deg);
+    if (displaySlice) Solenoid = new G4Tubs("Solenoid",solenoid_IR, solenoid_OR, 2.5*m,90.*deg,1.*deg);
     G4LogicalVolume* SolenoidLV = new G4LogicalVolume(Solenoid, Fe, "SolenoidLV");
     G4RotationMatrix* SolenoidRot = new G4RotationMatrix();
     new G4PVPlacement(SolenoidRot,G4ThreeVector(),SolenoidLV,
@@ -570,7 +575,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
                         false,0,checkOverlaps);
     G4VisAttributes* SolenoidAttributes = new G4VisAttributes(G4Colour(1.,0.,0.));   // red
     SolenoidAttributes->SetForceLineSegmentsPerCircle(100);
-    SolenoidAttributes->SetVisibility(false);
+    SolenoidAttributes->SetVisibility(false);        
+    if (displaySlice) SolenoidAttributes->SetVisibility(true);
+
     SolenoidLV->SetVisAttributes(SolenoidAttributes);	
 	
     ////////////// PSD //////////////////////// 
@@ -714,13 +721,22 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
         new G4PVPlacement(rmEL,G4ThreeVector(0,0,-(innerR)*tan(thetaB)-length/2.),phiELLog,"phiELPhys",worldLV,false,j,false);  
     }
 
+    if (displaySlice)
+    {
+        if (j == NbOfZRot/4 || j == NbOfZRot/4*3) 
+        {
+            new G4PVPlacement(rmB,G4ThreeVector((innerR+0.5*length)*cos(j*phi_unit),(innerR+0.5*length)*sin(j*phi_unit),0),phiBLog,"phiDivPhys",worldLV,false,j,false);
+            new G4PVPlacement(rmER,G4ThreeVector(0,0,(innerR)*tan(thetaB)+length/2.),phiERLog,"phiERPhys",worldLV,false,j,false);
+            new G4PVPlacement(rmEL,G4ThreeVector(0,0,-(innerR)*tan(thetaB)-length/2.),phiELLog,"phiELPhys",worldLV,false,j,false);  
+        }
+    }
     
         
             
     }
     
     G4double detOpacity = 1;
-    G4bool visHCAL = false;
+    G4bool visHCAL = true;
     G4bool wireFrame = false;
     G4bool solidView = true;
     
@@ -1020,13 +1036,19 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     SCEP_phiBLog->SetVisAttributes(motherEnvelopesVisAttr);
         
     
-   int offset_phi = 0;//SCEP_NbOfZRot/4*3;
+   int offset_phi = 0;
+   
+   if (displaySlice) offset_phi = SCEP_NbOfZRot/4*1;
 //     int offset = 100/4*3;
-//     int offset_phi = SCEP_NbOfZRot/4*3;;
+
     G4VPVParameterisation* barrelPhiParam = new BarrelPhiParameterisation( SCEP_innerR, SCEP_phi_unit, SCEP_xtal_L, offset_phi);        
     if (placeSCEPCAL) G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, SCEP_NbOfZRot, barrelPhiParam);
-//     G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, SCEP_NbOfZRot/2, barrelPhiParam);
-//     G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, 1, barrelPhiParam);
+
+    
+    //to display a single slice uncomment the line below
+    if (displaySlice) G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, 1, barrelPhiParam);
+    if (displayECALHalfSlice) G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, 1, barrelPhiParam);
+//     if (displaySlice) G4VPhysicalVolume* SCEP_phiDivPhys  = new G4PVParameterised( "SCEP_phiDivPhys", SCEP_phiBLog, SCEP_BLog, kUndefined, SCEP_NbOfZRot/2, barrelPhiParam);
     
     
     
@@ -1047,9 +1069,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //fill crystals along eta
     for (int iSide = -1; iSide < 2; iSide+=2)
     {
-//         if (iSide == -1) continue;
+        if (iSide == -1 && (displayECALHalfSlice) ) continue;
         char side_name[20];
-        if (iSide == -1) 
+        if (iSide == -1 ) 
         {
             sprintf(side_name, "L");
             dimB->Rbool(0);
@@ -1138,6 +1160,9 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     G4RotationMatrix* rmEL = new G4RotationMatrix();
     rmEL->rotateX(M_PI/1.);
+    
+    G4RotationMatrix * rotSlice = new G4RotationMatrix();
+    rotSlice->rotateZ(-M_PI/2); 
             
     for (int iRing = 0; iRing < SCEP_NbOfEndcap; iRing++)
     {
@@ -1178,6 +1203,8 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
             
             //front crystals
             
+            
+            
             //right side front
             SCEP_EndcapRing_F = new G4Cons("SCEP_EndcapRing_F", rmin1_F , rmax1_F, rmin2_F, rmax2_F, crystal_z_proj/2., 0., barrel_dPhi);
             SCEP_endcapRingLog_F = new G4LogicalVolume(SCEP_EndcapRing_F,SCEPCalMaterial,"SCEP_ringELog_F");
@@ -1185,26 +1212,32 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
                                 
             sprintf(name,"SCEP_endcapR_Front_P_ring%d", iRing+1);                   
             if (placeSCEPCAL) new G4PVPlacement(0,G4ThreeVector(0, 0, (SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj/2),SCEP_endcapRingLog_F,name,fMagneticLogical,false,iRing+1,checkOverlaps);                          
+            if (displaySlice) new G4PVPlacement(rotSlice,G4ThreeVector(0, 0, (SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj/2),SCEP_endcapRingLog_F,name,fMagneticLogical,false,iRing+1,checkOverlaps);                          
             
             crystal_EF =            new G4Cons("crystal_EF", rmin1_F , rmax1_F, rmin2_F, rmax2_F, crystal_z_proj/2.,        -divided_con_dPhi/2., divided_con_dPhi);
             G4LogicalVolume* crystalF_log = new G4LogicalVolume(crystal_EF, SCEPCalMaterial ,"crystalF_log", 0, 0, 0);        
             sprintf(name,"crystalECALEndcapFront_P_ring%d", iRing+1);
-            G4VPhysicalVolume* crystalF_P = new G4PVReplica(name, crystalF_log, SCEP_endcapRingLog_F, kPhi, n_divisionRing, divided_con_dPhi);
-            crystalF_log->SetVisAttributes(crystalFVisAttrEnd);
+            if (placeSCEPCAL) G4VPhysicalVolume* crystalF_P = new G4PVReplica(name, crystalF_log, SCEP_endcapRingLog_F, kPhi, n_divisionRing, divided_con_dPhi);
+            if (displaySlice) G4VPhysicalVolume* crystalF_P = new G4PVReplica(name, crystalF_log, SCEP_endcapRingLog_F, kPhi, 1, divided_con_dPhi);
+            crystalF_log->SetVisAttributes(crystalFVisAttr);
+//             crystalF_log->SetVisAttributes(crystalFVisAttrEnd);
             
             //left side front
-            SCEP_EndcapRing_F_L = new G4Cons("SCEP_EndcapRing_F_L", rmin2_F , rmax2_F, rmin1_F, rmax1_F, crystal_z_proj/2., 0., barrel_dPhi);
+            SCEP_EndcapRing_F_L = new G4Cons("SCEP_EndcapRing_F_L", rmin2_F , rmax2_F, rmin1_F, rmax1_F, crystal_z_proj/2., 0., barrel_dPhi);            
             SCEP_endcapRingLog_F_L = new G4LogicalVolume(SCEP_EndcapRing_F_L,SCEPCalMaterial,"SCEP_ringELog_F_L");
             SCEP_endcapRingLog_F_L->SetVisAttributes(motherEnvelopesVisAttr);
             
-            sprintf(name,"SCEP_endcapL_Front_P_ring%d", iRing+1);       
-            if (placeSCEPCAL) new G4PVPlacement(0,G4ThreeVector(0, 0, -((SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj/2)),SCEP_endcapRingLog_F_L,name,fMagneticLogical,false,-(iRing+1),checkOverlaps);  
+            sprintf(name,"SCEP_endcapL_Front_P_ring%d", iRing+1);     
+            if (placeSCEPCAL) new G4PVPlacement(0,G4ThreeVector(0, 0, -((SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj/2)),SCEP_endcapRingLog_F_L,name,fMagneticLogical,false,-(iRing+1),checkOverlaps); 
+            if (displaySlice) new G4PVPlacement(rotSlice,G4ThreeVector(0, 0, -((SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj/2)),SCEP_endcapRingLog_F_L,name,fMagneticLogical,false,-(iRing+1),checkOverlaps); 
                                                                         
-            crystal_EF_L =            new G4Cons("crystal_EF_L", rmin2_F , rmax2_F, rmin1_F, rmax1_F, crystal_z_proj/2.,        -divided_con_dPhi/2., divided_con_dPhi);
+            crystal_EF_L =  new G4Cons("crystal_EF_L", rmin2_F , rmax2_F, rmin1_F, rmax1_F, crystal_z_proj/2.,        -divided_con_dPhi/2., divided_con_dPhi);
             G4LogicalVolume* crystalF_L_log = new G4LogicalVolume(crystal_EF_L, SCEPCalMaterial ,"crystalF_L_log", 0, 0, 0);        
             sprintf(name,"crystalECALEndcapFront_P_ring%d", iRing+1);
-            G4VPhysicalVolume* crystalF_L_P = new G4PVReplica(name, crystalF_L_log, SCEP_endcapRingLog_F_L, kPhi, n_divisionRing, divided_con_dPhi);
-            crystalF_L_log->SetVisAttributes(crystalFVisAttrEnd);
+            if (placeSCEPCAL) G4VPhysicalVolume* crystalF_L_P = new G4PVReplica(name, crystalF_L_log, SCEP_endcapRingLog_F_L, kPhi, n_divisionRing, divided_con_dPhi);
+            if (displaySlice) G4VPhysicalVolume* crystalF_L_P = new G4PVReplica(name, crystalF_L_log, SCEP_endcapRingLog_F_L, kPhi, 1, divided_con_dPhi);
+            crystalF_L_log->SetVisAttributes(crystalFVisAttr);
+//             crystalF_L_log->SetVisAttributes(crystalFVisAttrEnd);
             
             
             //rear crystals
@@ -1216,12 +1249,15 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
             
             sprintf(name,"SCEP_endcapR_Rear_P_ring%d", iRing+1);       
             if (placeSCEPCAL) new G4PVPlacement(0,G4ThreeVector(0, 0, (SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj+crystal_z_proj_R/2),SCEP_endcapRingLog_R,name,fMagneticLogical,false,iRing+1,checkOverlaps);                          
+            if (displaySlice) new G4PVPlacement(rotSlice,G4ThreeVector(0, 0, (SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj+crystal_z_proj_R/2),SCEP_endcapRingLog_R,name,fMagneticLogical,false,iRing+1,checkOverlaps);                          
             
             crystal_ER =            new G4Cons("crystalR", rmin1_R , rmax1_R, rmin2_R, rmax2_R, crystal_z_proj_R/2.,        -divided_con_dPhi/2., divided_con_dPhi);
             G4LogicalVolume* crystalR_log = new G4LogicalVolume(crystal_ER, SCEPCalMaterial ,"crystalR_log", 0, 0, 0);        
             sprintf(name,"crystalECALEndcapRear_P_ring%d", iRing+1);             	            
-            G4VPhysicalVolume* crystalR_P = new G4PVReplica(name, crystalR_log, SCEP_endcapRingLog_R, kPhi, n_divisionRing, divided_con_dPhi);
-            crystalR_log->SetVisAttributes(crystalRVisAttrEnd);   
+            if (placeSCEPCAL) G4VPhysicalVolume* crystalR_P = new G4PVReplica(name, crystalR_log, SCEP_endcapRingLog_R, kPhi, n_divisionRing, divided_con_dPhi);
+            if (displaySlice) G4VPhysicalVolume* crystalR_P = new G4PVReplica(name, crystalR_log, SCEP_endcapRingLog_R, kPhi, 1, divided_con_dPhi);
+            crystalR_log->SetVisAttributes(crystalRVisAttr);   
+//             crystalR_log->SetVisAttributes(crystalRVisAttrEnd);   
             
             //left side rear
             SCEP_EndcapRing_R_L = new G4Cons("SCEP_EndcapRing_R_L", rmin2_R , rmax2_R, rmin1_R, rmax1_R, crystal_z_proj_R/2., 0., barrel_dPhi);
@@ -1230,12 +1266,15 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
             
             sprintf(name,"SCEP_endcapL_Rear_L_P_ring%d", iRing+1);       
             if (placeSCEPCAL) new G4PVPlacement(0,G4ThreeVector(0, 0, -((SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj+crystal_z_proj_R/2)),SCEP_endcapRingLog_R_L,name,fMagneticLogical,false,-(iRing+1),checkOverlaps);                          
+            if (displaySlice) new G4PVPlacement(rotSlice,G4ThreeVector(0, 0, -((SCEP_innerR+SCEP_xtal_L*FR_X0ratio)*tan(SCEP_thetaB)-SCEP_xtal_L*FR_X0ratio+crystal_z_proj+crystal_z_proj_R/2)),SCEP_endcapRingLog_R_L,name,fMagneticLogical,false,-(iRing+1),checkOverlaps);                          
                                 
             crystal_ER_L =            new G4Cons("crystalR_L", rmin2_R , rmax2_R, rmin1_R, rmax1_R, crystal_z_proj_R/2.,        -divided_con_dPhi/2., divided_con_dPhi);
             G4LogicalVolume* crystalR_L_log = new G4LogicalVolume(crystal_ER_L, SCEPCalMaterial ,"crystalR_L_log", 0, 0, 0);        
             sprintf(name,"crystalECALEndcapRear_P_ring%d", iRing+1);             	            
-            G4VPhysicalVolume* crystalR_L_P = new G4PVReplica(name, crystalR_L_log, SCEP_endcapRingLog_R_L, kPhi, n_divisionRing, divided_con_dPhi);
-            crystalR_L_log->SetVisAttributes(crystalRVisAttrEnd);
+            if (placeSCEPCAL) G4VPhysicalVolume* crystalR_L_P = new G4PVReplica(name, crystalR_L_log, SCEP_endcapRingLog_R_L, kPhi, n_divisionRing, divided_con_dPhi);
+            if (displaySlice) G4VPhysicalVolume* crystalR_L_P = new G4PVReplica(name, crystalR_L_log, SCEP_endcapRingLog_R_L, kPhi, 1, divided_con_dPhi);
+            crystalR_L_log->SetVisAttributes(crystalRVisAttr);
+//             crystalR_L_log->SetVisAttributes(crystalRVisAttrEnd);
         }
     }
     
@@ -1265,8 +1304,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4double SCEP_Timing_OuterR = 1795.*mm;
     G4double SCEP_Timing_Length = SCEP_Timing_InnerR;
     
-    
-    
+        
     //to get a 60x60 mm module
     G4int    nBars      = 20;
     G4double bar_length = 60*mm;
@@ -1292,11 +1330,11 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //barrel envelopes (non pointing, a flat layer)
     
     //full timing barrel mother envelope
-    G4Tubs         * Timing_Barrel_S = new G4Tubs("TimingBarrel_S", SCEP_Timing_InnerR, SCEP_Timing_OuterR, SCEP_Timing_Length, 0., 2.* M_PI * rad);            
+    G4Tubs         * Timing_Barrel_S = new G4Tubs("TimingBarrel_S", SCEP_Timing_InnerR, SCEP_Timing_OuterR, SCEP_Timing_Length, 0., 2.* M_PI * rad);
     G4LogicalVolume* Timing_Barrel_L = new G4LogicalVolume(Timing_Barrel_S, Air, "TimingBarrel_L");
-    new G4PVPlacement(0,G4ThreeVector(0,0,0),Timing_Barrel_L,"TimingBarrel_P",fMagneticLogical,false,0,checkOverlaps);                            
+    new G4PVPlacement(0,G4ThreeVector(0,0,0),Timing_Barrel_L,"TimingBarrel_P",fMagneticLogical,false,0,checkOverlaps);
 //     Timing_Barrel_L->SetVisAttributes(barrelEnvAttr);    
-    Timing_Barrel_L->SetVisAttributes(motherEnvelopesVisAttr);    
+    Timing_Barrel_L->SetVisAttributes(motherEnvelopesVisAttr);
 
     //barrel timing phi slice to be parameterized and then filled with modules
     G4Tubs* TimingBarrel_PhiSlice_S = new G4Tubs("TimingBarrel_PhiSlice_S",SCEP_Timing_InnerR, SCEP_Timing_OuterR, SCEP_Timing_Length, -SCEP_Timing_phi_unit/2., SCEP_Timing_phi_unit);
@@ -1304,9 +1342,11 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4LogicalVolume* TimingBarrel_PhiSlice_L = new G4LogicalVolume(TimingBarrel_PhiSlice_S,Air,"TimingBarrel_PhiSlice_L");
     TimingBarrel_PhiSlice_L->SetVisAttributes(motherEnvelopesVisAttr);
     
-    G4VPVParameterisation* barrelTimingPhiParam = new BarrelTimingPhiParameterisation( SCEP_Timing_InnerR, SCEP_Timing_phi_unit, SCEP_Timing_OuterR-SCEP_Timing_InnerR, 0);            
-    G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, SCEP_Timing_NbOfPhiRot, barrelTimingPhiParam);
-//     G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, 1, barrelTimingPhiParam);
+    if (displaySlice) offset_phi = SCEP_Timing_NbOfPhiRot/4*2+1;
+    G4VPVParameterisation* barrelTimingPhiParam = new BarrelTimingPhiParameterisation( SCEP_Timing_InnerR, SCEP_Timing_phi_unit, SCEP_Timing_OuterR-SCEP_Timing_InnerR, offset_phi);            
+//     G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, SCEP_Timing_NbOfPhiRot, barrelTimingPhiParam);
+
+    if (displaySlice) G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, 1, barrelTimingPhiParam);
     
     
     
@@ -1339,8 +1379,10 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
 //         for (int iZ = 0; iZ < 1; iZ++)
 //     for (int iZ = 0; iZ < 1; iZ++)        
     {        
-      if (placeTiming)        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0,  bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,    iZ+1, checkOverlaps);
-      if (placeTiming)        new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0, -bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,  -(iZ+1), checkOverlaps);        
+//       if (placeTiming)      
+          new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0,  bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,    iZ+1, checkOverlaps);
+//       if (placeTiming)     
+          new G4PVPlacement(rotModule, G4ThreeVector( (SCEP_Timing_InnerR+SCEP_Timing_OuterR)/2., 0, -bar_length*(iZ+0.5)), Timing_Module_Env_L, name, TimingBarrel_PhiSlice_L, false,  -(iZ+1), checkOverlaps);        
     }
     
     
@@ -1377,10 +1419,13 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
             if (radius_min>SCEP_Timing_Endcap_InnerR && radius_max< SCEP_Timing_OuterR)
             {
 	      if (placeTiming)    new G4PVPlacement(rotModuleEndcap, G4ThreeVector(posX, posY, 0.), Timing_Module_Env_L, name, Timing_Endcap_L, false, iX*nEndcapModulePerLine+iY, checkOverlaps);
+              if (displaySlice && iX ==nEndcapModulePerLine/2) new G4PVPlacement(rotModuleEndcap, G4ThreeVector(posX, posY, 0.), Timing_Module_Env_L, name, Timing_Endcap_L, false, iX*nEndcapModulePerLine+iY, checkOverlaps);
+              
             }
             
         }
     }
+    if (displayTimingModule) new G4PVPlacement(rotModuleEndcap, G4ThreeVector(0, 0, 0.), Timing_Module_Env_L, name, worldLV, false, 0, checkOverlaps);
     
     
 
