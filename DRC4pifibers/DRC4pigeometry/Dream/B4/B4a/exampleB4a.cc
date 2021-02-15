@@ -144,12 +144,15 @@ int main(int argc,char** argv)
   G4String physName = "FTFP_BERT"; //"FTFP_BERT", "QGSP_BERT"
   runManager->SetUserInitialization(new PhysicsList(physName));
   
+  std::cout << "runManager initialization..." << std::endl;
+  
 //   B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction);
   char c[200];
   strcpy(c, outputFileName.c_str());
   B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction, c);
   runManager->SetUserInitialization(actionInitialization);
   
+  std::cout << "action initialization..." << std::endl;
   
   // Initialize visualization
   //
@@ -157,6 +160,8 @@ int main(int argc,char** argv)
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
   visManager->Initialize();
+  
+  std::cout << "visManager initialization..." << std::endl;
 
   // Get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
