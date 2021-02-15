@@ -69,6 +69,7 @@ void B4aActionInitialization::Build() const
   B4aEventAction* eventAction = new B4aEventAction;
   SetUserAction(eventAction);
   SetUserAction(new B4aSteppingAction(fDetConstruction,eventAction));
+  std::cout << "Action initialization..." << std::endl;
 }  
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

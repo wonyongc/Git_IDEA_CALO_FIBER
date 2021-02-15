@@ -79,7 +79,7 @@ void B4aSteppingAction::UserSteppingAction(const G4Step* step)
   G4double global_y = thePrePosition.y()/mm;
   G4double global_z = thePrePosition.z()/mm;
 //   if (!strstr(PreStepVolume->GetName(),"tower"))   std::cout << " :: x = " << global_x << " :: y = " << global_y << " :: z = " << global_z << " --> step is in: " << PreStepVolume->GetName() << std::endl;
-  
+//   std::cout << "entering step action... " << std::endl;
   //define Birk's constant
   double k_B = 0.126; 
   G4double saturatedenergydeposited = 0.;

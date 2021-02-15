@@ -109,7 +109,7 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   //inform the runManager to save random number seed
 //   G4RunManager::GetRunManager()->SetRandomNumberStore(true);
     
-  G4cout<< "run " <<run->GetRunID()<<G4endl;
+//   G4cout<< "Run ID: " <<run->GetRunID()<<G4endl;
 
   const B4aEventAction* constEventAction = static_cast<const B4aEventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
   B4aEventAction* eventAction = const_cast<B4aEventAction*>(constEventAction);
@@ -130,8 +130,9 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   std::string fileName = fileName_temp;
   fileName += ".root";    
 //   G4String fileName = "out.root";    
+  std::cout << "Writing to output file: " << fileName << std::endl;
   analysisManager->OpenFile(fileName);    
-  
+//   std::cout << "opening file... " << std::endl;
   analysisManager->SetVerboseLevel(0);
   analysisManager->SetFirstHistoId(0);
   
@@ -186,9 +187,8 @@ void B4RunAction::BeginOfRunAction(const G4Run* run)
   analysisManager->CreateNtupleDColumn("VectorL_loop", eventAction->GetVectorL_loop());
   analysisManager->CreateNtupleDColumn("VectorR_loop", eventAction->GetVectorR_loop()); 
   analysisManager->FinishNtuple();                
-    
-  
 
+  std::cout << "Output Tree is configured... " << std::endl;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

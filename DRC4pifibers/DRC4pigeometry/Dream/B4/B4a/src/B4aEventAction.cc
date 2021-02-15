@@ -116,12 +116,14 @@ B4aEventAction::~B4aEventAction()
 
 void B4aEventAction::BeginOfEventAction(const G4Event* event)
 {  
+    
+
   //Time_distribution event
   std::ofstream TimeFile;
   TimeFile.open("Time.txt", std::ios_base::app);
   TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
   TimeFile.close();
-  
+//   std::cout << "Event action..." << std::endl;
  
   
   
@@ -246,10 +248,17 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
   G4double py = particle -> GetPy();
   G4double pz = particle -> GetPz();
   
-  SavePrimaryParticle(particle->GetParticleDefinition()->GetParticleName());
-  std::cout << "primary particle name is: " << particle->GetParticleDefinition()->GetParticleName() << std::endl;
-  SavePrimaryEnergy(InitEnergy);
-  SavePrimaryMomentum(px, py, pz);
+//   std::cout << "Looking for primary particle..." << std::endl;
+//   std::cout << "definition: " << particle->GetParticleDefinition() << std::endl;
+//   std::cout << "name: " << particle->GetParticleDefinition()->GetParticleName() << std::endl;
+  
+  if (particle->GetParticleDefinition()!=0)
+  {
+      SavePrimaryParticle(particle->GetParticleDefinition()->GetParticleName());
+//     std::cout << "primary particle name is: " << particle->GetParticleDefinition()->GetParticleName() << std::endl;
+      SavePrimaryEnergy(InitEnergy);
+      SavePrimaryMomentum(px, py, pz);
+  }
   
 //   std::cout << "ene = " << InitEnergy << ", momentum = (" << px << ", " << py << ", " << pz << std::endl;
   
