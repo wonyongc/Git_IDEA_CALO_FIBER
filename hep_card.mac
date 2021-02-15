@@ -2,4 +2,4 @@
 /generator/select hepmcAscii
 /generator/hepmcAscii/open ../HepMC_Files/hzjnbn100k.hep
 /B4/field/value 2 tesla #se vuoi includere il B field
-/run/beamOn 100
+/run/beamOn 10
