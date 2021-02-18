@@ -80,6 +80,7 @@ void filltruth::write_tuple() {
   cout << "A root tree has been written to a file" << endl;}
 }
 void filltruth::fillstable( std::vector<HepMC::GenParticle*> evt ) {
+
   int nstab=0;
   int nbpar=0;
 //  cout << "****************************" << endl;
@@ -118,21 +119,28 @@ int filltruth::find_in_map( const std::map<HepMC::GenParticle*,int>& m, HepMC::G
 
 //--------------------------------------------------------------------------
 void  filltruth::ReadStats(const HepMC::GenEvent* evt) {
+
  unsigned int particle_counter=0;
  index_to_particle.clear();
+
  HepMC::GenEvent::vertex_const_iterator v;
+
+ // std::cout << " evt->size() = " << evt.size() <<std::endl;
  for (v = evt->vertices_begin(); v != evt->vertices_end(); ++v ) {
 // making a list of incoming particles of the vertices
 // so that the mother indices in HEPEVT can be filled properly
      HepMC::GenVertex::particles_out_const_iterator p1;
+
      for (p1 = (*v)->particles_in_const_begin();p1 != (*v)->particles_in_const_end(); ++p1 ) {
 	 ++particle_counter;
          index_to_particle.push_back(*p1);
 	 particle_to_index[*p1] = particle_counter-1;
+
      }   
 // daughters are entered only if they aren't a mother of
 // another vertex
      HepMC::GenVertex::particles_out_const_iterator p2;
+
      for (p2 = (*v)->particles_out_const_begin();p2 != (*v)->particles_out_const_end(); ++p2) {
        if (!(*p2)->end_vertex()) {
          ++particle_counter;
