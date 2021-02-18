@@ -119,10 +119,10 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
     
 
   //Time_distribution event
-  std::ofstream TimeFile;
-  TimeFile.open("Time.txt", std::ios_base::app);
-  TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
-  TimeFile.close();
+  // std::ofstream TimeFile;
+  // TimeFile.open("Time.txt", std::ios_base::app);
+  // TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
+  // TimeFile.close();
 //   std::cout << "Event action..." << std::endl;
  
   
@@ -276,35 +276,36 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
     
 	
-    std::ofstream eventFile;
-    eventFile.open("Event.txt", std::ios_base::app);
-    /*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
-    G4cout<<"\t ID \t Energy(MeV) \t S/C \t Position \t slice \t tower"<<std::endl;
-    G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;*/
-    int v=0;
-    G4double E=0.;
-    if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile<<"EvtID\tFiberID\tEt\tXt\tYt\tZt\tFlagt\tslicet\ttowert"<<std::endl;
-    while(Fiber_Hits[v].F_ID!=0)
-    {
-    //G4cout<<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_X<<" "<<Fiber_Hits[v].F_Y<<" "<<Fiber_Hits[v].F_Z<<std::endl;
-        E = E+Fiber_Hits[v].F_E;
-        eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(3) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
-        v++;        
-    }
-    //eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
-    eventFile.close();
+    // std::ofstream eventFile;
+    // eventFile.open("Event.txt", std::ios_base::app);
+    // /*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+    // G4cout<<"\t ID \t Energy(MeV) \t S/C \t Position \t slice \t tower"<<std::endl;
+    // G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;*/
+    // int v=0;
+    // G4double E=0.;
+    // if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile<<"EvtID\tFiberID\tEt\tXt\tYt\tZt\tFlagt\tslicet\ttowert"<<std::endl;
+    // while(Fiber_Hits[v].F_ID!=0)
+    // {
+    // //G4cout<<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_X<<" "<<Fiber_Hits[v].F_Y<<" "<<Fiber_Hits[v].F_Z<<std::endl;
+    //     E = E+Fiber_Hits[v].F_E;
+    //     eventFile<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<std::fixed << std::setprecision(3) <<Fiber_Hits[v].F_ID<<"\t"<<Fiber_Hits[v].F_E<<"\t"<<Fiber_Hits[v].F_X<<"\t"<<Fiber_Hits[v].F_Y<<"\t"<<Fiber_Hits[v].F_Z<<"\t"<<Fiber_Hits[v].F_Type<<"\t"<<Fiber_Hits[v].F_slice<<"\t"<<Fiber_Hits[v].F_tower<<std::endl;
+    //     v++;        
+    // }
+    // //eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+    // eventFile.close();
 	
-    std::ofstream eventFile1;
-    eventFile1.open("Event_Track.txt", std::ios_base::app);
-    if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile1<<"EvtIDtrack\tTrackID\tXtrackt\tYtrackt\tZtrackt\tparticlesnamet"<<std::endl;
-    for (v=0;v<200;v++)
-    {
-        if(Tracking_Hits[v].T_ID!=0)
-        {
-            eventFile1<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<Tracking_Hits[v].T_ID<<"\t"<<Tracking_Hits[v].T_X<<"\t"<<Tracking_Hits[v].T_Y<<"\t"<<Tracking_Hits[v].T_Z<<"\t"<<Tracking_Hits[v].T_Name<<std::endl;
-	}        
-    }
-    eventFile1.close();
+    // std::ofstream eventFile1;
+    // eventFile1.open("Event_Track.txt", std::ios_base::app);
+    // if(G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()==0)	eventFile1<<"EvtIDtrack\tTrackID\tXtrackt\tYtrackt\tZtrackt\tparticlesnamet"<<std::endl;
+    // for (v=0;v<200;v++)
+    // {
+    //     if(Tracking_Hits[v].T_ID!=0)
+    //     {
+    //         eventFile1<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<"\t"<<Tracking_Hits[v].T_ID<<"\t"<<Tracking_Hits[v].T_X<<"\t"<<Tracking_Hits[v].T_Y<<"\t"<<Tracking_Hits[v].T_Z<<"\t"<<Tracking_Hits[v].T_Name<<std::endl;
+    // 	}        
+    // }
+    // eventFile1.close();
+
 	//eventFile<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
 	
 	/*G4cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
