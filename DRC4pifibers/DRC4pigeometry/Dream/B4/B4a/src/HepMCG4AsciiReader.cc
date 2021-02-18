@@ -63,7 +63,7 @@ void HepMCG4AsciiReader::Initialize()
   delete asciiInput;
 
   asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
-  std::string out = "test.root";
+  std::string out = "hep_truth.root";
   fill->book_tuple(out);
 }
 
@@ -71,8 +71,8 @@ void HepMCG4AsciiReader::Initialize()
 HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
 {
   HepMC::GenEvent* evt= asciiInput-> read_next_event();
-
-  fill->fill_tuple(evt);
+ 
+ fill->fill_tuple(evt);
   if(!evt){
     return 0; // no more event
   } 
