@@ -17,29 +17,22 @@ struct myCNNTreeVars
     
     float  PrimaryParticleEnergy;
     float  PrimaryParticleMomentum[3];
-    std::string PrimaryParticleName;
-//     Char_t * PrimaryParticleName;
+    std::string CNNPrimaryParticleName;
         
     float theta_seed;
     float phi_seed;    
     
-    float image_TT[225];
+    float image_TT[2025];    
+    float image_E1[2025];
+    float image_E2[2025];
     
-    float image_E1[225];
-    float image_E2[225];
-//     float image_ET[225];
-    
-    float image_DRT_S[225];
-    float image_DRT_C[225];
-    
-//     float image_E1[30][30];
-//     float image_E2[30][30];
-//     float image_ET[30][30];
+//     float image_DRT_S[2025];
+//     float image_DRT_C[2025];
     
           
 };
 
-void InitCNNTree(TTree* TreeRun, myCNNTreeVars &treeVars);
+void InitCNNTree(TTree* CNNTreeRun, myCNNTreeVars &CNNtreeVars);
 
 
 #endif

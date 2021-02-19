@@ -2,30 +2,23 @@
 #include <vector>
 #include <string>
 
-void InitCNNTree (TTree * TreeRun, myCNNTreeVars& treeVars)
+void InitCNNTree (TTree * CNNTreeRun, myCNNTreeVars& CNNtreeVars)
 {
         
-    TreeRun->Branch("PrimaryParticleEnergy",   &treeVars.PrimaryParticleEnergy, "PrimaryParticleEnergy/F");        
-    TreeRun->Branch("PrimaryParticleMomentum", treeVars.PrimaryParticleMomentum, "PrimaryParticleMomentum[3]/F");        
+    CNNTreeRun->Branch("PrimaryParticleEnergy",   &CNNtreeVars.PrimaryParticleEnergy, "PrimaryParticleEnergy/F");        
+    CNNTreeRun->Branch("PrimaryParticleMomentum", CNNtreeVars.PrimaryParticleMomentum, "PrimaryParticleMomentum[3]/F");        
     
-    TreeRun->Branch("PrimaryParticleName",    &treeVars.PrimaryParticleName);        
-//     TreeRun->Branch("PrimaryParticleName",     &treeVars.PrimaryParticleName, "PrimaryParticleName/C", 1024);        
+    CNNTreeRun->Branch("PrimaryParticleName",    &CNNtreeVars.CNNPrimaryParticleName);        
     
-    TreeRun->Branch("theta_seed", &treeVars.theta_seed, "theta_seed/F");        
-    TreeRun->Branch("phi_seed",   &treeVars.phi_seed,   "phi_seed/F");        
+    CNNTreeRun->Branch("theta_seed", &CNNtreeVars.theta_seed, "theta_seed/F");        
+    CNNTreeRun->Branch("phi_seed",   &CNNtreeVars.phi_seed,   "phi_seed/F");        
     
-    TreeRun->Branch("image_TT", treeVars.image_TT, "image_TT[225]/F");        
+    CNNTreeRun->Branch("image_TT", CNNtreeVars.image_TT, "image_TT[2025]");            
+    CNNTreeRun->Branch("image_E1", CNNtreeVars.image_E1, "image_E1[2025]");        
+    CNNTreeRun->Branch("image_E2", CNNtreeVars.image_E2, "image_E2[2025]");        
     
-    TreeRun->Branch("image_E1", treeVars.image_E1, "image_E1[225]/F");        
-    TreeRun->Branch("image_E2", treeVars.image_E2, "image_E2[225]/F");        
-//     TreeRun->Branch("image_ET", treeVars.image_ET, "image_ET[225]/F");        
-    
-    TreeRun->Branch("image_DRT_S", treeVars.image_DRT_S, "image_DRT_S[225]/F");        
-    TreeRun->Branch("image_DRT_C", treeVars.image_DRT_C, "image_DRT_C[225]/F");        
-    
-//     TreeRun->Branch("image_E1", treeVars.image_E1, "image_E1[30][30]/F");        
-//     TreeRun->Branch("image_E2", treeVars.image_E2, "image_E2[30][30]/F");        
-//     TreeRun->Branch("image_ET", treeVars.image_ET, "image_ET[30][30]/F");        
-    
+//     CNNTreeRun->Branch("image_DRT_S", CNNtreeVars.image_DRT_S, "image_DRT_S[2025]");        
+//     CNNTreeRun->Branch("image_DRT_C", CNNtreeVars.image_DRT_C, "image_DRT_C[2025]");        
+
     
 }
