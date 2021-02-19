@@ -1,6 +1,6 @@
-
+/*
 #ifndef __myG4Tree__
-#define __myG4Tree__
+#define __myG4Tree__*/
 
 #include <vector>
 #include <string>
@@ -22,8 +22,8 @@ struct myG4TreeVars
     Double_t NofCherenkovDetected;
     double EnergyTot;
     double PrimaryParticleEnergy;
-    Char_t *PrimaryParticleName;
-//     std::string PrimaryParticleName;
+    Char_t PrimaryParticleName[100];
+    
     double neutrinoleakage;
     double leakage;
     
@@ -64,4 +64,4 @@ struct myG4TreeVars
 void InitG4Tree(TTree* TreeRun, myG4TreeVars &treeVars);
 
 
-#endif
+// #endif

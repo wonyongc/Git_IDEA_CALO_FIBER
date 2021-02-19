@@ -1,5 +1,7 @@
 #include "myG4Tree.hh"
 #include <vector>
+#include "TTree.h"
+#include "TChain.h"
 
 void InitG4Tree (TTree * TreeRun, myG4TreeVars& treeVars)
 {
@@ -10,10 +12,9 @@ void InitG4Tree (TTree * TreeRun, myG4TreeVars& treeVars)
     TreeRun->SetBranchAddress("NofCherenkovDetected",   &treeVars.NofCherenkovDetected);    
     TreeRun->SetBranchAddress("EnergyTot",              &treeVars.EnergyTot);    
     
-    TreeRun->SetBranchAddress("PrimaryParticleEnergy",  &treeVars.PrimaryParticleEnergy);    
-    
-    
-    TreeRun->SetBranchAddress("PrimaryParticleName",    treeVars.PrimaryParticleName);    
+    TreeRun->SetBranchAddress("PrimaryParticleEnergy",  &treeVars.PrimaryParticleEnergy);     
+
+    TreeRun->SetBranchAddress("PrimaryParticleName",    &treeVars.PrimaryParticleName);
     TreeRun->SetBranchAddress("neutrinoleakage",        &treeVars.neutrinoleakage);    
     TreeRun->SetBranchAddress("leakage",                &treeVars.leakage);    
         
@@ -37,7 +38,7 @@ void InitG4Tree (TTree * TreeRun, myG4TreeVars& treeVars)
     treeVars.VecHit_Timing_ScepTimeF   = new std::vector<double>;
     treeVars.VecHit_Timing_ScepTimeR   = new std::vector<double>;
     
-    treeVars.PrimaryParticleMomentum = new std::vector<double>;
+    treeVars.PrimaryParticleMomentum = new std::vector<double>;    
     
     treeVars.VectorL            = new std::vector<double>;
     treeVars.VectorR            = new std::vector<double>;
