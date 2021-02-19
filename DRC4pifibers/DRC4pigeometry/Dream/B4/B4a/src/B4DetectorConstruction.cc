@@ -439,7 +439,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);*/
     
-    bool placeFIBERS  = false;
+    bool placeFIBERS  = true;
     bool placeHCAL    = true;
     bool placeSCEPCAL = true;
     bool placeTiming  = true;
@@ -1344,8 +1344,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     
     if (displaySlice) offset_phi = SCEP_Timing_NbOfPhiRot/4*2+1;
     G4VPVParameterisation* barrelTimingPhiParam = new BarrelTimingPhiParameterisation( SCEP_Timing_InnerR, SCEP_Timing_phi_unit, SCEP_Timing_OuterR-SCEP_Timing_InnerR, offset_phi);            
-//     G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, SCEP_Timing_NbOfPhiRot, barrelTimingPhiParam);
-
+    if (placeTiming)  G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, SCEP_Timing_NbOfPhiRot, barrelTimingPhiParam);
     if (displaySlice) G4VPhysicalVolume* SCEP_Timing_phiDivPhys  = new G4PVParameterised( "SCEP_TimingBarrel_phiDivPhys", TimingBarrel_PhiSlice_L, Timing_Barrel_L, kUndefined, 1, barrelTimingPhiParam);
     
     
