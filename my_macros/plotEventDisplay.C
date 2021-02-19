@@ -49,7 +49,7 @@
 int main(int argc, char** argv)
 {
 
-//   TApplication* theApp = new TApplication("App", &argc, argv);
+  TApplication* theApp = new TApplication("App", &argc, argv);
       
   using namespace std;
   
@@ -606,7 +606,7 @@ int main(int argc, char** argv)
   
   
   
-//   theApp->Run();
+  theApp->Run();
 }
 
 
