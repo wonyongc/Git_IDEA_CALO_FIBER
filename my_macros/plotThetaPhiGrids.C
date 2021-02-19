@@ -86,8 +86,8 @@ int main(int argc, char** argv)
   int NPHI_DRT   = 36;
   int NTHETA_DRT = 40+40-1;
   
-  double minPhi = -M_PI;
-  double maxPhi = M_PI;  
+  double minPhi = -M_PI*2;
+  double maxPhi = M_PI*2;  
   double minTheta = 0;
   double maxTheta = M_PI;
   
@@ -135,7 +135,7 @@ int main(int argc, char** argv)
   int NEVENTS = TreeRun->GetEntries();
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
 
-//   NEVENTS = 5000;
+  NEVENTS = 1000;
      
   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
   {
@@ -334,8 +334,8 @@ int main(int argc, char** argv)
   hGrid_DRT_S->SetTitle("Dual Readout HCAL Tower");
   hGrid_DRT_S->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_DRT_S->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_DRT_S->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_DRT_S->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_DRT_S->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_DRT_S->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -349,8 +349,8 @@ int main(int argc, char** argv)
   hGrid_DRT_C->SetTitle("Dual Readout HCAL Tower");
   hGrid_DRT_C->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_DRT_C->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_DRT_C->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_DRT_C->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_DRT_C->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_DRT_C->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -364,8 +364,8 @@ int main(int argc, char** argv)
   hGrid_EC_T->SetTitle("E1+E2");
   hGrid_EC_T->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_EC_T->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_T->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_EC_T->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_EC_T->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_EC_T->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -379,8 +379,8 @@ int main(int argc, char** argv)
   hGrid_EC_F->SetTitle("E1");
   hGrid_EC_F->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_EC_F->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_F->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_EC_F->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_EC_F->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_EC_F->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -394,8 +394,8 @@ int main(int argc, char** argv)
   hGrid_EC_R->SetTitle("E2");
   hGrid_EC_R->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_EC_R->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_R->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_EC_R->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_EC_R->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_EC_R->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -409,8 +409,8 @@ int main(int argc, char** argv)
   hGrid_T1->SetTitle("T1");
   hGrid_T1->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_T1->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_T1->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_T1->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_T1->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_T1->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -424,8 +424,8 @@ int main(int argc, char** argv)
   hGrid_T2->SetTitle("T2");
   hGrid_T2->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_T2->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_T2->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_T2->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_T2->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_T2->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
@@ -439,8 +439,8 @@ int main(int argc, char** argv)
   hGrid_TT->SetTitle("MaxHit (T1+T2)");
   hGrid_TT->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_TT->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_TT->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
-  hGrid_TT->GetYaxis()->SetRangeUser(-phiRange, phiRange);
+//   hGrid_TT->GetXaxis()->SetRangeUser(-thetaRange+M_PI/2, thetaRange+M_PI/2);
+//   hGrid_TT->GetYaxis()->SetRangeUser(-phiRange, phiRange);
   lEndcapMinus->Draw("same");
   lEndcapPlus->Draw("same");
   gPad->SetLogz();
