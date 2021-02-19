@@ -87,7 +87,7 @@ int main(int argc, char** argv)
   int NPHI_DRT   = 36;
   int NTHETA_DRT = 40+40-1;
   
-  const int imageSize = 15;
+  const int imageSize = 45;
 //   float image_E1[imageSize][imageSize];
   
   
@@ -125,40 +125,26 @@ int main(int argc, char** argv)
   TH2F * hImage_DRT_S = new TH2F ("hImage_DRT_S", "hImage_DRT_S",   imageSize, 0, imageSize, imageSize, 0, imageSize);
   TH2F * hImage_DRT_C = new TH2F ("hImage_DRT_C", "hImage_DRT_C",   imageSize, 0, imageSize, imageSize, 0, imageSize);  
   TH2F * hImage_TT    = new TH2F ("hImage_TT", "hImage_TT",         imageSize, 0, imageSize, imageSize, 0, imageSize);
-  
-  
-  
+      
   
   SCEPCal_GeometryHelper myGeometry;
   
-  //run over energy scan
-//   TFile * RunFile = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_T+E.root","READ"); 
-//   TFile * RunFile = new TFile("../root_files/iso_gun/central_kaon0L_10GeV_ALL.root","READ"); 
-//   TFile * RunFile = new TFile("../root_files/prod/output_SCEPCal_fixedPosMixed_5GeV.root","READ"); 
-  //   TFile * RunFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_pi-_5GeV.root","READ"); 
-  
-//   TFile * RunFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_pi-_Uniform1-100.root","READ"); 
-  
   std::vector<std::string> filenames;
-//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_5GeV.root");
-//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Uniform1-100.root");
-//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Uniform1-100.root");
   
-
-//  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
-//  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
-
-  filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
-  filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
+  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
+  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
+//   filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_e-_5GeV.root.root");
   
-  // filenames.push_back("../root_files/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV_job_1.root");
-  // filenames.push_back("../root_files/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV_job_1.root");
+  
+//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root");
+//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi0_Iso+Uniform1-100_GeV.root");
+  
 
   
   TChain * TreeRun = new TChain("B4", "B4");
   for (long unsigned int iFile = 0; iFile < filenames.size(); iFile++)
   {
-    TreeRun->Add( filenames.at(iFile).c_str() );  
+    TreeRun->Add( filenames.at(iFile).c_str() );
     std::cout << "adding file = " << filenames.at(iFile) << std::endl;
   }
 
@@ -168,11 +154,16 @@ int main(int argc, char** argv)
 //   TTree* TreeRun = (TTree*) RunFile->Get("B4");
   myG4TreeVars myTV;
   InitG4Tree (TreeRun, myTV);
-      
+  TreeRun->GetEntry(0);
+  std::cout << "primary name: "    << myTV.PrimaryParticleName << std::endl;  
 
   //create output tree for CNN
   TFile* outputFile = new TFile("../CNN_trees/output_forCNN_pi-e-_Iso+Uniform.root","RECREATE"); 
+//   TFile* outputFile = new TFile("../CNN_trees/output_forCNN_gamma_pi0_Iso+Uniform.root","RECREATE");
+  
 //   TFile* outputFile = new TFile("../CNN_trees/output_temp.root","RECREATE"); 
+  
+  
   TTree* outputTree = new TTree("CNN", "Tree for CNN");
   myCNNTreeVars cnnTV;
   InitCNNTree (outputTree, cnnTV);
@@ -186,14 +177,18 @@ int main(int argc, char** argv)
   int NEVENTS = TreeRun->GetEntries();
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
 
-  int MAX_EVENTS = 10000;
+  int MAX_EVENTS = 200000;
   if (MAX_EVENTS<NEVENTS) NEVENTS = MAX_EVENTS;
+  
+  float minEneECAL = 10; // MeV
+  float minEneHCAL = 10; // MeV
+  float minEneTiming = 0.5; // MeV
    
      
   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
   {
                                         
-    std::cout <<"iEvt = " << iEvt << std::endl;
+//     std::cout <<"iEvt = " << iEvt << std::endl;
       
       TreeRun->GetEntry(iEvt);
       if (iEvt%100 == 0) std::cout << "processing event: " << iEvt << "\r" << std::flush;
@@ -205,6 +200,13 @@ int main(int argc, char** argv)
       px/= P;
       py/= P;
       pz/= P;
+      
+      
+      
+
+//       if (P/1000<8 || P/1000>10) continue;
+//       std::cout << "P = " << P/1000 << " GeV" << std::endl;
+      
       
       double phi   = atan(py/px);
       if (px<0. && py <0.)   {phi = phi - M_PI;}
@@ -218,7 +220,7 @@ int main(int argc, char** argv)
       //**************************************************************//
       //                             ECAL
       //**************************************************************//
-
+//       std::cout << "ECAL" << std::endl;
       //use ECAL seed to align pictures of also HCAL and Timing layers
       std::vector<double>::iterator max_ene;
 
@@ -249,9 +251,9 @@ int main(int argc, char** argv)
 //           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
           if (true)
           {
-            hGrid_EC_F ->Fill(this_theta-theta_seed, this_phi-phi_seed, myTV.VecHit_ScepEneDepF->at(i)/1000);
-            hGrid_EC_R ->Fill(this_theta-theta_seed, this_phi-phi_seed, myTV.VecHit_ScepEneDepR->at(i)/1000);
-            hGrid_EC_T ->Fill(this_theta-theta_seed, this_phi-phi_seed, this_ene);                        
+            if (myTV.VecHit_ScepEneDepF->at(i) >minEneECAL) hGrid_EC_F ->Fill(this_theta-theta_seed, this_phi-phi_seed, myTV.VecHit_ScepEneDepF->at(i)/1000);
+            if (myTV.VecHit_ScepEneDepR->at(i) >minEneECAL) hGrid_EC_R ->Fill(this_theta-theta_seed, this_phi-phi_seed, myTV.VecHit_ScepEneDepR->at(i)/1000);
+            if (myTV.VecHit_ScepEneDepR->at(i) >minEneECAL) hGrid_EC_T ->Fill(this_theta-theta_seed, this_phi-phi_seed, this_ene);                        
           }
       }
 
@@ -261,7 +263,7 @@ int main(int argc, char** argv)
       //**************************************************************//
       //                           DR HCAL
       //**************************************************************//
-
+//       std::cout << "DR HCAL" << std::endl;
       
       
       for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
@@ -293,7 +295,7 @@ int main(int argc, char** argv)
       //**************************************************************//
       //                            Timing
       //**************************************************************//
-      
+//       std::cout << "Timing" << std::endl;
 //       double c_speed = 1./299792458*1e9; //mm per picosecond          
 //       double time_acceptance = 3; //time window to reject out of time hits
             
@@ -303,7 +305,7 @@ int main(int argc, char** argv)
           double this_phi = this_vec.Phi();
           double this_theta = this_vec.Theta();                     
           double this_ene = myTV.VecHit_Timing_ScepEneDepF->at(i);          
-          hGrid_T1 ->Fill(this_theta-theta_seed, this_phi-phi_seed,this_ene);                                             
+          if (this_ene >minEneTiming) hGrid_T1 ->Fill(this_theta-theta_seed, this_phi-phi_seed,this_ene);                                             
       }
       
       for (long unsigned int i = 0; i<myTV.VecHit_Timing_CrystalID_R->size(); i++)
@@ -312,7 +314,7 @@ int main(int argc, char** argv)
           double this_phi = this_vec.Phi();
           double this_theta = this_vec.Theta();                     
           double this_ene = myTV.VecHit_Timing_ScepEneDepR->at(i);          
-          hGrid_T2 ->Fill(this_theta-theta_seed, this_phi-phi_seed,this_ene);                                             
+          if (this_ene >minEneTiming)hGrid_T2 ->Fill(this_theta-theta_seed, this_phi-phi_seed,this_ene);                                             
       }
       
        
@@ -334,21 +336,26 @@ int main(int argc, char** argv)
           double this_phi = seed_vec.Phi();
           double this_theta = seed_vec.Theta();
 //           TT_maxHit_distance =  sqrt(pow(seed_vec.X(),2) + pow(seed_vec.Y(),2) + pow(seed_vec.Z(),2));
+          double this_ene = myTV.VecHit_Timing_ScepEneDepF->at(T1_maxHit_index_temp)+myTV.VecHit_Timing_ScepEneDepR->at(T2_maxHit_index_temp);
           
-          hGrid_TT ->Fill(this_theta-theta_seed, this_phi-phi_seed, myTV.VecHit_Timing_ScepEneDepF->at(T1_maxHit_index_temp)+myTV.VecHit_Timing_ScepEneDepR->at(T2_maxHit_index_temp));                                             
+          if (this_ene >minEneTiming) hGrid_TT ->Fill(this_theta-theta_seed, this_phi-phi_seed, this_ene);                                             
                     
        }    
        
        
+//        std::cout << "primary name: " << myTV.PrimaryParticleName << std::endl;       
        
        
        //fill CNN tree
+//        std::cout << "Filling CNN tree" << std::endl;
        
-       cnnTV.PrimaryParticleEnergy      = myTV.PrimaryParticleEnergy;
+       cnnTV.PrimaryParticleEnergy      =  myTV.PrimaryParticleEnergy;
+       cnnTV.CNNPrimaryParticleName        =  myTV.PrimaryParticleName;
+//        std::cout << "primary energy: " << myTV.PrimaryParticleEnergy << std::endl;
        cnnTV.PrimaryParticleMomentum[0] = px;
        cnnTV.PrimaryParticleMomentum[1] = py;
-       cnnTV.PrimaryParticleMomentum[2] = pz;
-       cnnTV.PrimaryParticleName        = myTV.PrimaryParticleName;
+       cnnTV.PrimaryParticleMomentum[2] = pz;              
+       
 //        cnnTV.PrimaryParticleName        = "test";
        
 //        std::cout  << " particle name = " << myTV.PrimaryParticleName << " :: " << cnnTV.PrimaryParticleName << std::endl;
@@ -358,6 +365,7 @@ int main(int argc, char** argv)
        
        //cut out images
        //ECAL
+//        std::cout << "Filling images ECAL" << std::endl;
        int iX_center_ECAL = NTHETA_EC/2.+1;
        int iY_center_ECAL = NPHI_EC/2.+1;
        for (int iPixelX = 0; iPixelX<imageSize; iPixelX++)
@@ -375,15 +383,12 @@ int main(int argc, char** argv)
 //                cnnTV.image_ET[iPixelX+iPixelY*imageSize] = hGrid_EC_T->GetBinContent(iBinX, iBinY);
                
 //                std::cout  << "image_E1 ["<< iPixelX<< "][" << iPixelY << "] : " << hGrid_EC_F->GetBinContent(iBinX, iBinY) << " ::: pixel_id = " << iPixelX+iPixelY*imageSize << std::endl;
-                                             
-//                cnnTV.image_E1[iPixelX][iPixelY] = hGrid_EC_F->GetBinContent(iBinX, iBinY);
-//                cnnTV.image_E2[iPixelX][iPixelY] = hGrid_EC_R->GetBinContent(iBinX, iBinY);
-//                cnnTV.image_ET[iPixelX][iPixelY] = hGrid_EC_T->GetBinContent(iBinX, iBinY);
-               
+
            }
        }
        
        //HCAL
+//        std::cout << "Filling images DR HCAL" << std::endl;
        int iX_center_HCAL = NTHETA_DRT/2.+1;
        int iY_center_HCAL = NPHI_DRT/2.+1;
        for (int iPixelX = 0; iPixelX<imageSize; iPixelX++)
@@ -395,12 +400,13 @@ int main(int argc, char** argv)
                int iBinY = iY_center_HCAL-imageSize/2 + iPixelY + 1;
                hImage_DRT_S->Fill(iPixelX, iPixelY, hGrid_DRT_S->GetBinContent(iBinX, iBinY));
                hImage_DRT_C->Fill(iPixelX, iPixelY, hGrid_DRT_C->GetBinContent(iBinX, iBinY));               
-               cnnTV.image_DRT_S[iPixelX+iPixelY*imageSize] = hGrid_DRT_S->GetBinContent(iBinX, iBinY);
-               cnnTV.image_DRT_C[iPixelX+iPixelY*imageSize] = hGrid_DRT_C->GetBinContent(iBinX, iBinY);                              
+//                cnnTV.image_DRT_S[iPixelX+iPixelY*imageSize] = hGrid_DRT_S->GetBinContent(iBinX, iBinY);
+//                cnnTV.image_DRT_C[iPixelX+iPixelY*imageSize] = hGrid_DRT_C->GetBinContent(iBinX, iBinY);                              
            }
        }
        
        //Timing Grid
+//        std::cout << "Filling images Timing" << std::endl;
        int iX_center_TT = NTHETA_TL1/2.+1;
        int iY_center_TT = NPHI_TL2/2.+1;
        for (int iPixelX = 0; iPixelX<imageSize; iPixelX++)
