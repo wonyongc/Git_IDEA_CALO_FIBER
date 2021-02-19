@@ -69,11 +69,11 @@ int main(int argc, char** argv)
   
   
   
-  const int NFILES = 1;  
-  int energies[NFILES] = {10};
+//   const int NFILES = 1;  
+//   int energies[NFILES] = {10};
   
-//   const int NFILES = 6;
-//   int energies[NFILES] = {1, 5, 10, 30, 60, 120};
+  const int NFILES = 6;
+  int energies[NFILES] = {1, 5, 10, 30, 60, 120};
   
 //   int energies[NFILES] = {5, 10, 15, 30, 60, 120, 300};//, 300};  
   
@@ -151,13 +151,13 @@ int main(int argc, char** argv)
   
   for (int iFile = 0; iFile < NFILES; iFile++)
   {
-//       RunFile[iFile] = new TFile(Form("../root_files/merged/ele_%dGeV.root", energies[iFile]),"READ"); 
+      RunFile[iFile] = new TFile(Form("../root_files/merged/ele_%dGeV.root", energies[iFile]),"READ"); 
 //       RunFile[iFile] = new TFile("../root_files/B4_t0.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu-_50GeV.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_ele_10GeV.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_gamma_10GeV_job0.root","READ"); 
 //         RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_ele_10GeV_cher.root","READ"); 
-        RunFile[iFile] = new TFile("../root_files/merged/ele_10GeV.root","READ"); 
+//         RunFile[iFile] = new TFile("../root_files/merged/ele_10GeV.root","READ"); 
       
       
       TTree* TreeRun = (TTree*) RunFile[iFile]->Get("B4");
