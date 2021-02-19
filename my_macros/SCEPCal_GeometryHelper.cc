@@ -51,8 +51,7 @@ TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side)
   double phi = ((double)sliceindex) * m_phiUnit;
 
   if (side == 'r') theta = theta + 90.;
-  else if (side == 'l') theta = 90. - theta;
-  else std::cout << "What the hell??????" << std::endl;
+  else if (side == 'l') theta = 90. - theta;  
   
   tower.SetMagThetaPhi(1,TMath::DegToRad()*(theta),TMath::DegToRad()*phi);
 
@@ -64,38 +63,35 @@ TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side)
 // ECAL
 TVector3 SCEPCal_GeometryHelper::GetCrystalVec(long int index)
 {          
-          
-//   std::cout << "this_index = " << index << std::endl;
+    
   // Create an empty TLorentzVector
   TVector3 crystal;
   
   if (index == 0 || fabs(index) > 2000000) return crystal;
-  
-  
-  int sign = index/fabs(index);  //get index sign (to distinguish left and right sides)
-  
-//   std::cout << "sign = " << sign << " :: fabs(index) = " << fabs(index) << std::endl;
-  
-  if (fabs(index)<m_chOffset)       // index in barrel
+    
+  int sign = index/fabs(index);  //get index sign (to distinguish left and right sides)  
+  if (fabs(index)<=m_chOffset)       // index in barrel
   {
 //       std::cout << "in BARREL!" << std::endl;
       int phi_slice_ID   = floor(fabs(index)/m_nBarrelEtaSeg);
-      int theta_id       = fabs(index) - m_nBarrelEtaSeg*phi_slice_ID;
-                  
-      double theta = 90 + sign*(theta_id-0.5)*m_deltaThetaBarrel;//-m_deltaThetaBarrel/2.;
-      double phi = ((double)phi_slice_ID) * m_phiUnitBarrel;  //-m_phiUnitBarrel/2.;
+      int theta_id       = fabs(index) - m_nBarrelEtaSeg*(phi_slice_ID);
       
-//       std::cout << "phi_slice_ID = " << phi_slice_ID << " :: theta_id    = " << theta_id << std::endl;
-//       std::cout << "phi value    = " << phi          << " :: theta value = " << theta  << std::endl;
+      double theta = 90 + sign*(theta_id-0.5)*m_deltaThetaBarrel;
+      if (theta_id == 0) 
+      {
+          phi_slice_ID   = floor(fabs(index)/m_nBarrelEtaSeg)-1;
+          theta_id       = fabs(index) - m_nBarrelEtaSeg*(phi_slice_ID);
+          theta = 90 + sign*(theta_id-0.5)*m_deltaThetaBarrel;  
+      }
       
-      crystal.SetMagThetaPhi(1,TMath::DegToRad()*theta,TMath::DegToRad()*phi);
-                    
+      double phi = ((double)phi_slice_ID) * m_phiUnitBarrel;      
+      crystal.SetMagThetaPhi(1,TMath::DegToRad()*theta,TMath::DegToRad()*phi);       
   }
   
   else if (fabs(index)>=m_chOffset)  //hit in endcap
   {
       
-//       std::cout << "in endcap!" << std::endl;
+//       std::cout << "in ENDCAP!" << std::endl;
       int ring_ID  = 0;
       int phi_ID   = 0 ;
       
@@ -112,32 +108,23 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalVec(long int index)
         {
             ring_ID = iRing;            
             phi_ID  = end_index - m_endOIDR[iRing];                        
-            theta = 45 + (ring_ID+1)*m_deltaThetaEndcap;
-//             theta = 45 + (ring_ID+0.5)*m_deltaThetaEndcap;
-            
-//             std::cout  << " theta = " << theta << " deg :: (" << theta*TMath::DegToRad()<< " rad)" << std::endl;            
+            theta = 45 + (ring_ID+1.)*m_deltaThetaEndcap;
             thisRingRadius = m_innerR/tan(theta*TMath::DegToRad()); //min radius used to computed nDivision in DetectorConstruction.cc
             centerRingRadius = m_innerR/tan((theta-0.5*m_deltaThetaEndcap)*TMath::DegToRad()); //+SCEP_deltatheta_endcap[iRing]/2);
                         
             double crystalSize = 10.;
-            int nDivisions = 2*M_PI*thisRingRadius/crystalSize;
+            int nDivisions = 2.*M_PI*thisRingRadius/crystalSize;
             double thisPhiUnit = 360./nDivisions;
-//             double thisPhiUnit = 360./(m_endOIDR[iRing+1]-m_endOIDR[iRing]);
-//             phi   = double(phi_ID+0.5)*thisPhiUnit;
             phi   = double(phi_ID+0.5)*thisPhiUnit;
-            
-//             std::cout << "ring_ID = " << ring_ID << " :: phi_ID = " << phi_ID << "/" << nDivisions << " (exp div = " << m_endOIDR[iRing+1]-m_endOIDR[iRing] << " ) :: phi " << phi << " deg (" << phi*TMath::DegToRad() << " rad) :: thisRingRadius = " << thisRingRadius << " :: thisPhiUnit = " << thisPhiUnit << std::endl;
-            
+//             if (phi == 180)          phi = 360-180.
+                
+//             std::cout << "ring_ID = " << ring_ID << " :: phi_ID = " << phi_ID << "/" << nDivisions << " (exp div = " << m_endOIDR[iRing+1]-m_endOIDR[iRing] << " ) :: phi " << phi << " deg (" << phi*TMath::DegToRad() << " rad) :: thisRingRadius = " << thisRingRadius << " :: thisPhiUnit = " << thisPhiUnit << " :: index = " << index << std::endl;            
             break;
         }
       }
       
-      crystal.SetXYZ(centerRingRadius*cos(phi*TMath::DegToRad()), sign*centerRingRadius*sin(phi*TMath::DegToRad()), -sign*m_innerR);
-//       crystal.SetXYZ(thisRingRadius*cos(phi*TMath::DegToRad()), sign*thisRingRadius*sin(phi*TMath::DegToRad()), -sign*m_innerR);      
-  }
-  
-  else std::cout << "What the hell??????" << std::endl;
-  
+      crystal.SetXYZ(centerRingRadius*cos(phi*TMath::DegToRad()), centerRingRadius*sin(phi*TMath::DegToRad()), -sign*m_innerR);
+  }  
   
 
   return crystal;
@@ -182,10 +169,7 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingVec(long int index, int layer_I
       else if (layer_ID == 2)
       {
           //use bar position for phi
-          phi = ((double)phi_slice_ID+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id+0.5)*m_phiUnitTimingBarrel/m_nBars;         
-          
-//           if (fabs(phi*TMath::DegToRad()) > 3.14) std::cout << "phi = " << phi*TMath::DegToRad() << " at : " << fabs(index) << std::endl;
-//           if (phi*TMath::DegToRad() < 0 && phi*TMath::DegToRad()>-2 ) std::cout << "phi = " << phi << " at : " << fabs(index) << std::endl;
+          phi = ((double)phi_slice_ID+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id+0.5)*m_phiUnitTimingBarrel/m_nBars;                   
           //use center of module for z
           z_pos = -sign*(module_id-0.5)*m_barLength;          
           x_pos = (timing_radius-m_barWidth/2)*cos(phi*TMath::DegToRad());
@@ -203,23 +187,24 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingVec(long int index, int layer_I
       int module_Y   = module_id - m_nEndcapModulePerLine*module_X;
             
       if (layer_ID == 1)
-      {           
-          x_pos = sign*(module_X+0.5-m_nEndcapModulePerLine/2)*m_barLength;
-          y_pos = -sign*((module_Y+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id+0.5)*m_barWidth);
-          z_pos = -sign*(timing_radius-m_barWidth/2);
+      {
+            x_pos = (module_X+0.5-m_nEndcapModulePerLine/2)*m_barLength;
+            y_pos = -sign*((module_Y+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id+0.5)*m_barWidth);
+            z_pos = -sign*(timing_radius-m_barWidth/2);
       }
       else if (layer_ID == 2)
       {
-          x_pos = sign*((module_X+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id+0.5)*m_barWidth);
-          y_pos = -sign*(module_Y+0.5-m_nEndcapModulePerLine/2)*m_barLength;
-          z_pos = -sign*(timing_radius+m_barWidth/2);
+            x_pos = ((module_X+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id+0.5)*m_barWidth);
+            y_pos = -sign*(module_Y+0.5-m_nEndcapModulePerLine/2)*m_barLength;
+            z_pos = -sign*(timing_radius+m_barWidth/2);
       }
       
-//       std:: cout << "endcap_index = " << endcap_index << " :: module_id = " << module_id << " ::  module_X = " << module_X  << " :: module_Y = " << module_Y  << " :: posX = " << x_pos << " :: posY = " << y_pos << " :: posZ = " << z_pos <<  std::endl;
+//       std::cout << "endcap_index = " << endcap_index << " :: module_id = " << module_id << " ::  module_X = " << module_X  << " :: module_Y = " << module_Y  << " :: posX = " << x_pos << " :: posY = " << y_pos << " :: posZ = " << z_pos <<  std::endl;
       
   }  
 
-  crystal.SetXYZ(x_pos, y_pos, z_pos);  
+//    if (sign<0)                  
+       crystal.SetXYZ(x_pos, y_pos, z_pos);  
   return crystal;
 }
 
@@ -242,26 +227,15 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
       int phi_slice_ID_2 = floor(fabs(index_2)/(m_nBarrelTiming_Z*m_nBars));      
       int module_id_2    = floor((fabs(index_2) - m_nBarrelTiming_Z*m_nBars*phi_slice_ID_2)/m_nBars);      
       int crystal_id_2   = fabs(index_2) - m_nBarrelTiming_Z*m_nBars*phi_slice_ID_2 - m_nBars*module_id_2;
-      
-//       if (module_id_1==module_id_2) 
-      if (true)
-      {                                      
-        //front layer gives fine granularity along z      
-        
-        if (sign<0)      z_pos = -sign*((module_id_1)*m_barLength + sign*(crystal_id_1+0.5)*m_barWidth);          
-        else if (sign>0) z_pos = -sign*((module_id_1-1)*m_barLength + sign*(crystal_id_1+0.5)*m_barWidth);          
-        //rear layer gives fine granularity along phi                
-        phi = ((double)phi_slice_ID_2+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id_2+0.5)*m_phiUnitTimingBarrel/m_nBars;
-        
-        x_pos = (timing_radius-m_barWidth/2)*cos(phi*TMath::DegToRad());
-        y_pos = (timing_radius-m_barWidth/2)*sin(phi*TMath::DegToRad());
-      }
-//       else
-//       {
-//           std::cout << "Attention front and rear hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
-//       }
-//       if (module_id_1!=module_id_2) std::cout << "Attention front and rear BARREL hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
-      
+                                  
+      //front layer gives fine granularity along z            
+      if (sign<0)      z_pos = -sign*((module_id_1)*m_barLength + sign*(crystal_id_1+0.5)*m_barWidth);          
+      else if (sign>0) z_pos = -sign*((module_id_1-1)*m_barLength + sign*(crystal_id_1+0.5)*m_barWidth);          
+      //rear layer gives fine granularity along phi                
+      phi = ((double)phi_slice_ID_2+0.5) * m_phiUnitTimingBarrel - 90. - (crystal_id_2+0.5)*m_phiUnitTimingBarrel/m_nBars;
+            
+      x_pos = (timing_radius-m_barWidth/2)*cos(phi*TMath::DegToRad());
+      y_pos = (timing_radius-m_barWidth/2)*sin(phi*TMath::DegToRad());      
   }
   
   if (fabs(index_1) >=m_chOffset && fabs(index_2)>=m_chOffset)       // index in endcap
@@ -278,14 +252,10 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
       int module_id_2  = floor(endcap_index_2/m_nBars);      
       int crystal_id_2 = endcap_index_2 - m_nBars*module_id_2;
       int module_X_2   = floor(module_id_2/m_nEndcapModulePerLine);
-//       int module_Y_2   = module_id_2 - m_nEndcapModulePerLine*module_X_2;
       
-      y_pos = -sign*((module_Y_1+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id_1+0.5)*m_barWidth);      
-      x_pos = sign*((module_X_2+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id_2+0.5)*m_barWidth);      
+      x_pos = ((module_X_2+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id_2+0.5)*m_barWidth);      
+      y_pos = -sign*((module_Y_1+1-m_nEndcapModulePerLine/2)*m_barLength-(crystal_id_1+0.5)*m_barWidth);            
       z_pos = -sign*(timing_radius);
-      
-//       if (module_id_1!=module_id_2) std::cout << "Attention front and rear ENDCAP hits are not in the same module! --> module_front = " << module_id_1 << " :: module_rear = " << module_id_2 << std::endl;
-
 //       std:: cout << "endcap_index = " << endcap_index << " :: module_id = " << module_id << " ::  module_X = " << module_X  << " :: module_Y = " << module_Y  << " :: posX = " << x_pos << " :: posY = " << y_pos << " :: posZ = " << z_pos <<  std::endl;
       
   }
