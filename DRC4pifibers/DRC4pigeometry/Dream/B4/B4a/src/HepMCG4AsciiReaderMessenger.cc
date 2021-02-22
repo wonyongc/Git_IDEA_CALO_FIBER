@@ -66,7 +66,7 @@ HepMCG4AsciiReaderMessenger::~HepMCG4AsciiReaderMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void HepMCG4AsciiReaderMessenger::SetNewValue(G4UIcommand* command,
-                                              G4String newValues)
+                                              G4String newValues)//, G4String outputFileName)
 {
   if (command==verbose) {
     int level= verbose-> GetNewIntValue(newValues);
@@ -75,7 +75,10 @@ void HepMCG4AsciiReaderMessenger::SetNewValue(G4UIcommand* command,
     gen-> SetFileName(newValues);
     G4cout << "HepMC Ascii inputfile: "
            << gen-> GetFileName() << G4endl;
-    gen-> Initialize();
+    
+    std::string outputString = newValues.substr (0,newValues.length()-4);    
+    outputString += "_output_tuple.root";
+    gen-> Initialize(outputString);
   }
 }
 

@@ -123,7 +123,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
   // TimeFile.open("Time.txt", std::ios_base::app);
   // TimeFile<<"Event "<<G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()<<" % % %"<<G4endl;
   // TimeFile.close();
-//   std::cout << "Event action..." << std::endl;
+  std::cout << "Event action..." << std::endl;
  
   
   
@@ -274,7 +274,6 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
 
   // get analysis manager
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-    
 	
     // std::ofstream eventFile;
     // eventFile.open("Event.txt", std::ios_base::app);
@@ -317,9 +316,10 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   //analysisManager->FillH1(2, TrackLmodule);
   //analysisManager->FillH1(3, EnergyScin);
   
-  std::cout << "filling ntuple with: " 
+  std::cout << "evt: " << G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()  << " :: filling ntuple with: " 
             << SCEP_Timing_EnergyDepF  << " MeV in T1 and "  << SCEP_Timing_EnergyDepR  << " MeV in T2 :: " 
             << SCEP_EnergyDepF         << " MeV in E1 and " << SCEP_EnergyDepR         << " MeV in E2" 
+            << EnergyScin              << " Scint DRH and " << NofCherenkovDetected         << " Cher photons in DRH"              
             << std::endl;
             
             

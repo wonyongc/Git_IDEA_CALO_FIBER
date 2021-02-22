@@ -71,21 +71,27 @@ B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
 }
 */
 B4PrimaryGeneratorAction::B4PrimaryGeneratorAction()
+// B4PrimaryGeneratorAction::B4PrimaryGeneratorAction(char* outputFileName)
+    
 {
    // default generator is particle gun.
+//   m_outputFileName = outputFileName;
   currentGenerator= particleGun= new G4GeneralParticleSource();
   currentGeneratorName= "gps";
   hepmcAscii= new HepMCG4AsciiReader();
 #ifdef G4LIB_USE_PYTHIA
+  
   pythiaGen= new HepMCG4PythiaInterface();
 #else
   pythiaGen= 0;
 #endif
 
-  gentypeMap["gps"]= particleGun;
-  gentypeMap["hepmcAscii"]= hepmcAscii;
-  gentypeMap["pythia"]= pythiaGen;
+  gentypeMap["gps"]        = particleGun;
+  gentypeMap["hepmcAscii"] = hepmcAscii;
+  gentypeMap["pythia"]     = pythiaGen;
 
+//   std::cout << "outputFileName = " << m_outputFileName << std::endl;
+//   messenger= new H02PrimaryGeneratorMessenger(this, m_outputFileName); 
   messenger= new H02PrimaryGeneratorMessenger(this); 
 }
 
@@ -142,7 +148,11 @@ void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 void B4PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
   if(currentGenerator)
+  {
+//     std::cout << "generating primary vertex" << std::endl;
     currentGenerator-> GeneratePrimaryVertex(anEvent);
+//     std::cout << "primary vertex generated!" << std::endl;
+  }
   else
     G4Exception("H02PrimaryGeneratorAction::GeneratePrimaries",
                 "InvalidSetup", FatalException,

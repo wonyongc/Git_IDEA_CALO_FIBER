@@ -22,11 +22,11 @@ using namespace std;
 
 filltruth::filltruth() {
   fPDG = TDatabasePDG::Instance();
-  cout << " create filltruth " << endl;
+  cout << "Create filltruth " << endl;
 }
 
 //this is the initalization function, put any new branches you want to create here, remember to declare them in the filltruth.h file as well 
-void filltruth::book_tuple(string outfile) {
+void filltruth::book_tuple(std::string outfile) {
   std::cout << "Preparing Root Tree" << endl;
   fileout = new TFile(outfile.c_str(),"RECREATE");
   tree = new TTree("truth","truth tree");

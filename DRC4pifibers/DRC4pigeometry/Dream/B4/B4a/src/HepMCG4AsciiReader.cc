@@ -51,6 +51,7 @@ HepMCG4AsciiReader::HepMCG4AsciiReader()
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 HepMCG4AsciiReader::~HepMCG4AsciiReader()
 {
+  std::cout << "writing truth tuple" << std::endl;
   fill->write_tuple();
   
   delete asciiInput;
@@ -58,13 +59,14 @@ HepMCG4AsciiReader::~HepMCG4AsciiReader()
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-void HepMCG4AsciiReader::Initialize()
+void HepMCG4AsciiReader::Initialize(G4String outputFileName)
 {
   delete asciiInput;
-
+//   std::cout << "reading ascii input : " << filename.c_str() << std::endl;
   asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
-  std::string out = "hep_truth.root";
-  fill->book_tuple(out);
+  std::cout << "Writing MC TRUTH to output file: " << outputFileName << std::endl;  
+//   std::string out = "hep_truth.root";
+  fill->book_tuple(outputFileName);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

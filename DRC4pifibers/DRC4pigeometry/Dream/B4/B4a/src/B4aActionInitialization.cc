@@ -65,11 +65,12 @@ void B4aActionInitialization::BuildForMaster() const
 void B4aActionInitialization::Build() const
 {
   SetUserAction(new B4PrimaryGeneratorAction);    
+//   SetUserAction(new B4PrimaryGeneratorAction(m_outputFileName));      
   SetUserAction(new B4RunAction(m_outputFileName));
   B4aEventAction* eventAction = new B4aEventAction;
   SetUserAction(eventAction);
   SetUserAction(new B4aSteppingAction(fDetConstruction,eventAction));
-  std::cout << "Action initialization..." << std::endl;
+  std::cout << "Action initialized..." << std::endl;
 }  
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

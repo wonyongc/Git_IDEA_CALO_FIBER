@@ -51,46 +51,6 @@ B4RunAction::B4RunAction(char* outputFileName)
 //   G4RunManager::GetRunManager()->SetPrintProgress(1);     
 
     m_outputFileName = outputFileName;
-  // Create analysis manager
-  // The choice of analysis technology is done via selectin of a namespace
-  // in B4Analysis.hh
- /* G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
-  G4cout << "Using " << analysisManager->GetType() << G4endl;
-
-  const B4aEventAction* constEventAction = static_cast<const B4aEventAction*>(G4RunManager::GetRunManager()->GetUserEventAction());
-  B4aEventAction* eventAction = const_cast<B4aEventAction*>(constEventAction);
-
-
-  // Create directories 
-  //analysisManager->SetHistoDirectoryName("histograms");
-  //analysisManager->SetNtupleDirectoryName("ntuple");
-  analysisManager->SetVerboseLevel(0);
-  analysisManager->SetFirstHistoId(0);
-
-  // Book histograms, ntuple
-  //
-  
-  // Creating histograms
-  //analysisManager->CreateH1("1","Edep in module", 100, 0., 1000*MeV);
-  //analysisManager->CreateH1("2","trackL in module", 100, 0., 1*m);
-  //analysisManager->CreateH1("3", "Edep in scintillating fibers", 100, 0., 1000*MeV);
-  // Creating ntuple
-
-  //G4double vector[10]={0};
-  //vector<int>* interactions = new vector<int>();
-  //vector<G4double> vector[10]={0.};
-  //
-  analysisManager->CreateNtuple("B4", "Edep");
-  analysisManager->CreateNtupleDColumn("Eem");
-  analysisManager->CreateNtupleDColumn("EScin");
-  analysisManager->CreateNtupleDColumn("ECher");
-  analysisManager->CreateNtupleDColumn("Cherenkovintheglass");
-  analysisManager->CreateNtupleDColumn("Scinintheglass");
-  analysisManager->CreateNtupleDColumn("EnergyTot");
-  analysisManager->CreateNtupleDColumn("EnergyInside2mm");
-  analysisManager->CreateNtupleIColumn("prova",eventAction->GetVectorSignals());
-  analysisManager->FinishNtuple();*/
-
 
 }
 

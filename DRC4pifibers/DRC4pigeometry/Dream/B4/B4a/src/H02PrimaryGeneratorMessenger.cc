@@ -41,6 +41,7 @@
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 H02PrimaryGeneratorMessenger::H02PrimaryGeneratorMessenger
                             (B4PrimaryGeneratorAction* genaction)
+//                             (B4PrimaryGeneratorAction* genaction, char* outputFileName)
   : primaryAction(genaction)
 {
   dir= new G4UIdirectory("/generator/");
@@ -51,6 +52,7 @@ H02PrimaryGeneratorMessenger::H02PrimaryGeneratorMessenger
   //verbose-> SetParameterName("verbose", false, false);
   //verbose-> SetDefaultValue(0);
   //verbose-> SetRange("verbose>=0 && verbose<=2");
+//   std::cout << "created new H02PrimaryGeneratorMessenger, with outputFileName = " << outputFileName << std::endl;
 
   select= new G4UIcmdWithAString("/generator/select", this);
   select-> SetGuidance("select generator type");
@@ -70,11 +72,11 @@ H02PrimaryGeneratorMessenger::~H02PrimaryGeneratorMessenger()
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 void H02PrimaryGeneratorMessenger::SetNewValue(G4UIcommand* command,
-                                              G4String newValues)
+                                              G4String newValues)//, G4String outputFileName)
 {
   if ( command==select) {
     primaryAction-> SetGenerator(newValues);
-    G4cout << "current generator type: "
+    G4cout << "Current generator type: "
             << primaryAction-> GetGeneratorName() << G4endl;
   } else {
   }
