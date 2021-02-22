@@ -49,9 +49,10 @@ public:
   //
   //  Methods for handling ntuple
   // 
-  void book_tuple(string);
+  void book_tuple(std::string outputfile);
   void fill_tuple(HepMC::GenEvent* evt);
   void write_tuple();
+  
   //
   //  Methods for converting HepMC into ntuple format
   //  Partially inspired by Delphes

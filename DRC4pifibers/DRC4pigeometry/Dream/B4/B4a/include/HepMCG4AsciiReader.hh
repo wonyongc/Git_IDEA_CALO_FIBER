@@ -41,6 +41,7 @@ class HepMCG4AsciiReaderMessenger;
 class HepMCG4AsciiReader : public HepMCG4Interface {
 protected:
   G4String filename;
+  G4String outputTruthFileName;
   HepMC::IO_GenEvent* asciiInput;
 
   G4int verbose;
@@ -56,12 +57,15 @@ public:
   // set/get method
   void SetFileName(G4String name);
   G4String GetFileName() const;
+  void SetOutputTruthFileName(G4String name);
+  G4String GetOutputTruthFileName() const;
 
   void SetVerboseLevel(G4int i);
   G4int GetVerboseLevel() const; 
 
   // methods...
   void Initialize();
+  void Initialize(G4String name);
 };
 
 // ====================================================================

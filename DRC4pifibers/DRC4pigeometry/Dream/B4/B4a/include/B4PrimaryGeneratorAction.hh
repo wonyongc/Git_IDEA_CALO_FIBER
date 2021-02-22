@@ -52,6 +52,7 @@ class H02PrimaryGeneratorMessenger;
 class B4PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
 public:
+//   B4PrimaryGeneratorAction(char*);    
   B4PrimaryGeneratorAction();    
   virtual ~B4PrimaryGeneratorAction();
 
@@ -80,6 +81,7 @@ private:
   std::map<G4String, G4VPrimaryGenerator*> gentypeMap;
 
   H02PrimaryGeneratorMessenger* messenger;
+//   char* m_outputFileName;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

@@ -45,6 +45,7 @@ class G4UIcmdWithAString;
 class H02PrimaryGeneratorMessenger : public G4UImessenger {
 public:
   H02PrimaryGeneratorMessenger(B4PrimaryGeneratorAction* genaction);
+//   H02PrimaryGeneratorMessenger(B4PrimaryGeneratorAction* genaction, char*);
   ~H02PrimaryGeneratorMessenger();
 
   void SetNewValue(G4UIcommand* command, G4String newValues);
