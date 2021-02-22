@@ -115,7 +115,7 @@ int main(int argc,char** argv)
     // Seed the random number generator manually
   //
   G4long myseed = myseed = CreateSeed();
-  G4cout << "Random seed : " << myseed << G4endl;
+  G4cout << "main:: Random seed : " << myseed << G4endl;
   CLHEP::HepRandom::setTheSeed(myseed);
   
   // Choose the Random engine
@@ -144,7 +144,7 @@ int main(int argc,char** argv)
   G4String physName = "FTFP_BERT"; //"FTFP_BERT", "QGSP_BERT"
   runManager->SetUserInitialization(new PhysicsList(physName));
   
-  std::cout << "runManager initialization..." << std::endl;
+  std::cout << "main:: runManager initializated..." << std::endl;
   
 //   B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction);
   char c[200];
@@ -152,7 +152,7 @@ int main(int argc,char** argv)
   B4aActionInitialization* actionInitialization = new B4aActionInitialization(detConstruction, c);
   runManager->SetUserInitialization(actionInitialization);
   
-  std::cout << "action initialization..." << std::endl;
+  std::cout << "main:: Action initializated..." << std::endl;
   
   // Initialize visualization
   //
@@ -161,7 +161,7 @@ int main(int argc,char** argv)
   // G4VisManager* visManager = new G4VisExecutive("Quiet");
   visManager->Initialize();
   
-  std::cout << "visManager initialization..." << std::endl;
+  std::cout << "main:: visManager initialized..." << std::endl;
 
   // Get the pointer to the User Interface manager
   G4UImanager* UImanager = G4UImanager::GetUIpointer();
