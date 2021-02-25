@@ -83,17 +83,20 @@ int main(int argc, char** argv)
   int NPHI_TL2   = 186*16-1;
   int NTHETA_TL2 = 29-1;
   
-//   int NPHI_EC    = 1130;
-//   int NTHETA_EC  = 180+180-1;
-  int NPHI_EC    = 1130/4;
-  int NTHETA_EC  = (180+180-1)/4;
+  int NPHI_EC    = 1130;
+  int NTHETA_EC  = 360;
+  
   int NPHI_DRT   = 36;
-  int NTHETA_DRT = 40+40-1;
+  int NTHETA_DRT = 320;
   
   double minPhi = -M_PI;
   double maxPhi = M_PI;  
   double minTheta = 0;
   double maxTheta = M_PI;
+  
+  double drh_S_norm  = 407;
+  double drh_C_norm  = 103.2;  
+
   
   double bin_width_theta_TL1 = (maxTheta-minTheta)/NTHETA_TL1;
   double bin_width_theta_TL2 = (maxTheta-minTheta)/NTHETA_TL2;
@@ -226,9 +229,14 @@ int main(int argc, char** argv)
       //**************************************************************//
       //                           DR HCAL
       //**************************************************************//
-
+      float ene_HC_th   = 0.04;
+      float totDRHEne   = 0;
       float totDRHScint = 0;
       float totDRHCher  = 0;
+      
+      float HC_seed_th = 0.4;
+      std::vector<CalHit> myHcHits;
+      std::vector<CalSeed> myHcSeeds;
       
       for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
       {                                        
@@ -238,110 +246,68 @@ int main(int argc, char** argv)
           double this_ene   = myTV.VectorL->at(i)/1000.;      
           double this_scint = myTV.VectorSignalsL->at(i);                
           double this_cher  = myTV.VectorSignalsCherL->at(i);
-          hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint);                              
-          hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher);    
+          if (this_ene>ene_HC_th)
+          {
+              hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint/drh_S_norm);                              
+              hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher/drh_C_norm);    
+              CalHit new_hit;
+              new_hit.Init(i, this_theta, this_phi, this_ene);
+              new_hit.SetSide(-1);
+              myHcHits.push_back(new_hit);
+          }
+          totDRHEne+=this_ene;
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
+          
+          if (this_scint/drh_S_norm>HC_seed_th)
+          {
+              CalSeed new_seed;
+              new_seed.Init(i, this_theta, this_phi, this_scint/drh_S_norm);
+              new_seed.SetSide(-1);              
+              myHcSeeds.push_back(new_seed);
+          }
       }
       for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
       {                                        
           TVector3 this_vec = myGeometry.GetTowerVec(i,'r');
           double this_phi   = this_vec.Phi();
           double this_theta = this_vec.Theta();
-          double this_ene   = myTV.VectorR->at(i)/1000.;                    
-          double this_scint = myTV.VectorSignalsR->at(i);     
-          double this_cher  = myTV.VectorSignalsCherR->at(i);      
-          hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint);                              
-          hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher);                              
+          double this_ene   = myTV.VectorR->at(i)/1000.;
+          double this_scint = myTV.VectorSignalsR->at(i);
+          double this_cher  = myTV.VectorSignalsCherR->at(i);
+          if (this_ene>ene_HC_th)
+          {
+              hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint/drh_S_norm);
+              hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher/drh_C_norm);
+              CalHit new_hit;
+              new_hit.Init(i, this_theta, this_phi, this_ene);
+              new_hit.SetSide(1);
+              myHcHits.push_back(new_hit);
+          }
+          totDRHEne+=this_ene;
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
+          if (this_scint/drh_S_norm>HC_seed_th)
+          {
+              CalSeed new_seed;
+              new_seed.Init(i, this_theta, this_phi, this_scint/drh_S_norm);
+              new_seed.SetSide(1);
+              myHcSeeds.push_back(new_seed);
+          }
       }
       
+      std::cout << "Total ene in scint HCAL fiber: " << totDRHEne << std::endl;
       std::cout << "Total scint in HCAL: " << totDRHScint << std::endl;
       std::cout << "Total cher in HCAL: " << totDRHCher << std::endl;
       
-      //**************************************************************//
-      //                             ECAL
-      //**************************************************************//
-
-      float ene_EC_th = 0.03;
-      float totEcalEne = 0;
-      for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
-      {                            
-              
-          TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
-          double this_phi = this_vec.Phi();
-          double this_theta = this_vec.Theta();
-          double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
-          
-//           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
-          if (this_ene>ene_EC_th)
-          {
-            hGrid_EC_F ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i)/1000);          
-            hGrid_EC_R ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i)/1000);          
-            hGrid_EC_T ->Fill(this_theta, this_phi, this_ene*100);
-            totEcalEne+=this_ene;
-          }
-      }
-      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;
-      
-      
-      // find hit with energy above seed threshold
-      float EC_seed_th = 0.4;
-      std::vector<EcalSeed> myEcSeeds;
-      for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
-      {
-              
-          TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
-          double this_phi = this_vec.Phi();
-          double this_theta = this_vec.Theta();
-          double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;
-          
-//           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
-          if (this_ene>EC_seed_th)
-          {
-              EcalSeed new_seed;
-              new_seed.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, this_ene);
-              myEcSeeds.push_back(new_seed);
-          }
-      }
-      
-      
-      std::cout << "Number of ECAL seeds found: " << myEcSeeds.size() << std::endl;
-      
-      std::cout << "Cleaning up seeds too close to each other" << std::endl;
-      std::vector<EcalSeed>  myEcSeedsCleaned;
-      for (long unsigned int iseed = 0; iseed < myEcSeeds.size(); iseed++)
-      {
-          EcalSeed i_seed = myEcSeeds.at(iseed);
-          float i_theta = i_seed.GetTheta();
-          float i_phi   = i_seed.GetPhi(); 
-          bool maxIsolatedHit = true;
-                    
-          for (long unsigned int jseed = 0; jseed < myEcSeeds.size(); jseed++)
-          {
-              EcalSeed j_seed = myEcSeeds.at(jseed);
-              float j_theta = j_seed.GetTheta();
-              float j_phi   = j_seed.GetPhi();
-              float dd = sqrt(pow(j_theta-i_theta,2) + pow(j_phi-i_phi,2));
-              
-              if (dd < maxDeltaR)
-              {
-                  std::cout << " dd = " << dd << " :: j_theta-i_theta= " << j_theta-i_theta << " :: j_phi-i_phi " << j_phi-i_phi << std::endl;
-                  std::cout << "Removing neighboring seed with lowest energy" << std::endl;
-                  if (i_seed.GetEne()<j_seed.GetEne()) maxIsolatedHit = false;
-              }
-          }
-          
-          if (maxIsolatedHit) myEcSeedsCleaned.push_back(i_seed);
-      }
-      
-    
-    
-      std::cout << "Matching clusters with gen level" << std::endl;
-      for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+      std::cout << "Number of HCAL seeds found: " << myHcSeeds.size() << std::endl;
+      std::cout << "Cleaning up HCAL seeds too close to each other" << std::endl;
+      std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaR);
+                        
+      std::cout << "Matching HCAL clusters with gen level" << std::endl;
+      for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
       { 
-          EcalSeed this_seed = myEcSeedsCleaned.at(iseed);
+          CalSeed this_seed = myHcSeedsCleaned.at(iseed);
           float seed_theta = this_seed.GetTheta();
           float seed_phi   = this_seed.GetPhi();
           
@@ -364,14 +330,94 @@ int main(int argc, char** argv)
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaR)
               {
-                  std::cout  << "ECAL cluster " << iseed << "matched to MC truth gen level particle: " << pdgId << std::endl;
+                  std::cout  << "HCAL cluster (seedEne = "<< this_seed.GetEne() << " GeV) " << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" << std::endl;
                   this_seed.AddGenMatch(pdgId);
               }
             }                    
       }
       
       
-      std::cout << "Matching gen level with clusters" << std::endl;
+      
+      //**************************************************************//
+      //                             ECAL
+      //**************************************************************//
+
+      float ene_EC_th = 0.04;
+      float totEcalEne = 0;
+      
+      float EC_seed_th = 0.3;
+      std::vector<CalHit> myEcHits;
+      std::vector<CalSeed> myEcSeeds;
+      
+      for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
+      {                            
+              
+          TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
+          double this_phi = this_vec.Phi();
+          double this_theta = this_vec.Theta();
+          double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
+          
+//           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
+          if (this_ene>ene_EC_th)
+          {            
+              hGrid_EC_F ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i)/1000);          
+              hGrid_EC_R ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i)/1000);          
+              hGrid_EC_T ->Fill(this_theta, this_phi, this_ene);
+              
+              CalHit new_hit;
+              new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, this_ene);
+              myEcHits.push_back(new_hit);
+          }
+          totEcalEne+=this_ene;
+
+          // find hit with energy above seed threshold
+          if (this_ene>EC_seed_th)
+          {
+              CalSeed new_seed;
+              new_seed.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, this_ene);
+              myEcSeeds.push_back(new_seed);
+          }
+      }
+      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;
+      std::cout << "Number of ECAL seeds found: " << myEcSeeds.size() << std::endl;      
+      std::cout << "Cleaning up ECAL seeds too close to each other" << std::endl;
+      std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaR);
+      
+    
+      std::cout << "Matching ECAL clusters with gen level" << std::endl;
+      for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+      { 
+          CalSeed this_seed = myEcSeedsCleaned.at(iseed);
+          float seed_theta = this_seed.GetTheta();
+          float seed_phi   = this_seed.GetPhi();
+          
+          
+          TruthTree->GetEntry(selEv);
+          for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
+          {
+              
+              int    pdgId = myTruthTV.mcs_pdgId->at(i);
+              double ene   = myTruthTV.mcs_E->at(i);
+              if (ene<0.1) continue;
+              
+              double truth_phi   = myTruthTV.mcs_phi->at(i);
+              double eta   = myTruthTV.mcs_eta->at(i);
+              int charge = myTruthTV.mcs_charge->at(i);              
+              double truth_theta = 2*atan(exp(-eta));
+              truth_theta = M_PI- truth_theta;
+              
+              
+              float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
+              if (dd < maxDeltaR)
+              {
+                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
+                  this_seed.AddGenMatch(pdgId);
+              }
+            }                    
+      }
+      
+      
+      std::cout << "Matching gen level with ECAL clusters" << std::endl;
       
       TruthTree->GetEntry(selEv);
       int nGenMatched = 0;
@@ -392,19 +438,19 @@ int main(int argc, char** argv)
           
           for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
           { 
-              EcalSeed this_seed = myEcSeedsCleaned.at(iseed);
+              CalSeed this_seed = myEcSeedsCleaned.at(iseed);
               float seed_theta = this_seed.GetTheta();
               float seed_phi   = this_seed.GetPhi();
             
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaR)
               {                  
-                  std::cout << "MC truth gen level particle: " << pdgId << " matched to ECAL cluster " << iseed << std::endl;
+                  std::cout << "MC truth gen level particle " << pdgId << " matched to ECAL cluster " << iseed << std::endl;
                   matchedToCluster ++;
               }
             }
             
-            if (matchedToCluster==0) std::cout << "MC truth gen level particle: " << pdgId << " NOT matched to any ECAL cluster " << std::endl;
+            if (matchedToCluster==0) std::cout << "MC truth gen level particle " << pdgId << " NOT matched to any ECAL cluster " << std::endl;
             else                     nGenMatched++;
       }
       
@@ -446,12 +492,9 @@ int main(int argc, char** argv)
       std::cout << "Total energy in TIMING: " << totTimingEne << std::endl;
 
   
-  
-//   float fit_range = 0.01;
-//   float phi_res_b, phi_res_e, phi_res_b_cg, phi_res_e_cg;
-//   float eta_res_b, eta_res_e, eta_res_b_cg, eta_res_e_cg;
-
-  /// other plots
+      
+      
+  // plots
   
   TLine * lEndcapMinus = new TLine(M_PI/4*1, minPhi, M_PI/4*1, maxPhi);
   TLine * lEndcapPlus  = new TLine(M_PI/4*3, minPhi, M_PI/4*3, maxPhi);
@@ -459,107 +502,14 @@ int main(int argc, char** argv)
   lEndcapMinus->SetLineWidth(2);
   lEndcapPlus->SetLineColor(kRed);
   lEndcapPlus->SetLineWidth(2);
-  
-//   float phiRange = (maxPhi-minPhi)/2;
-//   float thetaRange = M_PI/8;
-  
-/*  
-  TCanvas * cGrid_DRT_S = new TCanvas("cGrid_DRT_S", "cGrid_DRT_S", 900, 600);
-  cGrid_DRT_S->cd();
-  hGrid_DRT_S->Draw("LEGO2Z");
-  hGrid_DRT_S->SetStats(0);
-  hGrid_DRT_S->SetTitle("Dual Readout HCAL Tower");
-  hGrid_DRT_S->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_DRT_S->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_DRT_S->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_DRT_S->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_DRT_S->SaveAs(Form("plots/cGrid_DRT_S_%s.png", output_tag.c_str()));
-  
 
-  TCanvas * cGrid_DRT_C = new TCanvas("cGrid_DRT_C", "cGrid_DRT_C", 900, 600);
-  cGrid_DRT_C->cd();
-  hGrid_DRT_C->Draw("LEGO2Z");
-  hGrid_DRT_C->SetStats(0);
-  hGrid_DRT_C->SetTitle("Dual Readout HCAL Tower");
-  hGrid_DRT_C->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_DRT_C->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_DRT_C->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_DRT_C->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_DRT_C->SaveAs(Form("plots/cGrid_DRT_C_%s.png", output_tag.c_str()));
-  
-  
 
-  
-     TCanvas * cGrid_EC_F = new TCanvas("cGrid_EC_F", "cGrid_EC_F", 900, 600);
-  cGrid_EC_F->cd();
-  hGrid_EC_F->Draw("LEGO2Z");
-  hGrid_EC_F->SetStats(0);
-  hGrid_EC_F->SetTitle("E1");
-  hGrid_EC_F->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_EC_F->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_F->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_EC_F->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_EC_F->SaveAs(Form("plots/cGrid_EC_F_%s.png", output_tag.c_str()));
-  
-  
-    TCanvas * cGrid_EC_R = new TCanvas("cGrid_EC_R", "cGrid_EC_R", 900, 600);
-  cGrid_EC_R->cd();
-  hGrid_EC_R->Draw("LEGO2Z");
-  hGrid_EC_R->SetStats(0);
-  hGrid_EC_R->SetTitle("E2");
-  hGrid_EC_R->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_EC_R->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_R->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_EC_R->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_EC_R->SaveAs(Form("plots/cGrid_EC_R_%s.png", output_tag.c_str()));
-  
-  
-    TCanvas * cGrid_T1 = new TCanvas("cGrid_T1", "cGrid_T1", 900, 600);
-  cGrid_T1->cd();
-  hGrid_T1->Draw("LEGO2Z");
-  hGrid_T1->SetStats(0);
-  hGrid_T1->SetTitle("T1");
-  hGrid_T1->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_T1->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_T1->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_T1->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_T1->SaveAs(Form("plots/cGrid_T1_%s.png", output_tag.c_str()));
-  
-  
-    TCanvas * cGrid_T2 = new TCanvas("cGrid_T2", "cGrid_T2", 900, 600);
-  cGrid_T2->cd();
-  hGrid_T2->Draw("LEGO2Z");
-  hGrid_T2->SetStats(0);
-  hGrid_T2->SetTitle("T2");
-  hGrid_T2->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_T2->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_T2->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_T2->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   lEndcapMinus->Draw("same");
-//   lEndcapPlus->Draw("same");
-//   gPad->SetLogz();
-  if (SAVEPLOTS)   cGrid_T2->SaveAs(Form("plots/cGrid_T2_%s.png", output_tag.c_str()));
-  */
-
-    TCanvas * cGrid_EC_T = new TCanvas("cGrid_EC_T", "cGrid_EC_T", 900, 1600);
-  cGrid_EC_T->cd();
+  TCanvas * cCalSeeds = new TCanvas("cCalSeeds", "cCalSeeds", 1800, 1600);
+  cCalSeeds->Divide(2,1);
+  cCalSeeds->cd(1);
   hGrid_EC_T->Draw("BOX");
   hGrid_EC_T->SetStats(0);
+  hGrid_EC_T->SetFillColor(kCyan+2);
   hGrid_EC_T->SetTitle("E1+E2");
   hGrid_EC_T->GetXaxis()->SetTitle("#theta [rad]");
   hGrid_EC_T->GetYaxis()->SetTitle("#phi [rad]");
@@ -568,15 +518,42 @@ int main(int argc, char** argv)
       
   for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
   {          
-      EcalSeed this_seed = myEcSeedsCleaned.at(iseed);
+      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
       TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR, maxDeltaR);
-      std::cout << "seed: " << iseed << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
       el1->SetLineColor(kRed);
       el1->SetFillStyle(0);
       el1->SetLineWidth(2);
       el1->Draw();
   }
-  if (SAVEPLOTS)   cGrid_EC_T->SaveAs(Form("plots/cGrid_EC_T_%s.png", output_tag.c_str()));
+  
+  cCalSeeds->cd(2);
+  hGrid_DRT_S->Draw("BOX");
+  hGrid_DRT_S->SetLineColor(kGreen+2);
+  hGrid_DRT_S->SetFillColor(kGreen+2);
+  hGrid_DRT_S->SetStats(0);
+  hGrid_DRT_S->SetTitle("Dual Readout HCAL Tower");
+  hGrid_DRT_S->GetXaxis()->SetTitle("#theta [rad]");
+  hGrid_DRT_S->GetYaxis()->SetTitle("#phi [rad]");
+  hGrid_DRT_S->GetXaxis()->SetRangeUser(minTheta, maxTheta);
+  hGrid_DRT_S->GetYaxis()->SetRangeUser(minPhi, maxPhi);
+  
+  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+  {          
+      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR, maxDeltaR);
+      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      el1->SetLineColor(kYellow+2);
+      el1->SetFillStyle(0);
+      el1->SetLineWidth(2);
+      el1->Draw();
+  }
+  
+  
+  if (SAVEPLOTS)   cCalSeeds->SaveAs(Form("plots/cCalSeeds_%s.png", output_tag.c_str()));
+  
+  
+  
   
   
   
@@ -600,24 +577,13 @@ int main(int argc, char** argv)
   hStackedTruth->Add(hTruthNeutralEM);
   hStackedTruth->Add(hTruthChargedHAD);
   hStackedTruth->Add(hTruthNeutralHAD);
-     
-//   TCanvas * cGrid_Truth = new TCanvas("cGrid_Truth", "cGrid_Truth", 900, 600);
-//   cGrid_Truth->cd();
+  
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
   leg->AddEntry(hTruthChargedEM, "Electrons", "lpf");
   leg->AddEntry(hTruthNeutralEM, "Photons", "lpf");
   leg->AddEntry(hTruthChargedHAD, "Charged (except e^{-})", "lpf");
   leg->AddEntry(hTruthNeutralHAD, "Neutrals (except #gamma)", "lpf");
-//   hGrid_EC_R->Draw("LEGO2Z");
-//   hStackedTruth->SetStats(0);
-//   hStackedTruth->SetTitle("Truth");
-//   hStackedTruth->GetXaxis()->SetTitle("#theta [rad]");
-//   hStackedTruth->GetYaxis()->SetTitle("#phi [rad]");
-//   hStackedTruth->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-//   hStackedTruth->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-//   hStackedTruth->Draw();
-//   leg->Draw();
-  
+
   
   
   
