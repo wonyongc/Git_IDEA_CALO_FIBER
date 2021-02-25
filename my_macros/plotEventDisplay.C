@@ -1,7 +1,6 @@
-// g++ -Wall -o plotEventDisplay plotEventDisplay.C  VectorSmallestInterval.cc myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs`
+// g++ -Wall -o plotEventDisplay plotEventDisplay.C  myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs`
 
 
-#include "VectorSmallestInterval.hh"
 #include "SCEPCal_GeometryHelper.hh"
 #include "myG4Tree.hh"
 #include "myTruthTree.hh"
@@ -136,7 +135,8 @@ int main(int argc, char** argv)
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root","READ");         
   
   
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
   
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -156,7 +156,8 @@ int main(int argc, char** argv)
   
   if (isHepMC)
   {
-      TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
+//       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
       InitTruthTree (TruthTree, myTruthTV);
