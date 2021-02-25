@@ -129,16 +129,6 @@ int main(int argc, char** argv)
   
   SCEPCal_GeometryHelper myGeometry;
 
-  
-  //run over energy scan
-//   TFile * RunFile = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_T+E.root","READ"); 
-//   TFile * RunFile = new TFile("../root_files/iso_gun/central_kaon0L_10GeV_ALL.root","READ"); 
-  
-//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root","READ");       
-//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root","READ");         
-  
-  
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
   
   
@@ -155,7 +145,6 @@ int main(int argc, char** argv)
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
   
   
-//       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
   TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
   TTree* TruthTree = (TTree*) TruthFile->Get("truth");
   myTruthTreeVars myTruthTV;
@@ -322,7 +311,7 @@ int main(int argc, char** argv)
               
               double truth_phi   = myTruthTV.mcs_phi->at(i);
               double eta   = myTruthTV.mcs_eta->at(i);
-              int charge = myTruthTV.mcs_charge->at(i);              
+              int charge = myTruthTV.mcs_charge->at(i);
               double truth_theta = 2*atan(exp(-eta));
               truth_theta = M_PI- truth_theta;
               
@@ -410,10 +399,14 @@ int main(int argc, char** argv)
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaR)
               {
-                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
+                  CalCluster thisCluster;
+                  thisCluster.Init(this_seed, maxDeltaR);
+                  thisCluster.Clusterize(myEcHits, myHcHits);
+                  
+                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV, clusterEcalEne = " << thisCluster.GetEcalClusterEne() << " GeV, clusterTotEne = " << thisCluster.GetTotEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
                   this_seed.AddGenMatch(pdgId);
               }
-            }                    
+            }
       }
       
       
