@@ -22,6 +22,7 @@ class CalHit
     
     public:
         void Init(int, float, float, float);
+        ~CalHit();
         void SetHitId(int);
         void SetSide(int);
         void SetTheta(float);
@@ -47,6 +48,7 @@ class CalSeed
     
     public:
         void Init(int, float, float, float);
+        ~CalSeed();
         void SetHitId(int);
         void SetSide(int);
         void SetTheta(float);
@@ -82,16 +84,15 @@ class CalCluster
     float HcalClusterNHits;
     
     float totEne;
-    std::string caloType;
     
     
     public:
-        void Init(CalSeed mySeed, std::string caloType);
-        void Clusterize (std::vector<float> ecalHits, std::vector<float> hcalHits);
-        
-        void SetSeed(int);        
+        void Init(CalSeed mySeed, float deltaR);
+        void Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> hcalHits);
+        ~CalCluster();
+        void SetSeed(CalSeed this_seed);        
                 
-        int   GetSeed();
+        CalSeed GetSeed();
         float GetTotEne();
         float GetEcalClusterEne();
         float GetHcalClusterEne();
