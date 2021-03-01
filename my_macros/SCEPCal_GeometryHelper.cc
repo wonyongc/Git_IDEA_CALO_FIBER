@@ -123,7 +123,14 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalVec(long int index)
         }
       }
       
-      crystal.SetXYZ(centerRingRadius*cos(phi*TMath::DegToRad()), centerRingRadius*sin(phi*TMath::DegToRad()), -sign*m_innerR);
+      float X   = centerRingRadius*cos(phi*TMath::DegToRad());
+      float Y   = centerRingRadius*sin(phi*TMath::DegToRad());
+      float Z   = -sign*m_innerR;
+      float mag = sqrt(X*X+Y*Y+Z*Z);
+      crystal.SetXYZ(X/mag, Y/mag, Z/mag);
+      
+      
+//       crystal.SetMagThetaPhi(1,TMath::DegToRad()*theta,TMath::DegToRad()*phi);       
   }  
   
 
@@ -204,7 +211,8 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingVec(long int index, int layer_I
   }  
 
 //    if (sign<0)                  
-       crystal.SetXYZ(x_pos, y_pos, z_pos);  
+  float mag = sqrt(x_pos*x_pos+y_pos*y_pos+z_pos*z_pos);
+  crystal.SetXYZ(x_pos/mag, y_pos/mag, z_pos/mag);  
   return crystal;
 }
 
@@ -260,7 +268,8 @@ TVector3 SCEPCal_GeometryHelper::GetCrystalTimingBothVec(long int index_1, long 
       
   }
 
-  crystal.SetXYZ(x_pos, y_pos, z_pos);  
+  float mag = sqrt(x_pos*x_pos+y_pos*y_pos+z_pos*z_pos);
+  crystal.SetXYZ(x_pos/mag, y_pos/mag, z_pos/mag);  
   return crystal;
 }
 
