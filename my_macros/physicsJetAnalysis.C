@@ -1,11 +1,13 @@
 // g++ -Wall -o physicsJetAnalysis physicsJetAnalysis.C  myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs` `~/fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
+// g++ -Wall -o physicsJetAnalysis physicsJetAnalysis.C  myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs` `//afs/cern.ch/work/m/mlucchin//fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 #include "SCEPCal_GeometryHelper.hh"
 #include "myG4Tree.hh"
 #include "myTruthTree.hh"
 #include "recoUtils.hh"
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -50,6 +52,39 @@
 
 using namespace std;
 using namespace fastjet; 
+namespace fs = std::filesystem;
+
+bool FileExists(const char * filename)
+{
+  bool data = true;
+  ifstream file(filename);
+  if(file)
+  {
+      return data;
+  }
+  else
+  {
+    data = false;
+    return data;
+  }
+}
+
+bool RootFileExists(const char *filename)
+{
+  bool data = false;
+  TFile *f = TFile::Open(filename);
+  if ((!f) || (f->IsZombie()))
+  {
+      data = false;
+      return data;
+  }
+  else
+  {
+    data = true;
+    return data;
+  }
+  f->Close();
+}
   
 int main(int argc, char** argv)
 {
@@ -104,28 +139,37 @@ int main(int argc, char** argv)
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_wwlj100k_job_0.root","READ");  
 //   TTree* TreeRun = (TTree*) RecoFile->Get("B4");    
 
-  int NFILES = 1;
+  int NFILES = 100;
   
-  TChain * TreeRun = new TChain("B4", "B4");  
-  for (int iFile = 0; iFile<NFILES; iFile++)
-  {
-//     TreeRun->Add(Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile));
-    TreeRun->Add(Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile));
-  }
-  myG4TreeVars myTV;
-  InitG4Tree (TreeRun, myTV);
-  
-  
+  TChain * TreeRun = new TChain("B4", "B4");      
     
 //   TFile * TruthFile = new TFile("../../HepMC_Files/B0T/wwlj100k_job_0_output_tuple.root","READ");
 //   TTree* TruthTree = (TTree*) TruthFile->Get("truth");
   
   TChain * TruthTree = new TChain("truth", "truth");  
+//   for (int iFile = 0; iFile<NFILES; iFile++)
+//   {
+// //     TruthTree->Add(Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile));
+  
+//   }
+  
   for (int iFile = 0; iFile<NFILES; iFile++)
   {
-//     TruthTree->Add(Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile));
-    TruthTree->Add(Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile));    
-  }  
+
+    std::string fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
+    std::string fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
+    {
+      std::cout << "adding file: " << iFile << std::endl;
+//     TreeRun->Add(Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile));
+      TreeRun->Add(fname_reco.c_str());
+      TruthTree->Add(fname_truth.c_str());    
+    }
+  }
+
+  myG4TreeVars myTV;
+  InitG4Tree (TreeRun, myTV);
+  
   myTruthTreeVars myTruthTV;
   InitTruthTree (TruthTree, myTruthTV);
   
@@ -151,15 +195,18 @@ int main(int argc, char** argv)
   TH1F * hMCT_MassJJ = new TH1F ("hMCT_MassJJ", "hMCT_MassJJ", NBIN, minMass, maxMass);
   TH1F * hRAW_MassJJ = new TH1F ("hRAW_MassJJ", "hRAW_MassJJ", NBIN, minMass, maxMass);
   TH1F * hDRO_MassJJ = new TH1F ("hDRO_MassJJ", "hDRO_MassJJ", NBIN, minMass, maxMass);
-  
-  
+  TH1F * hRAW_MassDiff = new TH1F ("hRAW_MassDiff", "hRAW_MassDiff", NBIN, -1, 1);
+  TH1F * hDRO_MassDiff = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
+
+  TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
+  TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
     
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
   
   int NEVENTS = TreeRun->GetEntries();
-  //   NEVENTS = 1000;
+  NEVENTS = 10000;
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
   
   
@@ -212,7 +259,7 @@ int main(int argc, char** argv)
               if (fabs(pdgId)==14) 
               {
                   neutrinoEne += ene;
-                  std::cout << "neutrino Ene = " <<  ene << std::endl;
+		  //                  std::cout << "neutrino Ene = " <<  ene << std::endl;
               }
           }
     }
@@ -236,7 +283,7 @@ int main(int argc, char** argv)
     
     if (myTV.leakage/1000. - neutrinoEne > 1)
     {
-        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
+      //        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
         goodEvent = false;
         continue;
     }
@@ -293,7 +340,7 @@ int main(int argc, char** argv)
         totS+=S;        
     }
         
-//     std::cout << "Total S in HCAL: " << totS <<  " GeV " << std::endl;
+    //    std::cout << "Total S in HCAL: " << totS <<  " GeV " << std::endl;
     
       
       
@@ -332,7 +379,7 @@ int main(int argc, char** argv)
         totEcalEne+=this_ene;
       }
             
-//       std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;     
+    //      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;     
 //       std::cout << "Running fastjet for clustering calo hits..." << std::endl;            
 
       // run the clustering, extract the jets
@@ -405,38 +452,43 @@ int main(int argc, char** argv)
           //reject jets not fully contained in the calorimeter
           if (fabs(mct_jets[0].eta()) > 2 || fabs(mct_jets[1].eta()) > 2) goodEvent = false;
       }
-       
+
+      float jjMassMCT = 0;
       if (mct_jets.size()==2 && goodEvent)
       {
           float e1 = mct_jets[0].E();
           float e2 = mct_jets[1].E();
           float p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
           
-          float jjMass = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
-          hMCT_MassJJ->Fill(jjMass);
-//           std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMass << " GeV" << std::endl;
+          jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hMCT_MassJJ->Fill(jjMassMCT);
+	  //          std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
-      
+      float jjMassRAW = 0;
       if (raw_jets.size()==2 && goodEvent)
       {
           float e1 = raw_jets[0].E();
           float e2 = raw_jets[1].E();
           float p1p2Sum = sqrt(pow(raw_jets[0].px()+raw_jets[1].px(),2) + pow(raw_jets[0].py()+raw_jets[1].py(),2) + pow(raw_jets[0].pz()+raw_jets[1].pz(),2) );
           
-          float jjMass = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
-          hRAW_MassJJ->Fill(jjMass);
-//           std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMass << " GeV" << std::endl;
+          jjMassRAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hRAW_MassJJ->Fill(jjMassRAW);
+          hRAW_MassDiff->Fill((jjMassRAW-jjMassMCT)/jjMassMCT);
+	  hRAW_ScatterEne->Fill(e1 - mct_jets[0].E(), e2-mct_jets[1].E());
+	  //          std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
       }
-      
+      float jjMassDRO = 0;
       if (dro_jets.size()==2 && goodEvent)
       {
           float e1 = dro_jets[0].E();
           float e2 = dro_jets[1].E();
           float p1p2Sum = sqrt(pow(dro_jets[0].px()+dro_jets[1].px(),2) + pow(dro_jets[0].py()+dro_jets[1].py(),2) + pow(dro_jets[0].pz()+dro_jets[1].pz(),2) );
                   
-          float jjMass = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
-          hDRO_MassJJ->Fill(jjMass);
-//           std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMass << " GeV" << std::endl;
+          jjMassDRO = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hDRO_MassJJ->Fill(jjMassDRO);
+          hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
+	  hDRO_ScatterEne->Fill(e1 - mct_jets[0].E(), e2-mct_jets[1].E());
+	  //          std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
       }
                               
   }
@@ -474,12 +526,15 @@ int main(int argc, char** argv)
   if (SAVEPLOTS) cMassJJ->SaveAs("plots/MassJJ.png");
   
   
-  TFile * outputFile = new TFile (Form("output_jjMass_%s.root",output_tag.c_str() ) );
+  TFile * outputFile = new TFile (Form("output_jjMass_%s_10k.root",output_tag.c_str() ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hRAW_MassJJ->Write();
   hDRO_MassJJ->Write();
-  
+  hRAW_MassDiff->Write();
+  hDRO_MassDiff->Write();
+  hRAW_ScatterEne->Write();
+  hDRO_ScatterEne->Write();
   outputFile->Write();
   outputFile->Close();
   
