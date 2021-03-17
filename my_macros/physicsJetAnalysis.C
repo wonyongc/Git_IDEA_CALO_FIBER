@@ -91,13 +91,12 @@ int main(int argc, char** argv)
   TApplication* theApp = new TApplication("App", &argc, argv);
           
   //set Root style
-  gStyle->SetTitleXOffset (1.00) ;                                                                                        
-  gStyle->SetTitleYOffset (1.2) ;                                                                                                                                                                                                                 
-  gStyle->SetPadLeftMargin (0.13) ;                                                                                       
-  gStyle->SetPadBottomMargin (0.13) ;                                                                                                                                                                                                              
-  gStyle->SetTitleSize (0.05, "xyz") ;                                                                                    
-  gStyle->SetLabelSize (0.035,"xyz") ;  
-    
+  gStyle->SetTitleXOffset (1.00) ;                                                                                       
+  gStyle->SetTitleYOffset (1.2) ;                                                                                        
+  gStyle->SetPadLeftMargin (0.13) ;                                                                                      
+  gStyle->SetPadBottomMargin (0.13) ;                                                                                   
+  gStyle->SetTitleSize (0.05, "xyz") ;                                                                                   
+  gStyle->SetLabelSize (0.035,"xyz") ;      
   gStyle->SetLegendBorderSize(0);
   gStyle->SetLegendFillColor(0);
   gStyle->SetLegendFont(42);
@@ -109,8 +108,11 @@ int main(int argc, char** argv)
   //init  
   bool SAVEPLOTS = false;
   std::string output_tag = "wwlj";
+  int NFILES = 100;
   if (argc>0) output_tag = argv[1];   
-  
+  if (argc>1) NFILES = atoi(argv[2]);   
+  std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
+
   double ecal_S_norm = 0.985;
   double ecal_C_norm = 7286;
   float LO  = 2000;
@@ -118,7 +120,8 @@ int main(int argc, char** argv)
   double drh_S_norm  = 407;
   double drh_C_norm  = 103.2;  
   
-  double x_factor_hcal = 0.43;
+  //  double x_factor_hcal = 0.43;
+  double x_factor_hcal = 0.445;
   double x_factor_ecal = 0.371;
   
   
@@ -131,21 +134,32 @@ int main(int argc, char** argv)
   
     // single truth jet
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
-  
+
+  float etaAcceptance = 1.4;  //accept only  jet within this eta
   SCEPCal_GeometryHelper myGeometry;
 
   
-  int NFILES = 100;
+
   TChain * TreeRun = new TChain("B4", "B4");      
   TChain * TruthTree = new TChain("truth", "truth");  
   
   for (int iFile = 0; iFile<NFILES; iFile++)
   {
-    //    std::string fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
-    //    std::string fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    std::string fname_reco;
+    std::string fname_truth;
 
-    std::string fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
-    std::string fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    if (output_tag == "hznb" || output_tag == "wwlj" || output_tag == "hzjnbn")
+    {
+       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
+       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    }
+    else 
+    {
+       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    }
+    // std::string fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
+    // std::string fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
@@ -169,19 +183,22 @@ int main(int argc, char** argv)
   int flag_JES = 3;
   int flag_JEC = 4;
   
-  bool debugMode = false;
+  bool debugMode = true;
   
   //define histos
   
-  int NBIN = 150;
+  int NBIN = 170;
   int minMass = 0;
-  int maxMass = 150;
+  int maxMass = 170;
   
   TH1F * hMCT_MassJJ = new TH1F ("hMCT_MassJJ", "hMCT_MassJJ", NBIN, minMass, maxMass);
   TH1F * hRAW_MassJJ = new TH1F ("hRAW_MassJJ", "hRAW_MassJJ", NBIN, minMass, maxMass);
   TH1F * hDRO_MassJJ = new TH1F ("hDRO_MassJJ", "hDRO_MassJJ", NBIN, minMass, maxMass);
   TH1F * hRAW_MassDiff = new TH1F ("hRAW_MassDiff", "hRAW_MassDiff", NBIN, -1, 1);
   TH1F * hDRO_MassDiff = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
+  TH1F * hDRO_Jet1EneDiff = new TH1F ("hDRO_Jet1EneDiff", "hDRO_Jet1EneDiff", NBIN, -1, 1);
+  TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);
+
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
   TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -189,25 +206,31 @@ int main(int argc, char** argv)
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
-  int maxEVENTS = 10000;
+  int maxEVENTS = 100000;
   int NEVENTS = TreeRun->GetEntries();
   
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
   if (NEVENTS>maxEVENTS)  NEVENTS = maxEVENTS;
   std::cout << "... running on " << NEVENTS << " events" << std::endl;
-  
+  int countGoodEvents = 0;
   
   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
   {
       
     std::cout << "processing event: " << iEvt << "\r" << std::flush;
+    //    std::cout << "processing event: " << iEvt << std::endl;
     std::vector<PseudoJet> allHitsForJet;
       
     bool goodEvent = true;
     int nMuons = 0;
     int nNeutrinos = 0;
+    int nHeavyQuarks = 0;
     float neutrinoEne = 0;
-      
+    float muonEne = 0;
+
+    float mc_phi_muon = -999;
+    float mc_eta_muon = -999;
+
       //filling truth
     TruthTree->GetEntry(iEvt);
 //       std::cout << "n MC truth particles found: " << myTruthTV.mcs_n << std::endl;
@@ -228,6 +251,7 @@ int main(int argc, char** argv)
           
           if (   fabs(pdgId)!=12 && fabs(pdgId)!=14 && fabs(pdgId)!=16 && fabs(pdgId)!=13  // exclude neutrinos and muons
                 && fabs(pdgId)<10000 // exclude BSM
+		 &&  fabs(pdgId)!=5 &&  fabs(pdgId)!=6 // exclude heavy quark decay of the Z
               //           && fabs(eta)<etaAcceptance                    // make sure jets are fully contained in calorimeters
           )      
           {
@@ -243,29 +267,49 @@ int main(int argc, char** argv)
           
           else
           {
-              if (fabs(pdgId)==13) nMuons++;
+              if (fabs(pdgId)==13) 
+	      {
+                  nMuons++;
+		  muonEne+= ene;
+		  mc_phi_muon = phi;
+		  mc_eta_muon = eta;
+	      }
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) nNeutrinos++;
               if (fabs(pdgId)==14) 
               {
                   neutrinoEne += ene;
 		  //                  std::cout << "neutrino Ene = " <<  ene << std::endl;
               }
+              if (fabs(pdgId)==5 || fabs(pdgId)==6) nHeavyQuarks++;
           }
     }
   
-    if (output_tag == "wwln" && (nMuons>1 || nNeutrinos >1))
+    if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 || nHeavyQuarks>0))
     {
         goodEvent = false;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
         continue;
     }
   
-    if (output_tag == "hzjnbn" && (nMuons>0 || nNeutrinos >0))
+    if (output_tag == "hzjnbn" && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
     {
         goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
         continue;
     } 
                                         
+    if (output_tag == "hznb" && (nMuons>0 || nNeutrinos >2 || nHeavyQuarks>0))
+    {
+        goodEvent = false;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;      
+        continue;
+    } 
+    if (output_tag == "zjj_scan_100" && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
+    {
+        goodEvent = false;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
+        continue;
+    } 
      
     //filling reco
 
@@ -275,7 +319,13 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if (output_tag == "wwln" && (myTV.leakage/1000. - neutrinoEne > 1))
+    if ((output_tag == "hznb" || output_tag == "zjj_scan_100") && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
+    {
+      if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
+        goodEvent = false;
+        continue;
+    }
+    if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
     {
         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
         goodEvent = false;
@@ -284,7 +334,7 @@ int main(int argc, char** argv)
     
     float ene_HC_th   = 0.01;    
     float totS = 0;
-    
+    float edepMuonCalo = 0;
     
     for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
     {                                        
@@ -296,6 +346,14 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherL->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
+	float tower_phi_seed = this_vec.Phi();
+	float tower_eta_seed = this_vec.Eta();
+	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+        if (deltaR <0.1)
+ 	{
+	    edepMuonCalo+=S;
+	    //	    std::cout << "HCAL --> muon ene in cone R=" <<deltaR << " : " << this_ene << " :: totMuonCaloDep = "  << edepMuonCalo << std::endl;
+	}
         
         if (this_ene>ene_HC_th)
         {            
@@ -320,6 +378,15 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherR->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
+	float tower_phi_seed = this_vec.Phi();
+	float tower_eta_seed = this_vec.Eta();
+	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+
+        if (deltaR <0.1)
+ 	{
+	    edepMuonCalo+=S;
+	    //	    std::cout << "HCAL --> muon ene in cone R=" <<deltaR << " : " << this_ene << " :: totMuonCaloDep = "  << edepMuonCalo << std::endl;
+	}
         
         if (this_ene>ene_HC_th)
         {
@@ -351,9 +418,22 @@ int main(int argc, char** argv)
     {
      
         TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
-//         double this_phi = this_vec.Phi();
-//         double this_theta = this_vec.Theta();
         double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
+	float tower_phi_seed = this_vec.Phi();
+	float tower_eta_seed = this_vec.Eta();
+	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+        // if (this_ene>0.1 && deltaR < 0.1)
+	// {
+	//   std::cout << "tower_phi = "  << tower_phi_seed << " :: mc_phi_muon =  " << mc_phi_muon << 
+	//                " :: tower_eta = "<< tower_eta_seed << " :: mc_eta_muon = " << mc_eta_muon << 
+	//                " :: deltaR = " << deltaR << " :: this_ene = " << this_ene << std::endl;
+	// }
+ 
+        if (deltaR<0.1)
+ 	{
+	    edepMuonCalo+=this_ene;
+	    //	    std::cout << "ECAL --> muon ene in cone R=" <<deltaR << " : " << this_ene << " :: totMuonCaloDep = "  << edepMuonCalo << std::endl;
+	}
         
         if (this_ene>ene_EC_th)
         {
@@ -371,7 +451,14 @@ int main(int argc, char** argv)
         }
         
         totEcalEne+=this_ene;
-      }
+    }
+
+    if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 1))
+    {
+      if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
+        goodEvent = false;
+        continue;
+    }
             
     //      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;     
 //       std::cout << "Running fastjet for clustering calo hits..." << std::endl;            
@@ -419,7 +506,7 @@ int main(int argc, char** argv)
               }
           }
           
-          if (debugMode) std::cout << "E_JES = " << E_JES << " :: E_JEC = " << E_JEC << " :: E_JHS = " << E_JHS << " :: E_JHC = " << E_JHC << std::endl;
+	  //          if (debugMode) std::cout << "E_JES = " << E_JES << " :: E_JEC = " << E_JEC << " :: E_JHS = " << E_JHS << " :: E_JHC = " << E_JHC << std::endl;
           if (mct_constituents.size()>0) 
           {
               ClusterSequence csMC(mct_constituents, jet_mc);
@@ -444,7 +531,12 @@ int main(int argc, char** argv)
       if(mct_jets.size()==2)
       {
           //reject jets not fully contained in the calorimeter
-          if (fabs(mct_jets[0].eta()) > 2 || fabs(mct_jets[1].eta()) > 2) goodEvent = false;
+          if (fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance) 
+	  {
+	    goodEvent = false;
+  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) << std::endl;
+	    continue;
+	  }
       }
 
       float jjMassMCT = 0;
@@ -456,7 +548,7 @@ int main(int argc, char** argv)
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hMCT_MassJJ->Fill(jjMassMCT);
-	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
+	  //	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
       float jjMassRAW = 0;
       if (raw_jets.size()==2 && goodEvent)
@@ -470,7 +562,7 @@ int main(int argc, char** argv)
           hRAW_MassJJ->Fill(jjMassRAW);
           hRAW_MassDiff->Fill((jjMassRAW-jjMassMCT)/jjMassMCT);
 	  hRAW_ScatterEne->Fill(e1 - std::max(mct_jets[0].E(), mct_jets[1].E()), e2-std::min(mct_jets[0].E(), mct_jets[1].E()) );
-	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
+	  //	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
       }
       float jjMassDRO = 0;
       if (dro_jets.size()==2 && goodEvent)
@@ -482,14 +574,17 @@ int main(int argc, char** argv)
           jjMassDRO = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hDRO_MassJJ->Fill(jjMassDRO);
           hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
+          hDRO_Jet1EneDiff->Fill((std::max(mct_jets[0].E(), mct_jets[1].E())-e1)/e1);
+  	  hDRO_Jet2EneDiff->Fill((std::min(mct_jets[0].E(), mct_jets[1].E())-e2)/e2);
 	  hDRO_ScatterEne->Fill(e1 - std::max(mct_jets[0].E(), mct_jets[1].E()), e2-std::min(mct_jets[0].E(), mct_jets[1].E()) );
-	  if (debugMode) std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
+	  //	  if (debugMode) std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
       }
-                              
+                     
+      countGoodEvents++;
   }
   
   
-  
+  std::cout << "selection efficiency: " << float(countGoodEvents)/float(NEVENTS) << std::endl;
   
   //plotting
   
@@ -497,7 +592,7 @@ int main(int argc, char** argv)
   cMassJJ->cd();
     
   hMCT_MassJJ->Draw();
-  hMCT_MassJJ->SetStats(0);
+  //  hMCT_MassJJ->SetStats(0);
   hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
   hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
   hMCT_MassJJ->GetXaxis()->SetRangeUser(0, 140);
@@ -523,7 +618,7 @@ int main(int argc, char** argv)
   cMassJJ_Diff->cd();
     
   hDRO_MassDiff->Draw();
-  hDRO_MassDiff->SetStats(0);
+  //  hDRO_MassDiff->SetStats(0);
   hDRO_MassDiff->GetXaxis()->SetTitle("M_{jj}^{reco} - M_{jj}^{truth} / M_{jj}^{reco}");
   hDRO_MassDiff->GetYaxis()->SetTitle("Counts");
 //   hMCT_MassJJ->GetXaxis()->SetRangeUser(0, 140);
@@ -546,13 +641,13 @@ int main(int argc, char** argv)
   
   cScatterEnergy->cd(1);    
   hRAW_ScatterEne->Draw("COLZ");
-  hRAW_ScatterEne->SetStats(0);
+  //  hRAW_ScatterEne->SetStats(0);
   hRAW_ScatterEne->GetXaxis()->SetTitle("E_{j,1}^{reco} - E_{j,1}^{truth}");
   hRAW_ScatterEne->GetYaxis()->SetTitle("E_{j,2}^{reco} - E_{j,2}^{truth}");
   
   cScatterEnergy->cd(2);
   hDRO_ScatterEne->Draw("COLZ");
-  hDRO_ScatterEne->SetStats(0);
+  //  hDRO_ScatterEne->SetStats(0);
   hDRO_ScatterEne->GetXaxis()->SetTitle("E_{j,1}^{reco} - E_{j,1}^{truth}");
   hDRO_ScatterEne->GetYaxis()->SetTitle("E_{j,2}^{reco} - E_{j,2}^{truth}");
     
@@ -560,7 +655,7 @@ int main(int argc, char** argv)
   if (SAVEPLOTS) cScatterEnergy->SaveAs("plots/cScatterEnergy.png");
     
   
-  TFile * outputFile = new TFile (Form("output_jjMass_%s_10k.root",output_tag.c_str() ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_%s.root",output_tag.c_str() ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hRAW_MassJJ->Write();
@@ -569,6 +664,8 @@ int main(int argc, char** argv)
   hDRO_MassDiff->Write();
   hRAW_ScatterEne->Write();
   hDRO_ScatterEne->Write();
+  hDRO_Jet1EneDiff->Write();
+  hDRO_Jet2EneDiff->Write();
   outputFile->Write();
   outputFile->Close();
   
