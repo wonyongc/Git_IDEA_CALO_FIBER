@@ -250,7 +250,7 @@ int main(int argc, char** argv)
   }
   
   int THETA_BINS = 16;  
-  float maxThetaRange = 3.14/4*0.9;
+  float maxThetaRange = M_PI/4*0.9;
   float minThetaRange = 0;
   float vMinThetaBin [THETA_BINS];
   float vMaxThetaBin [THETA_BINS];
@@ -281,10 +281,12 @@ int main(int argc, char** argv)
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_timing.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_timing_v2.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_timing_v3.root","READ"); 
-      RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_T+E.root","READ"); 
+      
+//       RunFile[iFile] = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_T+E.root","READ"); 
+      
 //       RunFile[iFile] = new TFile("../root_files/prod/output_SCEPCal_Iso_e-_40GeV.root","READ"); 
 //       RunFile[iFile] = new TFile("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root","READ");      
-//       RunFile[iFile] = new TFile("../root_files/prod/output_SCEPCal_gamma_Iso+Uniform+noMagenticField.root","READ");
+      RunFile[iFile] = new TFile("../root_files/prod/output_SCEPCal_gamma_Iso+Uniform+noMagenticField.root","READ");
       
 //       RunFile[iFile] = new TFile("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root","READ");      
       
@@ -681,7 +683,7 @@ int main(int argc, char** argv)
                   hDeltaEta_TimingBarrel_Comb[iFile]->Fill(TT_eta_seed-eta);
                   hDeltaTheta_TimingBarrel_Comb[iFile]->Fill(TT_theta_seed-theta);
                                     
-                  if (fabs(T2_phi_seed)>3.140750) std::cout << "T2_phi_seed = " << T2_phi_seed << std::endl;
+                  if (fabs(T2_phi_seed)>M_PI) std::cout << "T2_phi_seed = " << T2_phi_seed << std::endl;
                   
                   hDeltaPhi_TimingBarrel_F[iFile]->Fill(T1_phi_seed-phi);              
                   hDeltaEta_TimingBarrel_F[iFile]->Fill(T1_eta_seed-eta);
@@ -693,7 +695,7 @@ int main(int argc, char** argv)
 //                   std::cout << " theta = " << theta << std::endl;
                   for (int iTheta = 0; iTheta<THETA_BINS; iTheta++)
                   {                
-                    if (fabs(theta-3.14/2)>=vMinThetaBin[iTheta] && fabs(theta-3.14/2)<vMaxThetaBin[iTheta]) 
+                    if (fabs(theta-M_PI/2)>=vMinThetaBin[iTheta] && fabs(theta-M_PI/2)<vMaxThetaBin[iTheta]) 
                     {
                         vDeltaThetaTiming[iTheta]->push_back(T1_theta_weighed-theta);
                     }
@@ -731,7 +733,7 @@ int main(int argc, char** argv)
                 hNHits_T1Endcap[iFile]->Fill(myTV.VecHit_Timing_CrystalID_F->size());
                 hNHits_T2Endcap[iFile]->Fill(myTV.VecHit_Timing_CrystalID_R->size());
                 
-//                 if (fabs(T1_phi_seed)>3.14) std::cout << "T1_phi_seed = " << T1_phi_seed << std::endl;
+//                 if (fabs(T1_phi_seed)>M_PI) std::cout << "T1_phi_seed = " << T1_phi_seed << std::endl;
                 
                 hDeltaPhi_TimingEndcap_Comb[iFile]->Fill(TT_phi_seed-phi);              
                 hDeltaEta_TimingEndcap_Comb[iFile]->Fill(TT_eta_seed-eta);
@@ -1451,7 +1453,7 @@ int main(int argc, char** argv)
   
   
   
-/*  
+
   TGraphErrors * gTimingThetaRes_vs_theta       = new TGraphErrors();    
   for (int iTheta = 0; iTheta<THETA_BINS; iTheta++)
   {
@@ -1489,7 +1491,7 @@ int main(int argc, char** argv)
   fitResolution->SetLineWidth(2);    
 //   fitResolution->SetLineStyle(7);    
   fitResolution->SetParameters(1., -0.02, 0.0002);
-  gTimingThetaRes_vs_theta->Fit(fitResolution, "R");*/
+  gTimingThetaRes_vs_theta->Fit(fitResolution, "R");
 //   fitResolution->SetParLimits(1,0.1, 0.5);
 //   
 //   
