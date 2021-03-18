@@ -202,7 +202,9 @@ int main(int argc, char** argv)
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
   TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
-    
+  TH2F * hScatterEneVis  = new TH2F ("hScatterEneVis", "hScatterEneVis", 170, 0, 170, 170, 0, 170);
+  TH2F * hScatterEneVisEH = new TH2F ("hScatterEneVisEH", "hScatterEneVisEH", 170, 0, 170, 200, 0, 5);
+
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
@@ -334,6 +336,7 @@ int main(int argc, char** argv)
     
     float ene_HC_th   = 0.01;    
     float totS = 0;
+    float totEneDRH = 0;
     float edepMuonCalo = 0;
     
     for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
@@ -366,6 +369,7 @@ int main(int argc, char** argv)
             allHitsForJet.push_back(this_JHC);            
         }          
         totS+=S;        
+	totEneDRH+=this_ene;
     }
     
     for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
@@ -399,10 +403,21 @@ int main(int argc, char** argv)
             allHitsForJet.push_back(this_JHC);            
         }                
         totS+=S;        
+	totEneDRH+=this_ene;
     }
         
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV " << std::endl;
-    
+    // float thismass = 100;
+    // if (output_tag == "wwlj") thismass = 80;
+    // if (output_tag == "hzjnbn") thismass = 90;
+    // if (output_tag == "hzbn") thismass = 125;
+    // if (output_tag == "zjj_scan_100") thismass = 100;
+    // if (totS/thismass<0.82)
+    // {
+    //   std::cout << "Total S in HCAL: " << totS <<  " GeV --> totS/Mass =  " << totS/thismass << std::endl;
+    //   goodEvent = false;
+    //   continue;
+    // }
       
       
     
@@ -459,6 +474,24 @@ int main(int argc, char** argv)
         goodEvent = false;
         continue;
     }
+
+    float thismass = 100;
+    if (output_tag == "wwlj") thismass = 80;
+    if (output_tag == "hzjnbn") thismass = 90;
+    if (output_tag == "hznb") thismass = 125;
+    if (output_tag == "zjj_scan_100") thismass = 100;
+    hScatterEneVis->Fill(totS,totEneDRH);
+    std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
+    //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
+
+    if ((totS+totEcalEne)/thismass<0.8)
+    {
+
+      //      std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
+      goodEvent = false;
+      continue;
+    }
+
             
     //      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;     
 //       std::cout << "Running fastjet for clustering calo hits..." << std::endl;            
@@ -578,10 +611,12 @@ int main(int argc, char** argv)
   	  hDRO_Jet2EneDiff->Fill((std::min(mct_jets[0].E(), mct_jets[1].E())-e2)/e2);
 	  hDRO_ScatterEne->Fill(e1 - std::max(mct_jets[0].E(), mct_jets[1].E()), e2-std::min(mct_jets[0].E(), mct_jets[1].E()) );
 	  //	  if (debugMode) std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
+	  hScatterEneVisEH->Fill(jjMassDRO, totEcalEne/totEneDRH);
       }
                      
       countGoodEvents++;
   }
+
   
   
   std::cout << "selection efficiency: " << float(countGoodEvents)/float(NEVENTS) << std::endl;
@@ -653,6 +688,18 @@ int main(int argc, char** argv)
     
   
   if (SAVEPLOTS) cScatterEnergy->SaveAs("plots/cScatterEnergy.png");
+
+  TCanvas * cScatterEnergyVisible = new TCanvas ("cScatterEnergyVisible", "cScatterEnergyVisible", 1000, 500);
+  cScatterEnergyVisible->Divide(2,1);    
+  cScatterEnergyVisible->cd(1);    
+  hScatterEneVis->Draw("COLZ");
+  hScatterEneVis->GetXaxis()->SetTitle("E_{visible}^{HCAL}");
+  hScatterEneVis->GetYaxis()->SetTitle("S_{tot}^{HCAL}");
+
+  cScatterEnergyVisible->cd(2);    
+  hScatterEneVisEH->Draw("COLZ");
+  hScatterEneVisEH->GetXaxis()->SetTitle("M_{jj}^{HCAL}");
+  hScatterEneVisEH->GetYaxis()->SetTitle("S_{ECAL}/S_{HCAL}");
     
   
   TFile * outputFile = new TFile (Form("output_jjMass_%s.root",output_tag.c_str() ) , "RECREATE");
@@ -666,6 +713,8 @@ int main(int argc, char** argv)
   hDRO_ScatterEne->Write();
   hDRO_Jet1EneDiff->Write();
   hDRO_Jet2EneDiff->Write();
+  hScatterEneVis->Write();
+  hScatterEneVisEH->Write();
   outputFile->Write();
   outputFile->Close();
   
