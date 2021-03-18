@@ -71,6 +71,7 @@ int main(int argc, char** argv)
   bool SAVEPLOTS = false;
   
   int ENE_BINS = 10;  
+//   int ENE_BINS = 14;  
   float maxEneRange = 100;
   float minEneRange = 1;
   float vMinEneBin [ENE_BINS];
@@ -98,11 +99,14 @@ int main(int argc, char** argv)
       float min_ene = minEneRange+stepEne*iEne;
       float max_ene = min_ene+stepEne;
       
-//       vMinEneBin[iEne]=min_ene;
-//       vMaxEneBin[iEne]=max_ene;
-      vMinEneBin[iEne]=binBoundary[iEne];
-      if (iEne<ENE_BINS-1) vMaxEneBin[iEne]=binBoundary[iEne+1];
-      else                 vMaxEneBin[iEne]=210;
+      //for uniform energy bins
+      vMinEneBin[iEne]=min_ene;
+      vMaxEneBin[iEne]=max_ene;
+      
+      //to use energy bins defined above
+//       vMinEneBin[iEne]=binBoundary[iEne];
+//       if (iEne<ENE_BINS-1) vMaxEneBin[iEne]=binBoundary[iEne+1];
+//       else                 vMaxEneBin[iEne]=210;
       
       vECALwShowerEnergy[iEne]     = new std::vector<double>();
       vECALCountNoMips[iEne]     = new std::vector<double>();
@@ -219,8 +223,9 @@ int main(int argc, char** argv)
       
     
   TChain * TreeRun = new TChain("B4", "B4");
-  TreeRun->Add("../root_files/prod/output_SCEPCal_fixedPos_kaon0L_Iso+Uniform1-100_GeV.root");
-//   TreeRun->Add("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
+//   TreeRun->Add("../root_files/prod/output_SCEPCal_fixedPos_kaon0L_Iso+Uniform1-100_GeV.root");
+  
+  TreeRun->Add("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
 //   TreeRun->Add("../root_files/prod/output_SCEPCal_fixedEne_pi-_IsoSupplement.root");
   
     
@@ -291,7 +296,7 @@ int main(int argc, char** argv)
       else if (this_ene > 50 && myTV.leakage/1000. > 3.0) continue;
 
       
-//       if (this_ene<5) continue;
+//       if (this_ene>50) std::cout << "this_ene  = " << this_ene << std::endl;
       
       double eneF   = myTV.SCEP_EnergyDepF/1000.;      
       double eneR   = myTV.SCEP_EnergyDepR/1000.;      
@@ -1172,6 +1177,7 @@ int main(int argc, char** argv)
   
   TCanvas * cFracShowerInECAL = new TCanvas ("cFracShowerInECAL", "cFracShowerInECAL", 600, 600);
   cFracShowerInECAL->cd();
+  gFracShowerInECAL->Sort();
   gFracShowerInECAL->Draw("ALPE");
   gFracShowerInECAL->SetTitle(";E_{0} [GeV]; Fraction of hadron showers starting in ECAL");
 
@@ -1180,6 +1186,7 @@ int main(int argc, char** argv)
   
   TCanvas * cEnergyResolutionHCAL_Only = new TCanvas ("cEnergyResolutionHCAL_Only", "cEnergyResolutionHCAL_Only", 600, 600);
   cEnergyResolutionHCAL_Only->cd();
+  gEres_vs_ene_hcalOnly->Sort();
   gEres_vs_ene_hcalOnly->SetLineColor(kGray+1);
   gEres_vs_ene_hcalOnly->SetMarkerColor(kGray+1);
   gEres_vs_ene_hcalOnly->SetMarkerStyle(21);
@@ -1239,6 +1246,7 @@ int main(int argc, char** argv)
   
   TCanvas * cEnergyResolution = new TCanvas ("cEnergyResolution", "cEnergyResolution", 600, 600);
   cEnergyResolution->cd();
+  gEres_vs_ene->Sort();
   gEres_vs_ene->SetLineColor(kRed+1);
   gEres_vs_ene->SetMarkerColor(kRed+1);
   gEres_vs_ene->SetMarkerStyle(21);
@@ -1301,6 +1309,7 @@ int main(int argc, char** argv)
   
   TCanvas * cEnergyLinearityHCAL_Only = new TCanvas ("cEnergyLinearityHCAL_Only", "cEnergyLinearityHCAL_Only", 600, 600);
   cEnergyLinearityHCAL_Only->cd();
+  gElin_vs_ene_hcalOnly->Sort();
   gElin_vs_ene_hcalOnly->SetLineColor(kGray+1);
   gElin_vs_ene_hcalOnly->SetMarkerColor(kGray+1);
   gElin_vs_ene_hcalOnly->SetMarkerStyle(21);
@@ -1331,6 +1340,7 @@ int main(int argc, char** argv)
   
   TCanvas * cEnergyLinearity = new TCanvas ("cEnergyLinearity", "cEnergyLinearity", 600, 600);
   cEnergyLinearity->cd();  
+  gElin_vs_ene->Sort();
   gElin_vs_ene->SetLineColor(kRed+1);
   gElin_vs_ene->SetMarkerColor(kRed+1);
   gElin_vs_ene->SetMarkerStyle(21);
