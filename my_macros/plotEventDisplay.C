@@ -90,6 +90,10 @@ int main(int argc, char** argv)
   int NPHI_DRT   = 36;
   int NTHETA_DRT = 40+40-1;
   
+  double drh_S_norm  = 407;
+//   double drh_C_norm  = 103.2;  
+  
+  
   double minPhi = -M_PI;
   double maxPhi = M_PI;  
   double minTheta = 0;
@@ -118,10 +122,27 @@ int main(int argc, char** argv)
   
   TH2F * hTruthFloor = new TH2F ("hTruthFloor", "hTruthFloor", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   TH2F * hTruthChargedEM = new TH2F ("hTruthChargedEM", "hTruthChargedEM", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  TH2F * hTruthMuon = new TH2F ("hTruthMuon", "hTruthMuon", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   TH2F * hTruthNeutralEM = new TH2F ("hTruthNeutralEM", "hTruthNeutralEM", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   TH2F * hTruthChargedHAD = new TH2F ("hTruthChargedHAD", "hTruthChargedHAD", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   TH2F * hTruthNeutralHAD = new TH2F ("hTruthNeutralHAD", "hTruthNeutralHAD", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   
+  
+  int NRADIUS = 1;
+  float minRadiusF = 1750;
+  float maxRadiusF = 1860;
+  float minRadiusR = 1860;
+  float maxRadiusR = 2000;
+  float minRadius = 1750;
+  float maxRadius = 2000;
+  
+  float minRadius_DRT = 2500;
+  float maxRadius_DRT = 4500;
+  
+  TH2D * hPolar_EC_F = new TH2D ("hPolar_EC_F", "hPolar_EC_F", NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2, NRADIUS, minRadiusF, maxRadiusF);
+  TH2D * hPolar_EC_R = new TH2D ("hPolar_EC_R", "hPolar_EC_R", NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2, NRADIUS, minRadiusR, maxRadiusR);
+  TH2D * hPolar_EC_T = new TH2D ("hPolar_EC_T", "hPolar_EC_T", NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2, NRADIUS, minRadius, maxRadius);
+  TH2D * hPolar_DRT_S = new TH2D ("hPolar_DRT_S", "hPolar_DRT_S", NPHI_DRT, minPhi-bin_width_phi_DRT/2, maxPhi-bin_width_phi_DRT/2, NRADIUS, minRadius_DRT, maxRadius_DRT);
   
   
   SCEPCal_GeometryHelper myGeometry;
@@ -136,7 +157,9 @@ int main(int argc, char** argv)
   
   
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
+  
   
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -153,11 +176,15 @@ int main(int argc, char** argv)
   int NEVENTS = TreeRun->GetEntries();
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
   
+  std::vector<TLine*> charged_tracks;
+  std::vector<TLine*> muon_tracks;
+  
   
   if (isHepMC)
   {
 //       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
-      TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
+//       TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/zjj_scan_100_job_0_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
       InitTruthTree (TruthTree, myTruthTV);
@@ -183,25 +210,47 @@ int main(int argc, char** argv)
         double theta = 2*atan(exp(-eta));
         theta = M_PI- theta;
         
-        if      (charge!=0 && abs(pdgId)!= 11) 
+        if      (charge!=0 && abs(pdgId)!= 11 && abs(pdgId)!= 13) 
         {
             hTruthChargedHAD ->Fill(theta, phi, ene);
             std::cout << "this is a non electron charged particle!" << std::endl;
         }
-        if (charge!=0 && abs(pdgId)== 11) 
+        if (abs(pdgId)== 11) 
         {
             hTruthChargedEM  ->Fill(theta, phi, ene);
             std::cout << "this is an electron!" << std::endl;
         }
-        if (charge==0 && abs(pdgId)!= 22) 
+        if (charge==0 && abs(pdgId)!= 22 && abs(pdgId)!= 12 && abs(pdgId)!= 14 && abs(pdgId)!= 16 && abs(pdgId)< 10000) 
         {
             hTruthNeutralHAD ->Fill(theta, phi, ene);
-            std::cout << "this is a non photon neutral particle!" << std::endl;
+            std::cout << "this is a  neutral hadron!" << std::endl;
         }
         if (charge==0 && pdgId== 22) 
         {
             std::cout << "this is a photon!" << std::endl;
             hTruthNeutralEM  ->Fill(theta, phi, ene);
+        }
+        
+        if (abs(pdgId)== 13) 
+        {
+            std::cout << "this is a muon!" << std::endl;
+            hTruthMuon  ->Fill(theta, phi, ene);
+        }
+        
+        if (charge!=0)
+        {
+            float max_radius = 1700;
+            float max_muon_radius = 4900;
+            if (abs(pdgId)!= 13)
+            {                            
+                TLine* new_charged_line = new TLine (0, 0, cos(phi)*max_radius, sin(phi)*max_radius) ;
+                charged_tracks.push_back(new_charged_line);
+            }
+            if (abs(pdgId)== 13)
+            {
+                TLine* new_charged_line = new TLine (0, 0, cos(phi)*max_muon_radius, sin(phi)*max_muon_radius) ;
+                muon_tracks.push_back(new_charged_line);
+            }
         }
         
         std::cout << "******************************************************* " << std::endl;
@@ -262,6 +311,7 @@ int main(int argc, char** argv)
           double this_cher  = myTV.VectorSignalsCherL->at(i);
           hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint);                              
           hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher);    
+          if (this_ene>0.03) hPolar_DRT_S ->Fill(this_phi, minRadius_DRT, this_scint/drh_S_norm);
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
       }
@@ -274,7 +324,8 @@ int main(int argc, char** argv)
           double this_scint = myTV.VectorSignalsR->at(i);     
           double this_cher  = myTV.VectorSignalsCherR->at(i);      
           hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint);                              
-          hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher);                              
+          hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher);           
+          if (this_ene>0.03) hPolar_DRT_S ->Fill(this_phi, minRadius_DRT, this_scint/drh_S_norm);
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
       }
@@ -299,12 +350,16 @@ int main(int argc, char** argv)
 //           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
           if (this_ene>ene_EC_th)
           {
-            hGrid_EC_F ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i)/1000);          
-            hGrid_EC_R ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i)/1000);          
-            hGrid_EC_T ->Fill(this_theta, this_phi, this_ene);                    
+            hGrid_EC_F ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i)/1000);
+            hGrid_EC_R ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i)/1000);
+            hGrid_EC_T ->Fill(this_theta, this_phi, this_ene);
+            
+            hPolar_EC_F ->Fill(this_phi, minRadiusF, myTV.VecHit_ScepEneDepF->at(i)/1000);
+            hPolar_EC_R ->Fill(this_phi, minRadiusR, myTV.VecHit_ScepEneDepR->at(i)/1000);
+            hPolar_EC_T ->Fill(this_phi, 1800, this_ene);
+            
             totEcalEne+=this_ene;
           }
-
       }
       
       std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;
@@ -528,26 +583,25 @@ int main(int argc, char** argv)
   hTruthNeutralEM->SetFillColor(kGreen+1);
   hTruthNeutralEM->SetLineColor(kGreen+1);
   
+  hTruthMuon->SetFillColor(kGray);
+  hTruthMuon->SetLineColor(kGray);
+  
   hStackedTruth->Add(hTruthFloor);
   hStackedTruth->Add(hTruthChargedEM);
   hStackedTruth->Add(hTruthNeutralEM);
   hStackedTruth->Add(hTruthChargedHAD);
   hStackedTruth->Add(hTruthNeutralHAD);
+//   hStackedTruth->Add(hTruthMuon);
      
   TCanvas * cGrid_Truth = new TCanvas("cGrid_Truth", "cGrid_Truth", 900, 600);
   cGrid_Truth->cd();
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
   leg->AddEntry(hTruthChargedEM, "Electrons", "lpf");
   leg->AddEntry(hTruthNeutralEM, "Photons", "lpf");
-  leg->AddEntry(hTruthChargedHAD, "Charged (except e^{-})", "lpf");
-  leg->AddEntry(hTruthNeutralHAD, "Neutrals (except #gamma)", "lpf");
-//   hGrid_EC_R->Draw("LEGO2Z");
-//   hStackedTruth->SetStats(0);
-//   hStackedTruth->SetTitle("Truth");
-//   hStackedTruth->GetXaxis()->SetTitle("#theta [rad]");
-//   hStackedTruth->GetYaxis()->SetTitle("#phi [rad]");
-//   hStackedTruth->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-//   hStackedTruth->GetYaxis()->SetRangeUser(minPhi, maxPhi);
+  leg->AddEntry(hTruthChargedHAD, "Charged (except e^{-}, #mu^{-})", "lpf");
+  leg->AddEntry(hTruthNeutralHAD, "Neutral hadron", "lpf");
+//   leg->AddEntry(hTruthMuon, "Muon", "lpf");
+// 
   hStackedTruth->Draw();
   leg->Draw();
   
@@ -592,19 +646,37 @@ int main(int argc, char** argv)
   leg->Draw();
   
 //   gPad->SetLogz();
-  cOverview->SaveAs(Form("plots/event_display/cOverview_%d.png", selEv));
-  
-//   hGrid_TT->Reset();
-//   hGrid_EC_F->Reset();
-//   hGrid_EC_R->Reset();       
-//   hGrid_EC_T->Reset();       
-//   hGrid_DRT_S->Reset();
-//   hGrid_DRT_C->Reset();
-//   
-//   
-//   
+//   cOverview->SaveAs(Form("plots/event_display/wwln/cOverview_%d.png", selEv));
+  cOverview->SaveAs(Form("plots/event_display/zjj_100/cOverview_%d.png", selEv));
   
   
+  TCanvas * cPolar = new TCanvas ("cPolar", "cPolar", 800, 800);
+  cPolar->cd();
+  gPad->DrawFrame(-maxRadius_DRT*1.2, -maxRadius_DRT*1.2, maxRadius_DRT*1.2, maxRadius_DRT*1.2);
+//   gPad->SetLogz();
+  for (long unsigned int iline = 0; iline< charged_tracks.size(); iline++)
+  {
+      charged_tracks[iline]->SetLineColor(kRed);
+      charged_tracks[iline]->Draw("same");
+  }
+  for (long unsigned int iline = 0; iline< muon_tracks.size(); iline++)
+  {
+      muon_tracks[iline]->SetLineColor(kBlue);
+      muon_tracks[iline]->Draw("same");
+  }
+  
+  
+  gStyle->SetPalette(kRainBow);
+  hPolar_EC_F->Draw("same colz pol");
+  hPolar_EC_R->Draw("same col pol");
+//   hPolar_EC_T->Draw("same colz pol");
+  
+  gStyle->SetPalette(kSolar);
+  hPolar_DRT_S->Draw("same col pol");
+  
+  
+  
+  cPolar->SaveAs(Form("plots/event_display/zjj_100/phi_plots/cPolar_%d.png", selEv));
   
   
   theApp->Run();
