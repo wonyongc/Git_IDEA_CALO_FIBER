@@ -109,8 +109,8 @@ int main(int argc, char** argv)
   bool SAVEPLOTS = false;
   std::string output_tag = "wwlj";
   int NFILES = 100;
-  if (argc>0) output_tag = argv[1];   
-  if (argc>1) NFILES = atoi(argv[2]);   
+  if (argc>1) output_tag = argv[1];   
+  if (argc>2) NFILES = atoi(argv[2]);   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
 
   double ecal_S_norm = 0.985;
