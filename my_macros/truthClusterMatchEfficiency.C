@@ -122,6 +122,9 @@ int main(int argc, char** argv)
   
   float ene_EC_th = 0.01;
   float EC_seed_th = 0.1;
+  
+  float ene_HC_th   = 0.01;    
+  float HC_seed_th = 0.1;
       
   
   
@@ -143,14 +146,21 @@ int main(int argc, char** argv)
   
   std::map <int, TH1F*> hEffGenMatchedToCluster;
   std::map <int, TH1F*> hNClustersMatchedToGen;
+  std::map <int, TH1F*> hNTotGen;
   
+  
+  TH1F * hNEcalSeeds = new TH1F ("hNEcalSeeds", "hNEcalSeeds", 100, -0.5, 99.5);
+  TH1F * hNHcalSeeds = new TH1F ("hNHcalSeeds", "hNHcalSeeds", 100, -0.5, 99.5);
   
   for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
   {
       hEffGenMatchedToCluster[it->first] = new TH1F(Form("hEffGenMatchedToCluster_%d", it->first), Form("hEffGenMatchedToCluster_%d", it->first), NBIN, minEff, maxEff);
       hNClustersMatchedToGen[it->first] = new TH1F(Form("hNClustersMatchedToGen_%d", it->first),Form("hNClustersMatchedToGen_%d", it->first), 10, -0.5, 9.5);
+      hNTotGen[it->first] = new TH1F(Form("hNTotGen_%d", it->first),Form("hNTotGen_%d", it->first), 50, -0.5, 49.5);
   }
   
+  
+  TH1F * hNGenMatchedToCluster = new TH1F ("hNGenMatchedToCluster", "hNGenMatchedToCluster", 20, -0.5, 19.5);
   
   
   SCEPCal_GeometryHelper myGeometry;
@@ -213,14 +223,9 @@ int main(int argc, char** argv)
       
       std::cout << "processing event: " << iEvt << "\r" << std::flush;
 
-    /*      
+      //**************************************************************//
       //                           DR HCAL
-      float ene_HC_th   = 0.04;
-      float totDRHEne   = 0;
-      float totDRHScint = 0;
-      float totDRHCher  = 0;
-      
-      float HC_seed_th = 0.4;
+      //**************************************************************//
       std::vector<CalHit> myHcHits;
       std::vector<CalSeed> myHcSeeds;
       
@@ -320,7 +325,7 @@ int main(int argc, char** argv)
               }
             }                    
       }
-      */
+      
       
       
       //**************************************************************//
@@ -360,7 +365,7 @@ int main(int argc, char** argv)
       
     
 
-      
+      hNEcalSeeds->Fill(myEcSeedsCleaned.size());
 //       std::cout << "Matching gen level with ECAL clusters" << std::endl;
       
       
@@ -388,8 +393,7 @@ int main(int argc, char** argv)
           
           double truth_phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
-          if (abs(eta)>etaAcceptance) continue;
-                    
+          if (abs(eta)>etaAcceptance) continue;                    
           double truth_theta = 2*atan(exp(-eta));
           truth_theta = M_PI- truth_theta;
           
@@ -414,41 +418,37 @@ int main(int argc, char** argv)
           hNClustersMatchedToGen[abs(pdgId)]->Fill(matchedToCluster);
           if (matchedToCluster>=1) nGenMatchToCluster[abs(pdgId)]++;
       }
-      
-      
-      
+                  
       for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
       {
+          hNTotGen[it->first]->Fill(nTotGen[it->first]);
           if (nTotGen[it->first]>0)
           {
               float eff = float(nGenMatchToCluster[it->first])/float(nTotGen[it->first]);
               hEffGenMatchedToCluster[it->first]->Fill(eff);
           }
       }
-          
 
-          
       
-                                                                
-/*      
       //       std::cout << "Matching ECAL clusters with gen level" << std::endl;
       for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
       { 
           CalSeed this_seed = myEcSeedsCleaned.at(iseed);
           float seed_theta = this_seed.GetTheta();
           float seed_phi   = this_seed.GetPhi();
-          
+          if (abs(this_seed.GetEta())>etaAcceptance) continue;
+          int nGenMatchedToCluster = 0;
           
           for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
           {
               
               int    pdgId = myTruthTV.mcs_pdgId->at(i);
-              double ene   = myTruthTV.mcs_E->at(i);
-              if (ene<0.1) continue;
-              
+//               double ene   = myTruthTV.mcs_E->at(i);
+//               if (ene<) continue;
+              if (pdgId == 12 || pdgId == 14 || pdgId == 16) continue; //ignore neutrinos
+
               double truth_phi   = myTruthTV.mcs_phi->at(i);
-              double eta   = myTruthTV.mcs_eta->at(i);
-              int charge = myTruthTV.mcs_charge->at(i);              
+              double eta   = myTruthTV.mcs_eta->at(i);              
               double truth_theta = 2*atan(exp(-eta));
               truth_theta = M_PI- truth_theta;
               
@@ -456,17 +456,18 @@ int main(int argc, char** argv)
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaR)
               {
-                  CalCluster thisCluster;
-                  thisCluster.Init(this_seed, maxDeltaR);
-                  thisCluster.Clusterize(myEcHits, myHcHits);
+//                   CalCluster thisCluster;
+//                   thisCluster.Init(this_seed, maxDeltaR);
+//                   thisCluster.Clusterize(myEcHits, myHcHits);
                   
-                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV, clusterEcalEne = " << thisCluster.GetEcalClusterEne() << " GeV, clusterTotEne = " << thisCluster.GetTotEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
-                  this_seed.AddGenMatch(pdgId);
+//                   std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV, clusterEcalEne = " << thisCluster.GetEcalClusterEne() << " GeV, clusterTotEne = " << thisCluster.GetTotEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
+//                   this_seed.AddGenMatch(pdgId);
+                  nGenMatchedToCluster++;
               }
             }
-      }
-      */
-      
+            
+            hNGenMatchedToCluster->Fill(nGenMatchedToCluster);                        
+      }            
   }
   
   
@@ -527,6 +528,49 @@ int main(int argc, char** argv)
   }
     
   leg->Draw();
+  
+  
+  TCanvas * cNTotGen = new TCanvas ("cNTotGen", "cNTotGen", 600, 500);
+  cNTotGen->cd();
+  hNTotGen[22]->SetStats(0);
+  hNTotGen[22]->SetTitle(0);
+  hNTotGen[22]->Draw();
+//   hNTotGen[22]->GetXaxis()->SetRangeUser(0, 1.4);
+  hNTotGen[22]->GetYaxis()->SetRangeUser(1, hNTotGen[22]->GetMaximum()*5);
+  hNTotGen[22]->GetXaxis()->SetTitle("Fraction of gen-match to at least one ECAL cluster");
+//   hNTotGen[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
+  gPad->SetLogy();
+  
+  color_it = 0;
+  leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
+  
+  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  {
+      hNTotGen[it->first]->Draw("same");
+      hNTotGen[it->first]->SetLineWidth(2);
+      hNTotGen[it->first]->SetLineColor(mycolors[color_it]);
+      hNTotGen[it->first]->SetMarkerColor(mycolors[color_it]);
+      
+      
+      color_it++;
+      leg->AddEntry(hNTotGen[it->first], it->second.c_str(), "lp");
+  }
+    
+  leg->Draw();
+  
+  
+  TCanvas * cNEcalSeeds = new TCanvas ("cNEcalSeeds", "nGenMatchedToCluster", 600, 500);
+  cNEcalSeeds->cd();
+  hNEcalSeeds->Draw();
+  hNEcalSeeds->GetXaxis()->SetTitle("N of ECAL clusters");
+  
+  
+  TCanvas * cNGenMatchedToCluster = new TCanvas ("cNGenMatchedToCluster", "nGenMatchedToCluster", 600, 500);
+  cNGenMatchedToCluster->cd();
+  hNGenMatchedToCluster->Draw();
+  hNGenMatchedToCluster->GetXaxis()->SetTitle("N of gen particles matched to ECAL cluster");
+  
+  
   
   
   
