@@ -99,11 +99,10 @@ int main(int argc, char** argv)
   gStyle->SetLegendFont(42);
   gStyle->SetLegendTextSize(0.035);
   TLegend * leg;
+
   int mycolors[10] = {kBlack, kGreen+1, kBlue, kRed, kYellow+1, kCyan+1, kViolet, kOrange+1, kGray+1, kPink};
-  
-  
-//   bool SAVEPLOTS = false;  
-//   int energy = 100;
+
+  bool SAVEPLOTS = false;
   
   std::string output_tag = "zjj_scan_100";
   int NFILES = 4;
@@ -111,9 +110,6 @@ int main(int argc, char** argv)
   if (argc>2) NFILES = atoi(argv[2]);   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
 
-    
-  //define histos
-  
   
   double drh_S_norm  = 407;
   float maxDeltaR = 0.1;
@@ -519,9 +515,9 @@ int main(int argc, char** argv)
             
       color_it++;
       leg->AddEntry(hNTotGen[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cNTotGen->SaveAs("plots_pfa/cNTotGen.png");
   
   
   
@@ -549,9 +545,9 @@ int main(int argc, char** argv)
             
       color_it++;
       leg->AddEntry(hNEcalClustersMatchedToGen[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cNEcalClustersMatchedToGen->SaveAs("plots_pfa/cNEcalClustersMatchedToGen.png");
 
   
   TCanvas * cEffGenMatchedToEcalCluster = new TCanvas ("cEffGenMatchedToEcalCluster", "cEffGenMatchedToEcalCluster", 600, 500);
@@ -577,9 +573,9 @@ int main(int argc, char** argv)
       
       color_it++;
       leg->AddEntry(hEffGenMatchedToEcalCluster[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cEffGenMatchedToEcalCluster->SaveAs("plots_pfa/cEffGenMatchedToEcalCluster.png");
   
   
     TCanvas * cNEcalClustersMatchedToGen_vsEne = new TCanvas ("cNEcalClustersMatchedToGen_vsEne", "cNEcalClustersMatchedToGen_vsEne", 600, 500);
@@ -587,8 +583,8 @@ int main(int argc, char** argv)
   pNEcalClustersMatchedToGen_vsEne[22]->SetStats(0);
   pNEcalClustersMatchedToGen_vsEne[22]->SetTitle(0);
   pNEcalClustersMatchedToGen_vsEne[22]->Draw();
-//   pNEcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetRangeUser(0, 100);
-//   pNEcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetRangeUser(1, pNEcalClustersMatchedToGen_vsEne[22]->GetMaximum()*5);
+  pNEcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetRangeUser(0, 100);
+  pNEcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetRangeUser(0, 2);
   pNEcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetTitle("MC truth particle energy [GeV]");
   pNEcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetTitle("<N> of HCAL clusters matched to gen particle");
 //   pNEcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
@@ -606,9 +602,9 @@ int main(int argc, char** argv)
             
       color_it++;
       leg->AddEntry(pNEcalClustersMatchedToGen_vsEne[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cNEcalClustersMatchedToGen_vsEne->SaveAs("plots_pfa/cNEcalClustersMatchedToGen_vsEne.png");
   
 
   //gen to HCAL cluster matches
@@ -635,9 +631,9 @@ int main(int argc, char** argv)
             
       color_it++;
       leg->AddEntry(hNHcalClustersMatchedToGen[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cNHcalClustersMatchedToGen->SaveAs("plots_pfa/cNHcalClustersMatchedToGen.png");
 
   
   TCanvas * cEffGenMatchedToHcalCluster = new TCanvas ("cEffGenMatchedToHcalCluster", "cEffGenMatchedToHcalCluster", 600, 500);
@@ -663,9 +659,9 @@ int main(int argc, char** argv)
       
       color_it++;
       leg->AddEntry(hEffGenMatchedToHcalCluster[it->first], it->second.c_str(), "lp");
-  }
-    
+  }    
   leg->Draw();
+  if (SAVEPLOTS) cEffGenMatchedToHcalCluster->SaveAs("plots_pfa/cEffGenMatchedToHcalCluster.png");
   
   
   TCanvas * cNHcalClustersMatchedToGen_vsEne = new TCanvas ("cNHcalClustersMatchedToGen_vsEne", "cNHcalClustersMatchedToGen_vsEne", 600, 500);
@@ -673,8 +669,8 @@ int main(int argc, char** argv)
   pNHcalClustersMatchedToGen_vsEne[22]->SetStats(0);
   pNHcalClustersMatchedToGen_vsEne[22]->SetTitle(0);
   pNHcalClustersMatchedToGen_vsEne[22]->Draw();
-//   pNHcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetRangeUser(0, 100);
-//   pNHcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetRangeUser(1, pNHcalClustersMatchedToGen_vsEne[22]->GetMaximum()*5);
+  pNHcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetRangeUser(0, 100);
+  pNHcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetRangeUser(0, 2);
   pNHcalClustersMatchedToGen_vsEne[22]->GetXaxis()->SetTitle("MC truth particle energy [GeV]");
   pNHcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetTitle("<N> of HCAL clusters matched to gen particle");
 //   pNHcalClustersMatchedToGen_vsEne[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
@@ -695,33 +691,33 @@ int main(int argc, char** argv)
   }
     
   leg->Draw();
+  if (SAVEPLOTS) cNHcalClustersMatchedToGen_vsEne->SaveAs("plots_pfa/cNHcalClustersMatchedToGen_vsEne.png");
   
   
   
-  
-  TCanvas * cNHcalSeeds = new TCanvas ("cNHcalSeeds", "nGenMatchedToCluster", 600, 500);
+  TCanvas * cNHcalSeeds = new TCanvas ("cNHcalSeeds", "cNHcalSeeds", 600, 500);
   cNHcalSeeds->cd();
   hNHcalSeeds->Draw();
-  hNHcalSeeds->GetXaxis()->SetTitle("N of HCAL clusters");
-  
+  hNHcalSeeds->GetXaxis()->SetTitle("N of HCAL clusters");  
+  if (SAVEPLOTS) cNHcalSeeds->SaveAs("plots_pfa/cNHcalSeeds.png");
   
   TCanvas * cNGenMatchedToHcalCluster = new TCanvas ("cNGenMatchedToHcalCluster", "nGenMatchedToHcalCluster", 600, 500);
   cNGenMatchedToHcalCluster->cd();
   hNGenMatchedToHcalCluster->Draw();
   hNGenMatchedToHcalCluster->GetXaxis()->SetTitle("N of gen particles matched to HCAL cluster");
+  if (SAVEPLOTS) cNGenMatchedToHcalCluster->SaveAs("plots_pfa/cNGenMatchedToHcalCluster.png");
   
-  
-  TCanvas * cNEcalSeeds = new TCanvas ("cNEcalSeeds", "nGenMatchedToCluster", 600, 500);
+  TCanvas * cNEcalSeeds = new TCanvas ("cNEcalSeeds", "cNEcalSeeds", 600, 500);
   cNEcalSeeds->cd();
   hNEcalSeeds->Draw();
   hNEcalSeeds->GetXaxis()->SetTitle("N of ECAL clusters");
-  
+  if (SAVEPLOTS) cNEcalSeeds->SaveAs("plots_pfa/cNEcalSeeds.png");
   
   TCanvas * cNGenMatchedToCluster = new TCanvas ("cNGenMatchedToCluster", "nGenMatchedToCluster", 600, 500);
   cNGenMatchedToCluster->cd();
   hNGenMatchedToCluster->Draw();
   hNGenMatchedToCluster->GetXaxis()->SetTitle("N of gen particles matched to ECAL cluster");
-  
+  if (SAVEPLOTS) cNGenMatchedToCluster->SaveAs("plots_pfa/cNGenMatchedToCluster.png");
   
   
   
