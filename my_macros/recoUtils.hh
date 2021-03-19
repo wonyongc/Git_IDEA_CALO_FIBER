@@ -32,6 +32,7 @@ class CalHit
         int GetHitId();
         int GetSide();
         float GetTheta();
+        float GetEta();
         float GetPhi();
         float GetEne();            
 };
@@ -58,6 +59,7 @@ class CalSeed
         int GetHitId();
         int GetSide();
         float GetTheta();
+        float GetEta();
         float GetPhi();
         float GetEne();
         std::vector<int> GetGenMatch();
