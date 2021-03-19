@@ -24,6 +24,7 @@ void  CalHit::SetEne (float this_ene)  {  ene = this_ene;}
 int   CalHit::GetHitId ()  {  return hit_id;}
 int   CalHit::GetSide ()  {  return side;}
 float CalHit::GetTheta() {  return theta;}
+float CalHit::GetEta() {  return -log(tan(theta/2));}
 float CalHit::GetPhi() {  return phi;}
 float CalHit::GetEne(){  return ene;}
 
@@ -50,6 +51,7 @@ void  CalSeed::AddGenMatch (int thisPdgId){  gen_matched_pdgId.push_back(thisPdg
 int   CalSeed::GetHitId ()  {  return hit_id;}
 int   CalSeed::GetSide ()  {  return side;}
 float CalSeed::GetTheta() {  return theta;}
+float CalSeed::GetEta() {  return -log(tan(theta/2));}
 float CalSeed::GetPhi() {  return phi;}
 float CalSeed::GetEne(){  return ene;}
 std::vector<int> CalSeed::GetGenMatch(){  return gen_matched_pdgId;}
