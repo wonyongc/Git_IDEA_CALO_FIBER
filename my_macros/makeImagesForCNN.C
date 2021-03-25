@@ -131,15 +131,15 @@ int main(int argc, char** argv)
   
   std::vector<std::string> filenames;
   
-  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
-  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");
-//   filenames.push_back("../root_files/merged/output_SCEPCal_fixedPos_e-_5GeV.root.root");
-  
+//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root");
+//   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi-_Iso+Uniform1-100_GeV.root");  
   
 //   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root");
 //   filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_pi0_Iso+Uniform1-100_GeV.root");
   
-
+  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root");
+  filenames.push_back("../root_files/prod/output_SCEPCal_fixedPos_kaon0L_Iso+Uniform1-100_GeV.root");
+  
   
   TChain * TreeRun = new TChain("B4", "B4");
   for (long unsigned int iFile = 0; iFile < filenames.size(); iFile++)
@@ -155,11 +155,12 @@ int main(int argc, char** argv)
   myG4TreeVars myTV;
   InitG4Tree (TreeRun, myTV);
   TreeRun->GetEntry(0);
-  std::cout << "primary name: "    << myTV.PrimaryParticleName << std::endl;  
+  std::cout << "primary name: " << myTV.PrimaryParticleName << std::endl;  
 
   //create output tree for CNN
-  TFile* outputFile = new TFile("../CNN_trees/output_forCNN_pi-e-_Iso+Uniform.root","RECREATE"); 
+//   TFile* outputFile = new TFile("../CNN_trees/output_forCNN_pi-e-_Iso+Uniform.root","RECREATE"); 
 //   TFile* outputFile = new TFile("../CNN_trees/output_forCNN_gamma_pi0_Iso+Uniform.root","RECREATE");
+   TFile* outputFile = new TFile("../CNN_trees/output_forCNN_gamma_kaon0L_Iso+Uniform.root","RECREATE");
   
 //   TFile* outputFile = new TFile("../CNN_trees/output_temp.root","RECREATE"); 
   
