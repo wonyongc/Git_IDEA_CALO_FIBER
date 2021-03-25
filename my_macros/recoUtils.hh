@@ -88,9 +88,26 @@ class CalCluster
     float totEne;
     
     
+    int NPHI_EC    = 1130;
+    int NTHETA_EC  = 180+180;
+    int NPHI_DRT   = 36;
+    int NTHETA_DRT = 40+40;
+    
+    double bin_width_theta_EC = M_PI/NTHETA_EC;
+    double bin_width_theta_HC = M_PI/NTHETA_DRT;
+    
+    double bin_width_phi_EC = 2*M_PI/NPHI_EC;
+    double bin_width_phi_HC = 2*M_PI/NPHI_DRT;
+    
+    int myImageSize = 15;
+    float image_E1[225];
+    float image_E2[225];
+    float image_HC[225];
+    
+    
     public:
-        void Init(CalSeed mySeed, float deltaR);
-        void Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> hcalHits);
+        void Init(CalSeed mySeed, float deltaR, int imageSize);
+        void Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> hcalHits, std::vector<CalHit> ecalHitsF, std::vector<CalHit> ecalHitsR);
         ~CalCluster();
         void SetSeed(CalSeed this_seed);        
                 
@@ -100,6 +117,7 @@ class CalCluster
         float GetHcalClusterEne();
         float GetEcalClusterNHits();
         float GetHcalClusterNHits();
+        float* GetImage(std::string segment_name);
                     
 };
 
