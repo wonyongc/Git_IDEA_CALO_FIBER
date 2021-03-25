@@ -334,7 +334,7 @@ int main(int argc, char** argv)
       float ene_EC_th = 0.04;
       float totEcalEne = 0;
       
-      float EC_seed_th = 0.3;
+      float EC_seed_th = 0.15;
       std::vector<CalHit> myEcHits;
       std::vector<CalSeed> myEcSeeds;
       
