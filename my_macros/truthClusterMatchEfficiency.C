@@ -161,7 +161,8 @@ int main(int argc, char** argv)
   TH1F * hNHcalSeeds = new TH1F ("hNHcalSeeds", "hNHcalSeeds", 100, -0.5, 99.5);
   TH1F * hNCaloSeeds = new TH1F ("hNCaloSeeds", "hNCaloSeeds", 100, -0.5, 99.5);
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+//   for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
       
       hNTotGen[it->first] = new TH1F(Form("hNTotGen_%d", it->first),Form("hNTotGen_%d", it->first), 50, -0.5, 49.5);
