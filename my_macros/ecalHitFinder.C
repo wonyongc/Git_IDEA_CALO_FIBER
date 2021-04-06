@@ -203,7 +203,8 @@ int main(int argc, char** argv)
 
   
 
-  float maxDeltaR = 0.1;
+  float maxDeltaR_Hcal = 0.1;
+  float maxDeltaR_Ecal = 0.02;
 //   NEVENTS = 1000;
   
 //   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
@@ -291,7 +292,7 @@ int main(int argc, char** argv)
       
       std::cout << "Number of HCAL seeds found: " << myHcSeeds.size() << std::endl;
       std::cout << "Cleaning up HCAL seeds too close to each other" << std::endl;
-      std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaR);
+      std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaR_Hcal);
                         
       std::cout << "Matching HCAL clusters with gen level" << std::endl;
       for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
@@ -317,7 +318,7 @@ int main(int argc, char** argv)
               
               
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaR)
+              if (dd < maxDeltaR_Hcal)
               {
                   std::cout  << "HCAL cluster (seedEne = "<< this_seed.GetEne() << " GeV) " << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" << std::endl;
                   this_seed.AddGenMatch(pdgId);
@@ -370,7 +371,7 @@ int main(int argc, char** argv)
       std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;
       std::cout << "Number of ECAL seeds found: " << myEcSeeds.size() << std::endl;      
       std::cout << "Cleaning up ECAL seeds too close to each other" << std::endl;
-      std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaR);
+      std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaR_Ecal);
       
     
       std::cout << "Matching ECAL clusters with gen level" << std::endl;
@@ -397,13 +398,10 @@ int main(int argc, char** argv)
               
               
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaR)
+              if (dd < maxDeltaR_Ecal)
               {
-                  CalCluster thisCluster;
-                  thisCluster.Init(this_seed, maxDeltaR);
-                  thisCluster.Clusterize(myEcHits, myHcHits);
                   
-                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV, clusterEcalEne = " << thisCluster.GetEcalClusterEne() << " GeV, clusterTotEne = " << thisCluster.GetTotEne() << " GeV) "  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
+                  std::cout  << "ECAL cluster (seedEne = "<< this_seed.GetEne() << " GeV)"  << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" <<  std::endl;
                   this_seed.AddGenMatch(pdgId);
               }
             }
@@ -436,7 +434,7 @@ int main(int argc, char** argv)
               float seed_phi   = this_seed.GetPhi();
             
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaR)
+              if (dd < maxDeltaR_Ecal)
               {                  
                   std::cout << "MC truth gen level particle " << pdgId << " matched to ECAL cluster " << iseed << std::endl;
                   matchedToCluster ++;
@@ -512,7 +510,7 @@ int main(int argc, char** argv)
   for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
   {          
       CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR, maxDeltaR);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
       std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
       el1->SetLineColor(kRed);
       el1->SetFillStyle(0);
@@ -534,7 +532,7 @@ int main(int argc, char** argv)
   for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
   {          
       CalSeed this_seed = myHcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR, maxDeltaR);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
       std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
       el1->SetLineColor(kYellow+2);
       el1->SetFillStyle(0);
