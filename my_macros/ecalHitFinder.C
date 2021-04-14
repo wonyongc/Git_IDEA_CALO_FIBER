@@ -78,10 +78,10 @@ int main(int argc, char** argv)
     
   //define histos
   
-  int NPHI_TL1   = 186-1;
-  int NTHETA_TL1 = 29*16-1;
-  int NPHI_TL2   = 186*16-1;
-  int NTHETA_TL2 = 29-1;
+  int NPHI_TL1   = 186;
+  int NTHETA_TL1 = 29*16;
+  int NPHI_TL2   = 186*16;
+  int NTHETA_TL2 = 29;
   
   int NPHI_EC    = 1130;
   int NTHETA_EC  = 360;
@@ -119,17 +119,19 @@ int main(int argc, char** argv)
   TH2F * hGrid_DRT_S = new TH2F ("hGrid_DRT_S", "hGrid_DRT_S", NTHETA_DRT, minTheta-bin_width_theta_DRT/2, maxTheta-bin_width_theta_DRT/2, NPHI_DRT, minPhi-bin_width_phi_DRT/2, maxPhi-bin_width_phi_DRT/2);
   TH2F * hGrid_DRT_C = new TH2F ("hGrid_DRT_C", "hGrid_DRT_C", NTHETA_DRT, minTheta-bin_width_theta_DRT/2, maxTheta-bin_width_theta_DRT/2, NPHI_DRT, minPhi-bin_width_phi_DRT/2, maxPhi-bin_width_phi_DRT/2);
   
-  TH2F * hTruthFloor = new TH2F ("hTruthFloor", "hTruthFloor", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
-  TH2F * hTruthChargedEM = new TH2F ("hTruthChargedEM", "hTruthChargedEM", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
-  TH2F * hTruthNeutralEM = new TH2F ("hTruthNeutralEM", "hTruthNeutralEM", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
-  TH2F * hTruthChargedHAD = new TH2F ("hTruthChargedHAD", "hTruthChargedHAD", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
-  TH2F * hTruthNeutralHAD = new TH2F ("hTruthNeutralHAD", "hTruthNeutralHAD", NTHETA_EC, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  int rebinTruth = 4;
+  TH2F * hTruthFloor      = new TH2F ("hTruthFloor", "hTruthFloor",           NTHETA_EC/rebinTruth, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC/rebinTruth, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  TH2F * hTruthChargedEM  = new TH2F ("hTruthChargedEM", "hTruthChargedEM",   NTHETA_EC/rebinTruth, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC/rebinTruth, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  TH2F * hTruthNeutralEM  = new TH2F ("hTruthNeutralEM", "hTruthNeutralEM",   NTHETA_EC/rebinTruth, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC/rebinTruth, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  TH2F * hTruthChargedHAD = new TH2F ("hTruthChargedHAD", "hTruthChargedHAD", NTHETA_EC/rebinTruth, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC/rebinTruth, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
+  TH2F * hTruthNeutralHAD = new TH2F ("hTruthNeutralHAD", "hTruthNeutralHAD", NTHETA_EC/rebinTruth, minTheta-bin_width_theta_EC/2, maxTheta-bin_width_theta_EC/2, NPHI_EC/rebinTruth, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2);
   
   
   
   SCEPCal_GeometryHelper myGeometry;
 
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
   
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -145,7 +147,8 @@ int main(int argc, char** argv)
   std::cout << "NEVENTS = " << NEVENTS << std::endl;
   
   
-  TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
+//   TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
+  TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_100_job_0_output_tuple.root","READ");
   TTree* TruthTree = (TTree*) TruthFile->Get("truth");
   myTruthTreeVars myTruthTV;
   InitTruthTree (TruthTree, myTruthTV);
@@ -205,6 +208,16 @@ int main(int argc, char** argv)
 
   float maxDeltaR_Hcal = 0.1;
   float maxDeltaR_Ecal = 0.02;
+  
+  float ene_EC_th = 0.01;      
+  float EC_seed_th = 0.1;
+      
+  float ene_HC_th   = 0.01;
+  float HC_seed_th = 0.1;
+  
+  float MC_ene_th = 0.1;
+
+
 //   NEVENTS = 1000;
   
 //   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
@@ -219,12 +232,11 @@ int main(int argc, char** argv)
       //**************************************************************//
       //                           DR HCAL
       //**************************************************************//
-      float ene_HC_th   = 0.04;
       float totDRHEne   = 0;
       float totDRHScint = 0;
       float totDRHCher  = 0;
       
-      float HC_seed_th = 0.4;
+      
       std::vector<CalHit> myHcHits;
       std::vector<CalSeed> myHcSeeds;
       
@@ -236,7 +248,7 @@ int main(int argc, char** argv)
           double this_ene   = myTV.VectorL->at(i)/1000.;      
           double this_scint = myTV.VectorSignalsL->at(i);                
           double this_cher  = myTV.VectorSignalsCherL->at(i);
-          if (this_ene>ene_HC_th)
+          if (this_scint/drh_S_norm>ene_HC_th)
           {
               hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint/drh_S_norm);                              
               hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher/drh_C_norm);    
@@ -265,7 +277,7 @@ int main(int argc, char** argv)
           double this_ene   = myTV.VectorR->at(i)/1000.;
           double this_scint = myTV.VectorSignalsR->at(i);
           double this_cher  = myTV.VectorSignalsCherR->at(i);
-          if (this_ene>ene_HC_th)
+          if (this_scint/drh_S_norm>ene_HC_th)
           {
               hGrid_DRT_S ->Fill(this_theta, this_phi, this_scint/drh_S_norm);
               hGrid_DRT_C ->Fill(this_theta, this_phi, this_cher/drh_C_norm);
@@ -308,7 +320,7 @@ int main(int argc, char** argv)
               
               int    pdgId = myTruthTV.mcs_pdgId->at(i);
               double ene   = myTruthTV.mcs_E->at(i);
-              if (ene<0.1) continue;
+              if (ene<MC_ene_th) continue;
               
               double truth_phi   = myTruthTV.mcs_phi->at(i);
               double eta   = myTruthTV.mcs_eta->at(i);
@@ -332,10 +344,10 @@ int main(int argc, char** argv)
       //                             ECAL
       //**************************************************************//
 
-      float ene_EC_th = 0.04;
+      
       float totEcalEne = 0;
       
-      float EC_seed_th = 0.15;
+      
       std::vector<CalHit> myEcHits;
       std::vector<CalSeed> myEcSeeds;
       
@@ -388,7 +400,7 @@ int main(int argc, char** argv)
               
               int    pdgId = myTruthTV.mcs_pdgId->at(i);
               double ene   = myTruthTV.mcs_E->at(i);
-              if (ene<0.1) continue;
+              if (ene<MC_ene_th) continue;
               
               double truth_phi   = myTruthTV.mcs_phi->at(i);
               double eta   = myTruthTV.mcs_eta->at(i);
@@ -416,7 +428,7 @@ int main(int argc, char** argv)
       {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
-          if (ene<0.1) continue;
+          if (ene<MC_ene_th) continue;
           
           int matchedToCluster = 0;
           
@@ -495,54 +507,7 @@ int main(int argc, char** argv)
   lEndcapPlus->SetLineWidth(2);
 
 
-  TCanvas * cCalSeeds = new TCanvas("cCalSeeds", "cCalSeeds", 1800, 1600);
-  cCalSeeds->Divide(2,1);
-  cCalSeeds->cd(1);
-  hGrid_EC_T->Draw("BOX");
-  hGrid_EC_T->SetStats(0);
-  hGrid_EC_T->SetFillColor(kCyan+2);
-  hGrid_EC_T->SetTitle("E1+E2");
-  hGrid_EC_T->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_EC_T->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_EC_T->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_EC_T->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-      
-  for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
-  {          
-      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
-      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
-      el1->SetLineColor(kRed);
-      el1->SetFillStyle(0);
-      el1->SetLineWidth(2);
-      el1->Draw();
-  }
-  
-  cCalSeeds->cd(2);
-  hGrid_DRT_S->Draw("BOX");
-  hGrid_DRT_S->SetLineColor(kGreen+2);
-  hGrid_DRT_S->SetFillColor(kGreen+2);
-  hGrid_DRT_S->SetStats(0);
-  hGrid_DRT_S->SetTitle("Dual Readout HCAL Tower");
-  hGrid_DRT_S->GetXaxis()->SetTitle("#theta [rad]");
-  hGrid_DRT_S->GetYaxis()->SetTitle("#phi [rad]");
-  hGrid_DRT_S->GetXaxis()->SetRangeUser(minTheta, maxTheta);
-  hGrid_DRT_S->GetYaxis()->SetRangeUser(minPhi, maxPhi);
-  
-  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
-  {          
-      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
-      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
-      el1->SetLineColor(kYellow+2);
-      el1->SetFillStyle(0);
-      el1->SetLineWidth(2);
-      el1->Draw();
-  }
-  
-  
-  if (SAVEPLOTS)   cCalSeeds->SaveAs(Form("plots/cCalSeeds_%s.png", output_tag.c_str()));
-  
+
   
   
   
@@ -620,17 +585,85 @@ int main(int argc, char** argv)
   
 //   gPad->SetLogz();
   cOverview->SaveAs(Form("plots/event_display/cOverview_%d.png", selEv));
+
   
-//   hGrid_TT->Reset();
-//   hGrid_EC_F->Reset();
-//   hGrid_EC_R->Reset();       
-//   hGrid_EC_T->Reset();       
-//   hGrid_DRT_S->Reset();
-//   hGrid_DRT_C->Reset();
-//   
-//   
-//   
   
+  
+  
+    TCanvas * cCalSeeds = new TCanvas("cCalSeeds", "cCalSeeds", 2400, 1600);
+  cCalSeeds->Divide(3,1);
+  cCalSeeds->cd(1);
+  hGrid_EC_T->Draw("BOX");
+  hGrid_EC_T->SetStats(0);
+  hGrid_EC_T->SetFillColor(kCyan+2);
+  hGrid_EC_T->SetTitle("E1+E2");
+  hGrid_EC_T->GetXaxis()->SetTitle("#theta [rad]");
+  hGrid_EC_T->GetYaxis()->SetTitle("#phi [rad]");
+  hGrid_EC_T->GetXaxis()->SetRangeUser(minTheta, maxTheta);
+  hGrid_EC_T->GetYaxis()->SetRangeUser(minPhi, maxPhi);
+      
+  for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+  {          
+      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
+      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      el1->SetLineColor(kRed);
+      el1->SetFillStyle(0);
+      el1->SetLineWidth(2);
+      el1->Draw();
+  }
+  
+  cCalSeeds->cd(2);
+  hGrid_DRT_S->Draw("BOX");
+  hGrid_DRT_S->SetLineColor(kGreen+2);
+  hGrid_DRT_S->SetFillColor(kGreen+2);
+  hGrid_DRT_S->SetStats(0);
+  hGrid_DRT_S->SetTitle("Dual Readout HCAL Tower");
+  hGrid_DRT_S->GetXaxis()->SetTitle("#theta [rad]");
+  hGrid_DRT_S->GetYaxis()->SetTitle("#phi [rad]");
+  hGrid_DRT_S->GetXaxis()->SetRangeUser(minTheta, maxTheta);
+  hGrid_DRT_S->GetYaxis()->SetRangeUser(minPhi, maxPhi);
+  
+  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+  {          
+      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
+      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      el1->SetLineColor(kYellow+2);
+      el1->SetFillStyle(0);
+      el1->SetLineWidth(2);
+      el1->Draw();
+  }
+ 
+  cCalSeeds->cd(3);
+  
+  hStackedTruth->Draw("BOX");
+  for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+  {          
+      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
+      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      el1->SetLineColor(kRed);
+      el1->SetFillStyle(0);
+      el1->SetLineWidth(2);
+      el1->SetLineStyle(7);
+      el1->Draw();
+  }
+  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+  {          
+      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
+      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      el1->SetLineColor(kYellow+2);
+      el1->SetFillStyle(0);
+      el1->SetLineWidth(2);
+      el1->SetLineStyle(7);
+      el1->Draw();
+  }
+  leg->Draw();
+  
+  
+  if (SAVEPLOTS)   cCalSeeds->SaveAs(Form("plots/cCalSeeds_%s.png", output_tag.c_str()));
   
   
   
