@@ -59,15 +59,18 @@ float CalSeed::GetEne(){  return ene;}
 std::vector<int> CalSeed::GetGenMatch(){  return gen_matched_pdgId;}
 
 
-void CalCluster::Init (CalSeed this_seed, float deltaR, int imageSize) 
+void CalCluster::Init (CalSeed this_seed, float deltaR_ECAL, float deltaR_HCAL, int imageSize, std::string type) 
 {
   
   seed = this_seed;
-  maxDeltaR = deltaR;
+  maxDeltaR_ECAL = deltaR_ECAL;
+  maxDeltaR_HCAL = deltaR_HCAL;
   myImageSize = imageSize;
+  myType = type;
     
   EcalClusterEne = 0;  
   HcalClusterEne = 0;  
+  HcalClusterEneNarrow = 0;  
   EcalClusterNHits = 0;
   HcalClusterNHits = 0;    
   totEne = 0;
@@ -79,13 +82,16 @@ CalCluster::~CalCluster(){};
 void CalCluster::Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> hcalHits, std::vector<CalHit> ecalHitsF, std::vector<CalHit> ecalHitsR)
 {
       
-    EcalClusterEne = 0;  
+    EcalClusterEne = 0;
+    EcalClusterEneF = 0;  
+    EcalClusterEneR = 0;  
     HcalClusterEne = 0;  
+    HcalClusterEneNarrow = 0;  
     EcalClusterNHits = 0;
     HcalClusterNHits = 0;    
     totEne = 0;
     
-    TH2F * hImage_E1_temp  = new TH2F ("hImage_E1_temp", "hImage_E1_temp", myImageSize, -bin_width_theta_EC*(myImageSize/2), bin_width_theta_EC*(myImageSize/2), myImageSize, -bin_width_phi_EC*(myImageSize/2), bin_width_phi_EC*(myImageSize/2));
+    TH2F * hImage_E1_temp  = new TH2F ("hImage_E1_temp", "hImage_E1_temp", myImageSize, -bin_width_theta_EC*myImageSize/2, bin_width_theta_EC*myImageSize/2, myImageSize, -bin_width_phi_EC*myImageSize/2, bin_width_phi_EC*myImageSize/2);
     TH2F * hImage_E2_temp  = new TH2F ("hImage_E2_temp", "hImage_E2_temp", myImageSize, -bin_width_theta_EC*myImageSize/2, bin_width_theta_EC*myImageSize/2, myImageSize, -bin_width_phi_EC*myImageSize/2, bin_width_phi_EC*myImageSize/2);
     TH2F * hImage_HC_temp  = new TH2F ("hImage_HC_temp", "hImage_HC_temp", myImageSize, -bin_width_theta_HC*myImageSize/2, bin_width_theta_HC*myImageSize/2, myImageSize, -bin_width_phi_HC*myImageSize/2, bin_width_phi_HC*myImageSize/2);
     
@@ -102,9 +108,11 @@ void CalCluster::Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> h
         CalHit this_hitR = ecalHitsR.at(i);
         hImage_E2_temp ->Fill(hit_theta-seed.GetTheta(), hit_phi-seed.GetPhi(), this_hitR.GetEne());
         
-        if (dd < maxDeltaR)
+        if (dd < maxDeltaR_ECAL)
         {
             EcalClusterEne+=this_hit.GetEne();
+            EcalClusterEneF+=this_hitF.GetEne();
+            EcalClusterEneR+=this_hitR.GetEne();
             EcalClusterNHits++;            
         }        
     }
@@ -118,7 +126,11 @@ void CalCluster::Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> h
         float dd = sqrt(pow(hit_theta-seed.GetTheta(),2) + pow(hit_phi-seed.GetPhi(),2));
         
         hImage_HC_temp ->Fill(hit_theta-seed.GetTheta(), hit_phi-seed.GetPhi(), this_hit.GetEne());
-        if (dd < maxDeltaR)
+        if (dd < maxDeltaR_ECAL)
+        {
+            HcalClusterEneNarrow+=this_hit.GetEne();
+        }
+        if (dd < maxDeltaR_HCAL)
         {
             HcalClusterEne+=this_hit.GetEne();
             HcalClusterNHits++;            
@@ -126,7 +138,20 @@ void CalCluster::Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> h
     }
     totEne = EcalClusterEne+HcalClusterEne;
     
-        
+    
+    /*
+    if   (     EcalClusterEne  > 0.25
+            && seed.GetEne()/EcalClusterEne < 0.8
+//             && EcalClusterEne/(EcalClusterEne+HcalClusterEneNarrow) >0.5
+         )
+    {
+        myType = "ecal";
+    }
+    else
+    {
+        myType = "hcal";
+    }*/
+    
     for (int iBinX = 0; iBinX<myImageSize; iBinX++)
     {
         for (int iBinY = 0; iBinY<myImageSize; iBinY++)
@@ -149,12 +174,17 @@ void CalCluster::Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> h
 
 void  CalCluster::SetSeed(CalSeed this_seed) {seed = this_seed;}
 
-CalSeed   CalCluster::GetSeed()  {return seed;}
+CalSeed CalCluster::GetSeed()  {return seed;}
 float CalCluster::GetTotEne(){return totEne;}
+float CalCluster::GetTotEneNarrow(){return (HcalClusterEneNarrow+EcalClusterEne);}
 float CalCluster::GetEcalClusterEne() {return EcalClusterEne;}
+float CalCluster::GetEcalClusterEneFront() {return EcalClusterEneF;}
+float CalCluster::GetEcalClusterEneRear() {return EcalClusterEneR;}
 float CalCluster::GetHcalClusterEne() {return HcalClusterEne;}
+float CalCluster::GetHcalClusterEneNarrow() {return HcalClusterEneNarrow;}
 float CalCluster::GetEcalClusterNHits() {return EcalClusterNHits;}
 float CalCluster::GetHcalClusterNHits() {return HcalClusterNHits;}
+std::string CalCluster::GetType() {return myType;}
 float* CalCluster::GetImage(std::string segment_name) 
 {
     if (segment_name == "E1") return image_E1;

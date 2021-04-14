@@ -77,15 +77,20 @@ class CalCluster
 {
     
     CalSeed seed;
-    float maxDeltaR;
+    float maxDeltaR_ECAL;
+    float maxDeltaR_HCAL;
     
     float EcalClusterEne;
+    float EcalClusterEneF;
+    float EcalClusterEneR;
     float HcalClusterEne;
+    float HcalClusterEneNarrow;
     
     float EcalClusterNHits;
     float HcalClusterNHits;
     
     float totEne;
+    std::string myType = "none";
     
     
     int NPHI_EC    = 1130;
@@ -106,17 +111,22 @@ class CalCluster
     
     
     public:
-        void Init(CalSeed mySeed, float deltaR, int imageSize);
+        void Init(CalSeed mySeed, float deltaR_ECAL, float deltaR_HCAL, int imageSize, std::string type);
         void Clusterize (std::vector<CalHit> ecalHits, std::vector<CalHit> hcalHits, std::vector<CalHit> ecalHitsF, std::vector<CalHit> ecalHitsR);
         ~CalCluster();
         void SetSeed(CalSeed this_seed);        
                 
         CalSeed GetSeed();
         float GetTotEne();
+        float GetTotEneNarrow();
         float GetEcalClusterEne();
+        float GetEcalClusterEneFront();
+        float GetEcalClusterEneRear();
         float GetHcalClusterEne();
+        float GetHcalClusterEneNarrow();
         float GetEcalClusterNHits();
         float GetHcalClusterNHits();
+        std::string GetType();
         float* GetImage(std::string segment_name);
                     
 };
