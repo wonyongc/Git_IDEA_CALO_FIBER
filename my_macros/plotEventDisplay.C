@@ -160,6 +160,9 @@ int main(int argc, char** argv)
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");
   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
   
+//           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+//         fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+  
   
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -184,7 +187,7 @@ int main(int argc, char** argv)
   {
 //       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
-      TFile * TruthFile = new TFile("../../HepMC_Files/zjj_scan_100_job_0_output_tuple.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_100_job_0_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
       InitTruthTree (TruthTree, myTruthTV);
