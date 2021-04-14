@@ -111,17 +111,25 @@ int main(int argc, char** argv)
   if (argc>2) NFILES = atoi(argv[2]);   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
 
-  
+  double ecal_S_norm = 0.985;
+//   double ecal_S_norm = 1.;
+  double LO  = 2000;
   double drh_S_norm  = 407;
-  float maxDeltaRMatch = 0.1;
-  float maxDeltaRSeed  = 0.1;
+  
+  float maxDeltaRMatchEcal   = 0.01;
+  float maxDeltaRSeedEcal    = 0.01;
+  float maxDeltaRClusterEcal = 0.02;
+  
+  float maxDeltaRMatchHcal = 0.1;  
+  float maxDeltaRSeedHcal  = 0.1;
+  
   float etaAcceptance = 1.4;
   
   float ene_EC_th = 0.01;
-  float EC_seed_th = 0.1;
+  float EC_seed_th = 0.05;
   
   float ene_HC_th   = 0.01;    
-  float HC_seed_th = 0.1;
+  float HC_seed_th = 0.05;
   
   float MC_ene_th = 0.5;
       
@@ -144,6 +152,10 @@ int main(int argc, char** argv)
   float minEff = 0; float maxEff = 3;
   
   std::map <int, TH1F*> hNTotGen;
+  std::map <int, TH1F*> hEneGen;
+  std::map <int, TH1F*> hEneTotRes;
+  std::map <int, TH1F*> hEneTotNarrowRes;
+  std::map <int, TH1F*> hEneECALRes;
   
   std::map <int, TH1F*> hEffGenMatchedToEcalCluster;
   std::map <int, TH1F*> hNEcalClustersMatchedToGen;
@@ -156,6 +168,14 @@ int main(int argc, char** argv)
   std::map <int, TH1F*> hEffGenMatchedToCaloCluster;
   std::map <int, TH1F*> hNCaloClustersMatchedToGen;
   std::map <int, TProfile*> pNCaloClustersMatchedToGen_vsEne;
+
+  std::map <int, TH2F*> h2EneReco_vsEneTruth;
+  
+  std::map <int, TH2F*> h2NClustersMatchedToGen;
+  std::map <int, TH2F*> h2EneFracECAL_HCAL;
+  std::map <int, TH2F*> h2EneNarrowFracECAL_HCAL;
+  std::map <int, TH2F*> h2EneECALFracECAL_HCAL;
+  std::map <int, TH2F*> h2EneECALFracECAL_Seed;
   
   TH1F * hNEcalSeeds = new TH1F ("hNEcalSeeds", "hNEcalSeeds", 100, -0.5, 99.5);
   TH1F * hNHcalSeeds = new TH1F ("hNHcalSeeds", "hNHcalSeeds", 100, -0.5, 99.5);
@@ -165,19 +185,32 @@ int main(int argc, char** argv)
   for (auto it : myPdgId)
   {
       
-      hNTotGen[it->first] = new TH1F(Form("hNTotGen_%d", it->first),Form("hNTotGen_%d", it->first), 50, -0.5, 49.5);
+      hNTotGen[it.first]         = new TH1F(Form("hNTotGen_%d", it.first),Form("hNTotGen_%d", it.first),                 50, -0.5, 49.5);
+      hEneGen[it.first]          = new TH1F(Form("hEneGen_%d", it.first),Form("hEneGen_%d", it.first),                   100, 0., 50.);
+      hEneTotRes[it.first]       = new TH1F(Form("hEneTotRes_%d", it.first),Form("hEneTotRes_%d", it.first),             400, -5., 5.);
+      hEneTotNarrowRes[it.first] = new TH1F(Form("hEneTotNarrowRes_%d", it.first),Form("hEneTotNarrowRes_%d", it.first), 400, -5., 5.);
+      hEneECALRes[it.first]      = new TH1F(Form("hEneECALRes_%d", it.first),Form("hEneECALRes_%d", it.first),           400, -5., 5.);
       
-      hEffGenMatchedToEcalCluster[it->first] = new TH1F(Form("hEffGenMatchedToEcalCluster_%d", it->first), Form("hEffGenMatchedToEcalCluster_%d", it->first), NBIN, minEff, maxEff);
-      hNEcalClustersMatchedToGen[it->first]  = new TH1F(Form("hNEcalClustersMatchedToGen_%d", it->first),Form("hNEcalClustersMatchedToGen_%d", it->first), 10, -0.5, 9.5);
-      pNEcalClustersMatchedToGen_vsEne[it->first] = new TProfile(Form("pNEcalClustersMatchedToGen_vsEne_%d", it->first),Form("pNEcalClustersMatchedToGen_vsEne_%d", it->first), 50, 0, 100);
+      hEffGenMatchedToEcalCluster[it.first] = new TH1F(Form("hEffGenMatchedToEcalCluster_%d", it.first), Form("hEffGenMatchedToEcalCluster_%d", it.first), NBIN, minEff, maxEff);
+      hNEcalClustersMatchedToGen[it.first]  = new TH1F(Form("hNEcalClustersMatchedToGen_%d", it.first),Form("hNEcalClustersMatchedToGen_%d", it.first), 10, -0.5, 9.5);
+      pNEcalClustersMatchedToGen_vsEne[it.first] = new TProfile(Form("pNEcalClustersMatchedToGen_vsEne_%d", it.first),Form("pNEcalClustersMatchedToGen_vsEne_%d", it.first), 50, 0, 100);
       
-      hEffGenMatchedToHcalCluster[it->first] = new TH1F(Form("hEffGenMatchedToHcalCluster_%d", it->first), Form("hEffGenMatchedToHcalCluster_%d", it->first), NBIN, minEff, maxEff);
-      hNHcalClustersMatchedToGen[it->first]  = new TH1F(Form("hNHcalClustersMatchedToGen_%d", it->first),Form("hNHcalClustersMatchedToGen_%d", it->first), 10, -0.5, 9.5);
-      pNHcalClustersMatchedToGen_vsEne[it->first] = new TProfile(Form("pNHcalClustersMatchedToGen_vsEne_%d", it->first),Form("pNHcalClustersMatchedToGen_vsEne_%d", it->first), 50, 0, 100);
+      hEffGenMatchedToHcalCluster[it.first] = new TH1F(Form("hEffGenMatchedToHcalCluster_%d", it.first), Form("hEffGenMatchedToHcalCluster_%d", it.first), NBIN, minEff, maxEff);
+      hNHcalClustersMatchedToGen[it.first]  = new TH1F(Form("hNHcalClustersMatchedToGen_%d", it.first),Form("hNHcalClustersMatchedToGen_%d", it.first), 10, -0.5, 9.5);
+      pNHcalClustersMatchedToGen_vsEne[it.first] = new TProfile(Form("pNHcalClustersMatchedToGen_vsEne_%d", it.first),Form("pNHcalClustersMatchedToGen_vsEne_%d", it.first), 50, 0, 100);
       
-      hEffGenMatchedToCaloCluster[it->first] = new TH1F(Form("hEffGenMatchedToCaloCluster_%d", it->first), Form("hEffGenMatchedToCaloCluster_%d", it->first), NBIN, minEff, maxEff);
-      hNCaloClustersMatchedToGen[it->first]  = new TH1F(Form("hNCaloClustersMatchedToGen_%d", it->first),Form("hNCaloClustersMatchedToGen_%d", it->first), 10, -0.5, 9.5);
-      pNCaloClustersMatchedToGen_vsEne[it->first] = new TProfile(Form("pNCaloClustersMatchedToGen_vsEne_%d", it->first),Form("pNCaloClustersMatchedToGen_vsEne_%d", it->first), 50, 0, 100);
+      hEffGenMatchedToCaloCluster[it.first] = new TH1F(Form("hEffGenMatchedToCaloCluster_%d", it.first), Form("hEffGenMatchedToCaloCluster_%d", it.first), NBIN, minEff, maxEff);
+      hNCaloClustersMatchedToGen[it.first]  = new TH1F(Form("hNCaloClustersMatchedToGen_%d", it.first),Form("hNCaloClustersMatchedToGen_%d", it.first), 10, -0.5, 9.5);
+      pNCaloClustersMatchedToGen_vsEne[it.first] = new TProfile(Form("pNCaloClustersMatchedToGen_vsEne_%d", it.first),Form("pNCaloClustersMatchedToGen_vsEne_%d", it.first), 50, 0, 100);
+      
+      h2EneReco_vsEneTruth[it.first] = new TH2F(Form("h2EneReco_vsEneTruth_%d", it.first),Form("h2EneReco_vsEneTruth_%d", it.first), 100, 0, 50, 500, 0, 5);
+      
+      h2NClustersMatchedToGen[it.first]  = new TH2F(Form("h2NClustersMatchedToGen_%d", it.first),Form("h2NClustersMatchedToGen_%d", it.first), 10, -0.5, 9.5, 10, -0.5, 9.5);
+      
+      h2EneFracECAL_HCAL[it.first]          = new TH2F(Form("h2EneFracECAL_HCAL_%d", it.first),Form("h2EneFracECAL_HCAL_%d", it.first),             100, 0., 10, 100, 0., 1.2);
+      h2EneNarrowFracECAL_HCAL[it.first]    = new TH2F(Form("h2EneNarrowFracECAL_HCAL_%d", it.first),Form("h2EneNarrowFracECAL_HCAL_%d", it.first), 100, 0., 10, 100, 0., 1.2);
+      h2EneECALFracECAL_HCAL[it.first]      = new TH2F(Form("h2EneECALFracECAL_HCAL_%d", it.first),Form("h2EneECALFracECAL_HCAL_%d", it.first),     100, 0., 10, 100, 0., 1.2);
+      h2EneECALFracECAL_Seed[it.first]      = new TH2F(Form("h2EneECALFracECAL_Seed_%d", it.first),Form("h2EneECALFracECAL_Seed_%d", it.first),     100, 0., 1.2,100, 0., 1.2);
       
   }
   
@@ -338,7 +371,7 @@ int main(int argc, char** argv)
 //       std::cout << "Number of HCAL seeds found: " << myHcSeeds.size() << std::endl;
 //       std::cout << "Cleaning up HCAL seeds too close to each other" << std::endl;
 
-      std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaRSeed);                        
+      std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaRSeedHcal);                        
       hNHcalSeeds->Fill(myHcSeedsCleaned.size());
       
       
@@ -365,7 +398,7 @@ int main(int argc, char** argv)
               
               
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)
+              if (dd < maxDeltaRMatchEcal)
               {
 //                   std::cout  << "HCAL cluster (seedEne = "<< this_seed.GetEne() << " GeV) " << iseed << " matched to MC truth gen level particle " << pdgId << " (energy = " << ene << " GeV)" << std::endl;
                   this_seed.AddGenMatch(pdgId);
@@ -395,6 +428,8 @@ int main(int argc, char** argv)
           double this_phi = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
+          double ecal_S = gRandom->Poisson(this_ene*LO)/ecal_S_norm/LO;
+          this_ene = ecal_S;
           if (this_ene>ene_EC_th)
           {
               CalHit new_hit;
@@ -417,7 +452,10 @@ int main(int argc, char** argv)
       }
 //       std::cout << "Number of ECAL seeds found: " << myEcSeeds.size() << std::endl;      
 //       std::cout << "Cleaning up ECAL seeds too close to each other" << std::endl;
-      std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaRSeed);          
+//       int seed_clust_size = 2;
+//       std::vector<CalSeed>  myEcSeedsCleaned = FindSeeds(myEcHits, maxDeltaRSeedEcal, seed_clust_size);
+
+      std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaRSeedEcal);
       hNEcalSeeds->Fill(myEcSeedsCleaned.size());
       
       
@@ -452,7 +490,7 @@ int main(int argc, char** argv)
               
               
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)
+              if (dd < maxDeltaRMatchEcal)
               {
                   this_seed.AddGenMatch(pdgId);
                   nGenMatchedToCaloCluster++;
@@ -461,7 +499,7 @@ int main(int argc, char** argv)
         
         
           CalCluster thisCluster;
-          thisCluster.Init(this_seed, maxDeltaRSeed, 15);
+          thisCluster.Init(this_seed, maxDeltaRClusterEcal, maxDeltaRSeedHcal, 15, "ecal");
           thisCluster.Clusterize(myEcHits, myHcHits, myEcHitsF, myEcHitsR);
           myCalClusters.push_back(thisCluster);
         
@@ -521,9 +559,7 @@ int main(int argc, char** argv)
                   hImage_HC_Sum->Draw("COLZ");
                   cPlotImageSum->Update();
               }
-          }
-
-            
+          }            
           hNGenMatchedToCluster->Fill(nGenMatchedToCaloCluster);                        
       }
       
@@ -535,14 +571,14 @@ int main(int argc, char** argv)
           float seed_phi   = this_seed.GetPhi();            
           bool HcalMatchedToEcalCluster = false;
           
-          //check if HCAL cluster is matched to ECAL cluster, if so skip HCAL cluster has already present in CalCluster collection
+          //check if HCAL cluster is matched to ECAL cluster, if so skip HCAL cluster since already present in CalCluster collection
           for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
           { 
             CalSeed ec_this_seed = myEcSeedsCleaned.at(iseed);
             float ec_seed_theta = ec_this_seed.GetTheta();
             float ec_seed_phi   = ec_this_seed.GetPhi();
             float dd = sqrt(pow(seed_theta-ec_seed_theta,2) + pow(seed_phi-ec_seed_phi,2));              
-            if (dd < maxDeltaRMatch*2)
+            if (dd < maxDeltaRMatchHcal)
             {
                 HcalMatchedToEcalCluster = true;
                 break;
@@ -561,7 +597,7 @@ int main(int argc, char** argv)
               truth_theta = M_PI- truth_theta;
               
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)
+              if (dd < maxDeltaRMatchHcal)
               {
                   this_seed.AddGenMatch(pdgId);                  
                   nHcalOnlyCluster++;
@@ -569,7 +605,7 @@ int main(int argc, char** argv)
           }
           
           CalCluster thisCluster;
-          thisCluster.Init(this_seed, maxDeltaRSeed, 15);
+          thisCluster.Init(this_seed, maxDeltaRClusterEcal, maxDeltaRSeedHcal, 15, "hcal");
           thisCluster.Clusterize(myEcHits, myHcHits, myEcHitsF, myEcHitsR);
           myCalClusters.push_back(thisCluster);
       }
@@ -597,24 +633,26 @@ int main(int argc, char** argv)
       std::map<int,int> nCaloClusterMatchedToGen;
       std::map<int,int> nTotGen;      
       
-      for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+      for (auto it : myPdgId)
       {
-          nEcalClusterMatchedToGen[it->first] = 0;
-          nHcalClusterMatchedToGen[it->first] = 0;
-          nTotGen[it->first] = 0;
+          nEcalClusterMatchedToGen[it.first] = 0;
+          nHcalClusterMatchedToGen[it.first] = 0;
+          nTotGen[it.first] = 0;
       }
       
       for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
       {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
-          if (ene<MC_ene_th) continue;
+          
+          if (ene < MC_ene_th) continue;
           auto it = myPdgId.find(abs(pdgId));
           if (it== myPdgId.end())
           {
               if (abs(pdgId) != 12 && abs(pdgId) != 14 && abs(pdgId) != 16) std::cout << "skipping particle not in my pdg id list: " << pdgId << std::endl;
               continue;
           }
+          hEneGen[abs(pdgId)]->Fill(ene);
           
           double truth_phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
@@ -634,7 +672,7 @@ int main(int argc, char** argv)
               float seed_theta = this_seed.GetTheta();
               float seed_phi   = this_seed.GetPhi();            
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)   matchedToEcalCluster ++;                            
+              if (dd < maxDeltaRMatchEcal)   matchedToEcalCluster ++;                            
           }
           hNEcalClustersMatchedToGen[abs(pdgId)]->Fill(matchedToEcalCluster);
           pNEcalClustersMatchedToGen_vsEne[abs(pdgId)]->Fill(ene, matchedToEcalCluster);
@@ -647,11 +685,14 @@ int main(int argc, char** argv)
               float seed_theta = this_seed.GetTheta();
               float seed_phi   = this_seed.GetPhi();            
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)   matchedToHcalCluster ++;                            
+              if (dd < maxDeltaRMatchHcal)   matchedToHcalCluster ++;                            
           }                    
           hNHcalClustersMatchedToGen[abs(pdgId)]->Fill(matchedToHcalCluster);
           pNHcalClustersMatchedToGen_vsEne[abs(pdgId)]->Fill(ene, matchedToHcalCluster);
           if (matchedToHcalCluster>0) nHcalClusterMatchedToGen[abs(pdgId)]++;
+          
+          h2NClustersMatchedToGen[abs(pdgId)]->Fill(matchedToEcalCluster, matchedToHcalCluster);
+          
           
           //Calo Cluster Match
           for (long unsigned int icluster = 0; icluster < myCalClusters.size(); icluster++)
@@ -661,8 +702,35 @@ int main(int argc, char** argv)
               
               float seed_theta = this_seed.GetTheta();
               float seed_phi   = this_seed.GetPhi();            
-              float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
-              if (dd < maxDeltaRMatch)   matchedToCaloCluster ++;                            
+              float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));
+              float this_cluster_deltaR;
+              if (this_cluster.GetType() == "ecal") this_cluster_deltaR = maxDeltaRMatchEcal;
+              if (this_cluster.GetType() == "hcal") this_cluster_deltaR = maxDeltaRMatchHcal;
+              if (dd < this_cluster_deltaR)   
+              {
+//                   if (abs(pdgId)==22 || abs(pdgId)==130) std::cout << "i: " << i << " :: pdgId (" << pdgId << ") : matched to " << this_cluster.GetType() << " cluster with seed ( "<< seed_theta <<", " << seed_phi << ")" << std::endl;
+                  if (this_cluster.GetType() == "ecal") 
+                  {
+                      h2EneFracECAL_HCAL[abs(pdgId)]->Fill(this_cluster.GetTotEne()/ene, 
+                                                           this_cluster.GetEcalClusterEne()/this_cluster.GetTotEne());
+                      
+                      h2EneNarrowFracECAL_HCAL[abs(pdgId)]->Fill(this_cluster.GetTotEneNarrow()/ene, 
+                                                                 this_cluster.GetEcalClusterEne()/this_cluster.GetTotEneNarrow());
+                      
+                      h2EneECALFracECAL_HCAL[abs(pdgId)]->Fill(this_cluster.GetEcalClusterEne()/ene, 
+                                                               this_cluster.GetEcalClusterEne()/this_cluster.GetTotEneNarrow());
+                      
+                      h2EneECALFracECAL_Seed[abs(pdgId)]->Fill(this_seed.GetEne()/this_cluster.GetEcalClusterEne(), 
+                                                               this_cluster.GetEcalClusterEneFront()/this_cluster.GetEcalClusterEneRear());
+                      
+                      
+                      hEneTotRes[abs(pdgId)]->Fill((this_cluster.GetTotEne() - ene)/ene);
+                      hEneTotNarrowRes[abs(pdgId)]->Fill((this_cluster.GetTotEneNarrow() - ene)/ene);
+                      hEneECALRes[abs(pdgId)]->Fill((this_cluster.GetEcalClusterEne() - ene)/ene);
+                      h2EneReco_vsEneTruth[abs(pdgId)]->Fill(ene, this_cluster.GetEcalClusterEne()/ene);
+                  }
+                  matchedToCaloCluster ++;
+              }
           }                    
           hNCaloClustersMatchedToGen[abs(pdgId)]->Fill(matchedToCaloCluster);
           pNCaloClustersMatchedToGen_vsEne[abs(pdgId)]->Fill(ene, matchedToCaloCluster);
@@ -670,19 +738,19 @@ int main(int argc, char** argv)
           
       }
                   
-      for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+      for (auto it : myPdgId)
       {
-          hNTotGen[it->first]->Fill(nTotGen[it->first]);
-          if (nTotGen[it->first]>0)
+          hNTotGen[it.first]->Fill(nTotGen[it.first]);
+          if (nTotGen[it.first]>0)
           {
-              float eff = float(nEcalClusterMatchedToGen[it->first])/float(nTotGen[it->first]);
-              hEffGenMatchedToEcalCluster[it->first]->Fill(eff);
+              float eff = float(nEcalClusterMatchedToGen[it.first])/float(nTotGen[it.first]);
+              hEffGenMatchedToEcalCluster[it.first]->Fill(eff);
               
-              eff = float(nHcalClusterMatchedToGen[it->first])/float(nTotGen[it->first]);
-              hEffGenMatchedToHcalCluster[it->first]->Fill(eff);
+              eff = float(nHcalClusterMatchedToGen[it.first])/float(nTotGen[it.first]);
+              hEffGenMatchedToHcalCluster[it.first]->Fill(eff);
               
-              eff = float(nCaloClusterMatchedToGen[it->first])/float(nTotGen[it->first]);
-              hEffGenMatchedToCaloCluster[it->first]->Fill(eff);
+              eff = float(nCaloClusterMatchedToGen[it.first])/float(nTotGen[it.first]);
+              hEffGenMatchedToCaloCluster[it.first]->Fill(eff);
           }
       }                  
   }
@@ -695,52 +763,78 @@ int main(int argc, char** argv)
   hNTotGen[22]->Draw();
 //   hNTotGen[22]->GetXaxis()->SetRangeUser(0, 1.4);
   hNTotGen[22]->GetYaxis()->SetRangeUser(1, hNTotGen[22]->GetMaximum()*5);
-  hNTotGen[22]->GetXaxis()->SetTitle("Total number of gen-match particles");
+  hNTotGen[22]->GetXaxis()->SetTitle("Total number of gen particles");
 //   hNTotGen[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
   gPad->SetLogy();
   
   int color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hNTotGen[it->first]->Draw("same");
-      hNTotGen[it->first]->SetLineWidth(2);
-      hNTotGen[it->first]->SetLineColor(mycolors[color_it]);
-      hNTotGen[it->first]->SetMarkerColor(mycolors[color_it]);
+      hNTotGen[it.first]->Draw("same");
+      hNTotGen[it.first]->SetLineWidth(2);
+      hNTotGen[it.first]->SetLineColor(mycolors[color_it]);
+      hNTotGen[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(hNTotGen[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hNTotGen[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cNTotGen->SaveAs("plots_pfa/cNTotGen.png");
   
   
+  TCanvas * cEneGen = new TCanvas ("cEneGen", "cEneGen", 600, 500);
+  cEneGen->cd();
+  hEneGen[22]->SetStats(0);
+  hEneGen[22]->SetTitle(0);
+  hEneGen[22]->Draw();
+//   hEneGen[22]->GetXaxis()->SetRangeUser(0, 1.4);
+  hEneGen[22]->GetYaxis()->SetRangeUser(1, hEneGen[22]->GetMaximum()*5);
+  hEneGen[22]->GetXaxis()->SetTitle("Energy [GeV]");
+//   hEneGen[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
+  gPad->SetLogy();
+  
+  color_it = 0;
+  leg = new TLegend(0.57,0.5,0.88,0.88,NULL,"brNDC");
+  
+  for (auto it : myPdgId)
+  {
+      hEneGen[it.first]->Draw("same");
+      hEneGen[it.first]->SetLineWidth(2);
+      hEneGen[it.first]->SetLineColor(mycolors[color_it]);
+      hEneGen[it.first]->SetMarkerColor(mycolors[color_it]);
+            
+      color_it++;
+      leg->AddEntry(hEneGen[it.first], Form("%s : <E> = %.1f GeV", it.second.c_str(), hEneGen[it.first]->GetMean()), "lp");
+  }    
+  leg->Draw();
+  if (SAVEPLOTS) cEneGen->SaveAs("plots_pfa/cEneGen.png");
   
   //gen to ECAL cluster matches
   TCanvas * cNEcalClustersMatchedToGen = new TCanvas ("cNEcalClustersMatchedToGen", "cNEcalClustersMatchedToGen", 600, 500);
   cNEcalClustersMatchedToGen->cd();
   hNEcalClustersMatchedToGen[22]->SetStats(0);
-  hNEcalClustersMatchedToGen[22]->SetTitle(0);
-  hNEcalClustersMatchedToGen[22]->Draw();
+  hNEcalClustersMatchedToGen[22]->SetTitle(0);  
   hNEcalClustersMatchedToGen[22]->GetXaxis()->SetRangeUser(-0.5, 5.5);
 //   hNEcalClustersMatchedToGen[22]->GetYaxis()->SetRangeUser(1, hNEcalClustersMatchedToGen[22]->GetMaximum()*5);
   hNEcalClustersMatchedToGen[22]->GetXaxis()->SetTitle("N of ECAL clusters matched to gen particle");
 //   hNEcalClustersMatchedToGen[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
-  gPad->SetLogy();
-  
+//   gPad->SetLogy();
+  hNEcalClustersMatchedToGen[22]->DrawCopy();
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hNEcalClustersMatchedToGen[it->first]->Draw("same");
-      hNEcalClustersMatchedToGen[it->first]->SetLineWidth(2);
-      hNEcalClustersMatchedToGen[it->first]->SetLineColor(mycolors[color_it]);
-      hNEcalClustersMatchedToGen[it->first]->SetMarkerColor(mycolors[color_it]);
+      
+      hNEcalClustersMatchedToGen[it.first]->SetLineWidth(2);
+      hNEcalClustersMatchedToGen[it.first]->SetLineColor(mycolors[color_it]);
+      hNEcalClustersMatchedToGen[it.first]->SetMarkerColor(mycolors[color_it]);
+      hNEcalClustersMatchedToGen[it.first]->DrawCopy("same");
             
       color_it++;
-      leg->AddEntry(hNEcalClustersMatchedToGen[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hNEcalClustersMatchedToGen[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cNEcalClustersMatchedToGen->SaveAs("plots_pfa/cNEcalClustersMatchedToGen.png");
@@ -751,7 +845,7 @@ int main(int argc, char** argv)
   hEffGenMatchedToEcalCluster[22]->SetStats(0);
   hEffGenMatchedToEcalCluster[22]->SetTitle(0);
   hEffGenMatchedToEcalCluster[22]->Draw();
-  hEffGenMatchedToEcalCluster[22]->GetXaxis()->SetRangeUser(0, 1.4);
+  hEffGenMatchedToEcalCluster[22]->GetXaxis()->SetRangeUser(0, 1.1);
   hEffGenMatchedToEcalCluster[22]->GetYaxis()->SetRangeUser(1, hEffGenMatchedToEcalCluster[22]->GetMaximum()*5);
   hEffGenMatchedToEcalCluster[22]->GetXaxis()->SetTitle("Fraction of gen-match to at least one ECAL cluster");
 //   hEffGenMatchedToEcalCluster[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
@@ -760,15 +854,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hEffGenMatchedToEcalCluster[it->first]->Draw("same");
-      hEffGenMatchedToEcalCluster[it->first]->SetLineWidth(2);
-      hEffGenMatchedToEcalCluster[it->first]->SetLineColor(mycolors[color_it]);
-      hEffGenMatchedToEcalCluster[it->first]->SetMarkerColor(mycolors[color_it]);    
+      hEffGenMatchedToEcalCluster[it.first]->Draw("same");
+      hEffGenMatchedToEcalCluster[it.first]->SetLineWidth(2);
+      hEffGenMatchedToEcalCluster[it.first]->SetLineColor(mycolors[color_it]);
+      hEffGenMatchedToEcalCluster[it.first]->SetMarkerColor(mycolors[color_it]);    
       
       color_it++;
-      leg->AddEntry(hEffGenMatchedToEcalCluster[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hEffGenMatchedToEcalCluster[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cEffGenMatchedToEcalCluster->SaveAs("plots_pfa/cEffGenMatchedToEcalCluster.png");
@@ -789,15 +883,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      pNEcalClustersMatchedToGen_vsEne[it->first]->Draw("same");
-      pNEcalClustersMatchedToGen_vsEne[it->first]->SetLineWidth(2);
-      pNEcalClustersMatchedToGen_vsEne[it->first]->SetLineColor(mycolors[color_it]);
-      pNEcalClustersMatchedToGen_vsEne[it->first]->SetMarkerColor(mycolors[color_it]);
+      pNEcalClustersMatchedToGen_vsEne[it.first]->Draw("same");
+      pNEcalClustersMatchedToGen_vsEne[it.first]->SetLineWidth(2);
+      pNEcalClustersMatchedToGen_vsEne[it.first]->SetLineColor(mycolors[color_it]);
+      pNEcalClustersMatchedToGen_vsEne[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(pNEcalClustersMatchedToGen_vsEne[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(pNEcalClustersMatchedToGen_vsEne[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cNEcalClustersMatchedToGen_vsEne->SaveAs("plots_pfa/cNEcalClustersMatchedToGen_vsEne.png");
@@ -818,15 +912,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hNHcalClustersMatchedToGen[it->first]->Draw("same");
-      hNHcalClustersMatchedToGen[it->first]->SetLineWidth(2);
-      hNHcalClustersMatchedToGen[it->first]->SetLineColor(mycolors[color_it]);
-      hNHcalClustersMatchedToGen[it->first]->SetMarkerColor(mycolors[color_it]);
+      hNHcalClustersMatchedToGen[it.first]->Draw("same");
+      hNHcalClustersMatchedToGen[it.first]->SetLineWidth(2);
+      hNHcalClustersMatchedToGen[it.first]->SetLineColor(mycolors[color_it]);
+      hNHcalClustersMatchedToGen[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(hNHcalClustersMatchedToGen[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hNHcalClustersMatchedToGen[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cNHcalClustersMatchedToGen->SaveAs("plots_pfa/cNHcalClustersMatchedToGen.png");
@@ -837,7 +931,7 @@ int main(int argc, char** argv)
   hEffGenMatchedToHcalCluster[22]->SetStats(0);
   hEffGenMatchedToHcalCluster[22]->SetTitle(0);
   hEffGenMatchedToHcalCluster[22]->Draw();
-  hEffGenMatchedToHcalCluster[22]->GetXaxis()->SetRangeUser(0, 1.4);
+  hEffGenMatchedToHcalCluster[22]->GetXaxis()->SetRangeUser(0, 1.1);
   hEffGenMatchedToHcalCluster[22]->GetYaxis()->SetRangeUser(1, hEffGenMatchedToHcalCluster[22]->GetMaximum()*5);
   hEffGenMatchedToHcalCluster[22]->GetXaxis()->SetTitle("Fraction of gen-match to at least one HCAL cluster");
 //   hEffGenMatchedToHcalCluster[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
@@ -846,15 +940,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hEffGenMatchedToHcalCluster[it->first]->Draw("same");
-      hEffGenMatchedToHcalCluster[it->first]->SetLineWidth(2);
-      hEffGenMatchedToHcalCluster[it->first]->SetLineColor(mycolors[color_it]);
-      hEffGenMatchedToHcalCluster[it->first]->SetMarkerColor(mycolors[color_it]);    
+      hEffGenMatchedToHcalCluster[it.first]->Draw("same");
+      hEffGenMatchedToHcalCluster[it.first]->SetLineWidth(2);
+      hEffGenMatchedToHcalCluster[it.first]->SetLineColor(mycolors[color_it]);
+      hEffGenMatchedToHcalCluster[it.first]->SetMarkerColor(mycolors[color_it]);    
       
       color_it++;
-      leg->AddEntry(hEffGenMatchedToHcalCluster[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hEffGenMatchedToHcalCluster[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cEffGenMatchedToHcalCluster->SaveAs("plots_pfa/cEffGenMatchedToHcalCluster.png");
@@ -875,15 +969,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      pNHcalClustersMatchedToGen_vsEne[it->first]->Draw("same");
-      pNHcalClustersMatchedToGen_vsEne[it->first]->SetLineWidth(2);
-      pNHcalClustersMatchedToGen_vsEne[it->first]->SetLineColor(mycolors[color_it]);
-      pNHcalClustersMatchedToGen_vsEne[it->first]->SetMarkerColor(mycolors[color_it]);
+      pNHcalClustersMatchedToGen_vsEne[it.first]->Draw("same");
+      pNHcalClustersMatchedToGen_vsEne[it.first]->SetLineWidth(2);
+      pNHcalClustersMatchedToGen_vsEne[it.first]->SetLineColor(mycolors[color_it]);
+      pNHcalClustersMatchedToGen_vsEne[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(pNHcalClustersMatchedToGen_vsEne[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(pNHcalClustersMatchedToGen_vsEne[it.first], it.second.c_str(), "lp");
   }
     
   leg->Draw();
@@ -906,15 +1000,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hNCaloClustersMatchedToGen[it->first]->Draw("same");
-      hNCaloClustersMatchedToGen[it->first]->SetLineWidth(2);
-      hNCaloClustersMatchedToGen[it->first]->SetLineColor(mycolors[color_it]);
-      hNCaloClustersMatchedToGen[it->first]->SetMarkerColor(mycolors[color_it]);
+      hNCaloClustersMatchedToGen[it.first]->Draw("same");
+      hNCaloClustersMatchedToGen[it.first]->SetLineWidth(2);
+      hNCaloClustersMatchedToGen[it.first]->SetLineColor(mycolors[color_it]);
+      hNCaloClustersMatchedToGen[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(hNCaloClustersMatchedToGen[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hNCaloClustersMatchedToGen[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cNCaloClustersMatchedToGen->SaveAs("plots_pfa/cNCaloClustersMatchedToGen.png");
@@ -924,7 +1018,7 @@ int main(int argc, char** argv)
   hEffGenMatchedToCaloCluster[22]->SetStats(0);
   hEffGenMatchedToCaloCluster[22]->SetTitle(0);
   hEffGenMatchedToCaloCluster[22]->Draw();
-  hEffGenMatchedToCaloCluster[22]->GetXaxis()->SetRangeUser(0, 1.4);
+  hEffGenMatchedToCaloCluster[22]->GetXaxis()->SetRangeUser(0, 1.1);
   hEffGenMatchedToCaloCluster[22]->GetYaxis()->SetRangeUser(1, hEffGenMatchedToCaloCluster[22]->GetMaximum()*5);
   hEffGenMatchedToCaloCluster[22]->GetXaxis()->SetTitle("Fraction of gen-match to at least one CALO cluster");
 //   hEffGenMatchedToCaloCluster[22]->GetYaxis()->SetTitle("Frequency [a.u.]");
@@ -933,15 +1027,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      hEffGenMatchedToCaloCluster[it->first]->Draw("same");
-      hEffGenMatchedToCaloCluster[it->first]->SetLineWidth(2);
-      hEffGenMatchedToCaloCluster[it->first]->SetLineColor(mycolors[color_it]);
-      hEffGenMatchedToCaloCluster[it->first]->SetMarkerColor(mycolors[color_it]);    
+      hEffGenMatchedToCaloCluster[it.first]->Draw("same");
+      hEffGenMatchedToCaloCluster[it.first]->SetLineWidth(2);
+      hEffGenMatchedToCaloCluster[it.first]->SetLineColor(mycolors[color_it]);
+      hEffGenMatchedToCaloCluster[it.first]->SetMarkerColor(mycolors[color_it]);    
       
       color_it++;
-      leg->AddEntry(hEffGenMatchedToCaloCluster[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(hEffGenMatchedToCaloCluster[it.first], it.second.c_str(), "lp");
   }    
   leg->Draw();
   if (SAVEPLOTS) cEffGenMatchedToCaloCluster->SaveAs("plots_pfa/cEffGenMatchedToCaloCluster.png");
@@ -962,15 +1056,15 @@ int main(int argc, char** argv)
   color_it = 0;
   leg = new TLegend(0.75,0.5,0.88,0.88,NULL,"brNDC");
   
-  for (auto it = myPdgId.begin(); it != myPdgId.end(); ++it)
+  for (auto it : myPdgId)
   {
-      pNCaloClustersMatchedToGen_vsEne[it->first]->Draw("same");
-      pNCaloClustersMatchedToGen_vsEne[it->first]->SetLineWidth(2);
-      pNCaloClustersMatchedToGen_vsEne[it->first]->SetLineColor(mycolors[color_it]);
-      pNCaloClustersMatchedToGen_vsEne[it->first]->SetMarkerColor(mycolors[color_it]);
+      pNCaloClustersMatchedToGen_vsEne[it.first]->Draw("same");
+      pNCaloClustersMatchedToGen_vsEne[it.first]->SetLineWidth(2);
+      pNCaloClustersMatchedToGen_vsEne[it.first]->SetLineColor(mycolors[color_it]);
+      pNCaloClustersMatchedToGen_vsEne[it.first]->SetMarkerColor(mycolors[color_it]);
             
       color_it++;
-      leg->AddEntry(pNCaloClustersMatchedToGen_vsEne[it->first], it->second.c_str(), "lp");
+      leg->AddEntry(pNCaloClustersMatchedToGen_vsEne[it.first], it.second.c_str(), "lp");
   }
     
   leg->Draw();
@@ -1023,59 +1117,196 @@ int main(int argc, char** argv)
   leg->AddEntry(hNGenMatchedToHcalCluster, "HCAL seeds", "lp");
   leg->AddEntry(hNGenMatchedToCaloCluster, "CALO seeds", "lp");
   leg->Draw();
-  gPad->SetLogy();  
+  gPad->SetLogy();
+  
   if (SAVEPLOTS) cNGenMatchedToEcalCluster->SaveAs("plots_pfa/cNGenMatchedToEcalCluster.png");
   
   
-    TCanvas * cNClustersMatchedToGenKaon = new TCanvas ("cNClustersMatchedToGenKaon", "cNClustersMatchedToGenKaon", 600, 500);
-  cNClustersMatchedToGenKaon->cd();
-  hNEcalClustersMatchedToGen[130]->Draw();
-  hNEcalClustersMatchedToGen[130]->GetXaxis()->SetTitle("N of clusters matched to gen K^{0,L}");
-  hNEcalClustersMatchedToGen[130]->SetStats(0);
-  hNEcalClustersMatchedToGen[130]->SetLineColor(kGreen+1);
-  hNEcalClustersMatchedToGen[130]->SetFillColor(kGreen+1);
-  hNEcalClustersMatchedToGen[130]->SetLineWidth(2);  
-//   hNEcalClustersMatchedToGen[130]->GetYaxis()->SetRangeUser(1, hNEcalClustersMatchedToGen[130]->GetMaximum()*10);
-  hNEcalClustersMatchedToGen[130]->GetYaxis()->SetRangeUser(0, hNEcalClustersMatchedToGen[130]->GetMaximum()*1.5);
+  std::map<int, TCanvas *> cNClustersMatchedToGenParticle;
+  for (auto it : myPdgId)
+  {
+    cNClustersMatchedToGenParticle[it.first] = new TCanvas (Form("cNClustersMatchedToGen_%d", it.first), Form("cNClustersMatchedToGen_%d", it.first), 600, 500);
+    cNClustersMatchedToGenParticle[it.first]->cd();
+    
+    hNEcalClustersMatchedToGen[it.first]->Sumw2();
+    hNHcalClustersMatchedToGen[it.first]->Sumw2();
+    hNCaloClustersMatchedToGen[it.first]->Sumw2();
+    hNEcalClustersMatchedToGen[it.first]->Scale(1/hNEcalClustersMatchedToGen[it.first]->Integral());
+    hNHcalClustersMatchedToGen[it.first]->Scale(1/hNHcalClustersMatchedToGen[it.first]->Integral());
+    hNCaloClustersMatchedToGen[it.first]->Scale(1/hNCaloClustersMatchedToGen[it.first]->Integral());     
+      
+    hNEcalClustersMatchedToGen[it.first]->Draw("histo");
+    hNEcalClustersMatchedToGen[it.first]->SetTitle(Form("N of clusters matched to gen %s", it.second.c_str() ) );
+    hNEcalClustersMatchedToGen[it.first]->GetXaxis()->SetTitle(Form("N of clusters matched to gen %s", it.second.c_str()));
+    hNEcalClustersMatchedToGen[it.first]->GetYaxis()->SetTitle("Frequency");
+    hNEcalClustersMatchedToGen[it.first]->SetStats(0);
+    hNEcalClustersMatchedToGen[it.first]->SetLineColor(kGreen+1);
+    hNEcalClustersMatchedToGen[it.first]->SetFillColor(kGreen+1);
+    hNEcalClustersMatchedToGen[it.first]->SetLineWidth(2);  
+    hNEcalClustersMatchedToGen[it.first]->GetYaxis()->SetRangeUser(0, 1.1);
+    hNEcalClustersMatchedToGen[it.first]->GetXaxis()->SetRangeUser(-0.5, 5.5);
+    
+    hNHcalClustersMatchedToGen[it.first]->Draw("same histo");
+    hNHcalClustersMatchedToGen[it.first]->SetLineColor(kRed+1);
+    hNHcalClustersMatchedToGen[it.first]->SetLineWidth(2);
+    hNCaloClustersMatchedToGen[it.first]->Draw("same histo");
+    hNCaloClustersMatchedToGen[it.first]->SetLineColor(kBlack);
+    hNCaloClustersMatchedToGen[it.first]->SetLineWidth(2);
+    leg = new TLegend(0.65,0.5,0.88,0.88,NULL,"brNDC");
+    leg->AddEntry(hNEcalClustersMatchedToGen[it.first], "ECAL seeds", "lp");
+    leg->AddEntry(hNHcalClustersMatchedToGen[it.first], "HCAL seeds", "lp");
+    leg->AddEntry(hNCaloClustersMatchedToGen[it.first], "CALO seeds", "lp");
+    leg->Draw();
+    //   gPad->SetLogy();  
+    if (SAVEPLOTS) cNClustersMatchedToGenParticle[it.first]->SaveAs(Form("plots_pfa/cNClustersMatchedToGen_pdgId%d.png", it.first));
+  }
   
-  hNHcalClustersMatchedToGen[130]->Draw("same");
-  hNHcalClustersMatchedToGen[130]->SetLineColor(kRed+1);
-  hNHcalClustersMatchedToGen[130]->SetLineWidth(2);
-  hNCaloClustersMatchedToGen[130]->Draw("same");
-  hNCaloClustersMatchedToGen[130]->SetLineColor(kBlack);
-  hNCaloClustersMatchedToGen[130]->SetLineWidth(2);
-  leg = new TLegend(0.65,0.5,0.88,0.88,NULL,"brNDC");
-  leg->AddEntry(hNEcalClustersMatchedToGen[130], "ECAL seeds", "lp");
-  leg->AddEntry(hNHcalClustersMatchedToGen[130], "HCAL seeds", "lp");
-  leg->AddEntry(hNCaloClustersMatchedToGen[130], "CALO seeds", "lp");
-  leg->Draw();
-//   gPad->SetLogy();  
-  if (SAVEPLOTS) cNClustersMatchedToGenKaon->SaveAs("plots_pfa/cNClustersMatchedToGenKaon.png");
   
-  TCanvas * cNClustersMatchedToGenPhoton = new TCanvas ("cNClustersMatchedToGenPhoton", "cNClustersMatchedToGenPhoton", 600, 500);
-  cNClustersMatchedToGenPhoton->cd();
-  hNEcalClustersMatchedToGen[22]->Draw();
-  hNEcalClustersMatchedToGen[22]->GetXaxis()->SetTitle("N of clusters matched to gen photons");
-  hNEcalClustersMatchedToGen[22]->SetStats(0);
-  hNEcalClustersMatchedToGen[22]->SetLineColor(kGreen+1);
-  hNEcalClustersMatchedToGen[22]->SetFillColor(kGreen+1);
-  hNEcalClustersMatchedToGen[22]->SetLineWidth(2);  
-//   hNEcalClustersMatchedToGen[22]->GetYaxis()->SetRangeUser(1, hNEcalClustersMatchedToGen[22]->GetMaximum()*10);
-  hNEcalClustersMatchedToGen[22]->GetYaxis()->SetRangeUser(0, hNEcalClustersMatchedToGen[22]->GetMaximum()*1.5);
   
-  hNHcalClustersMatchedToGen[22]->Draw("same");
-  hNHcalClustersMatchedToGen[22]->SetLineColor(kRed+1);
-  hNHcalClustersMatchedToGen[22]->SetLineWidth(2);
-  hNCaloClustersMatchedToGen[22]->Draw("same");
-  hNCaloClustersMatchedToGen[22]->SetLineColor(kBlack);
-  hNCaloClustersMatchedToGen[22]->SetLineWidth(2);
-  leg = new TLegend(0.65,0.5,0.88,0.88,NULL,"brNDC");
-  leg->AddEntry(hNEcalClustersMatchedToGen[22], "ECAL seeds", "lp");
-  leg->AddEntry(hNHcalClustersMatchedToGen[22], "HCAL seeds", "lp");
-  leg->AddEntry(hNCaloClustersMatchedToGen[22], "CALO seeds", "lp");
-  leg->Draw();
-//   gPad->SetLogy();  
-  if (SAVEPLOTS) cNClustersMatchedToGenPhoton->SaveAs("plots_pfa/cNClustersMatchedToGenPhoton.png");
+  std::map<int, TCanvas *> cCaloClusterEneRes;
+  for (auto it : myPdgId)
+  {
+    cCaloClusterEneRes[it.first] = new TCanvas (Form("cCaloClusterEneRes_%d", it.first), Form("cCaloClusterEneRes_%d", it.first), 600, 500);
+    cCaloClusterEneRes[it.first]->cd();
+    
+    hEneECALRes[it.first]->Sumw2();
+    hEneTotRes[it.first]->Sumw2();
+    hEneTotNarrowRes[it.first]->Sumw2();
+    hEneECALRes[it.first]->Scale(1/hEneECALRes[it.first]->Integral());
+    hEneTotRes[it.first]->Scale(1/hEneTotRes[it.first]->Integral());
+    hEneTotNarrowRes[it.first]->Scale(1/hEneTotNarrowRes[it.first]->Integral());
+    
+      
+    hEneECALRes[it.first]->Draw("histo");
+    hEneECALRes[it.first]->SetTitle(Form("Gen particle %s", it.second.c_str() ) );
+    hEneECALRes[it.first]->GetXaxis()->SetTitle("(E_{calo,cluster} - E_{truth}) / E_{truth}");
+    hEneECALRes[it.first]->GetYaxis()->SetTitle("Frequency");
+//     hEneECALRes[it.first]->SetStats(0);
+    hEneECALRes[it.first]->SetLineColor(kGreen+1);
+    hEneECALRes[it.first]->SetFillColor(kGreen+1);
+    hEneECALRes[it.first]->SetLineWidth(2);  
+    hEneECALRes[it.first]->GetYaxis()->SetRangeUser(0.0001, 1.1);
+    
+    hEneTotNarrowRes[it.first]->Draw("same histo");
+    hEneTotNarrowRes[it.first]->SetLineColor(kRed+1);
+    hEneTotNarrowRes[it.first]->SetLineWidth(2);
+    hEneTotRes[it.first]->Draw("same histo");
+    hEneTotRes[it.first]->SetLineColor(kBlack);
+    hEneTotRes[it.first]->SetLineWidth(2);
+    
+    leg = new TLegend(0.65,0.5,0.88,0.88,NULL,"brNDC");
+    leg->AddEntry(hEneECALRes[it.first], "ECAL energy", "lp");
+    leg->AddEntry(hEneECALRes[it.first], "CALO narrow", "lp");
+    leg->AddEntry(hEneECALRes[it.first], "CALO total", "lp");
+    
+    
+    gPad->SetLogy();
+    if (SAVEPLOTS) cCaloClusterEneRes[it.first]->SaveAs(Form("plots_pfa/cCaloClusterEneRes_pdgId%d.png", it.first));
+  }
+  
+    
+  std::map<int, TCanvas *> cScatterNClustersMatchedToGenParticle;
+  for (auto it : myPdgId)
+  {
+    cScatterNClustersMatchedToGenParticle[it.first] = new TCanvas (Form("cScatterNClustersMatchedToGenParticle_%d", it.first), Form("cScatterNClustersMatchedToGenParticle_%d", it.first), 500, 500);
+    cScatterNClustersMatchedToGenParticle[it.first]->cd();        
+    
+    if (h2NClustersMatchedToGen[it.first]->Integral()>0) h2NClustersMatchedToGen[it.first]->Scale(1./h2NClustersMatchedToGen[it.first]->Integral());
+    h2NClustersMatchedToGen[it.first]->Draw("COL TEXT");
+    h2NClustersMatchedToGen[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2NClustersMatchedToGen[it.first]->GetXaxis()->SetTitle(Form("N of ECAL clusters matched to gen %s", it.second.c_str()));
+    h2NClustersMatchedToGen[it.first]->GetYaxis()->SetTitle(Form("N of HCAL clusters matched to gen %s", it.second.c_str()));
+    h2NClustersMatchedToGen[it.first]->SetStats(0);
+//     h2NClustersMatchedToGen[it.first]->SetLineColor(kGreen+1);
+//     h2NClustersMatchedToGen[it.first]->SetFillColor(kGreen+1);
+//     h2NClustersMatchedToGen[it.first]->SetLineWidth(2);  
+//     h2NClustersMatchedToGen[it.first]->GetYaxis()->SetRangeUser(0, 1.1);
+    h2NClustersMatchedToGen[it.first]->GetXaxis()->SetRangeUser(-0.5, 3.5);
+    h2NClustersMatchedToGen[it.first]->GetYaxis()->SetRangeUser(-0.5, 3.5);
+    
+    //   gPad->SetLogy();  
+    if (SAVEPLOTS) cScatterNClustersMatchedToGenParticle[it.first]->SaveAs(Form("plots_pfa/cScatterNClustersMatchedToGenParticle_pdgId%d.png", it.first));
+  }
+  
+  
+  
+    std::map<int, TCanvas *> cScatterEneFrac_vsCaloFrac;
+  for (auto it : myPdgId)
+  {
+    cScatterEneFrac_vsCaloFrac[it.first] = new TCanvas (Form("cScatterEneFrac_vsCaloFrac_%d", it.first), Form("cScatterEneFrac_vsCaloFrac_%d", it.first), 1600, 400);
+    cScatterEneFrac_vsCaloFrac[it.first]->Divide(4,1);
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(1);
+    h2EneFracECAL_HCAL[it.first]->Draw("COLZ");
+    h2EneFracECAL_HCAL[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneFracECAL_HCAL[it.first]->GetXaxis()->SetTitle("Ene TOT cluster / Ene MC");
+    h2EneFracECAL_HCAL[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene TOT clust");
+    h2EneFracECAL_HCAL[it.first]->SetStats(0);
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(2);
+    h2EneNarrowFracECAL_HCAL[it.first]->Draw("COLZ");
+    h2EneNarrowFracECAL_HCAL[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneNarrowFracECAL_HCAL[it.first]->GetXaxis()->SetTitle("Ene TOT narrow cluster / Ene MC");
+    h2EneNarrowFracECAL_HCAL[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene TOT narrow clust");
+    h2EneNarrowFracECAL_HCAL[it.first]->SetStats(0);
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(3);
+    h2EneECALFracECAL_HCAL[it.first]->Draw("COLZ");
+    h2EneECALFracECAL_HCAL[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneECALFracECAL_HCAL[it.first]->GetXaxis()->SetTitle("Ene ECAL cluster / Ene MC");
+    h2EneECALFracECAL_HCAL[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene TOT narrow clust");
+    h2EneECALFracECAL_HCAL[it.first]->SetStats(0);
+    
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(4);
+    h2EneECALFracECAL_Seed[it.first]->Draw("COLZ");
+    h2EneECALFracECAL_Seed[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneECALFracECAL_Seed[it.first]->GetXaxis()->SetTitle("Ene ECAL seed / Ene ECAL cluster");
+    h2EneECALFracECAL_Seed[it.first]->GetYaxis()->SetTitle("Ene ECAL Front / Ene ECAL Rear");
+    h2EneECALFracECAL_Seed[it.first]->SetStats(0);
+    
+    if (SAVEPLOTS) cScatterEneFrac_vsCaloFrac[it.first]->SaveAs(Form("plots_pfa/cScatterEneFrac_vsCaloFrac_pdgId%d.png", it.first));
+  }
+  
+  
+  std::map<int, TCanvas *> cScatterEneReco_vs_EneTruth;
+  for (auto it : myPdgId)
+  {
+    cScatterEneReco_vs_EneTruth[it.first] = new TCanvas (Form("cScatterEneReco_vs_EneTruth_%d", it.first), Form("cScatterEneReco_vs_EneTruth_%d", it.first), 500, 500);
+//     cScatterEneReco_vs_EneTruth[it.first]->Divide(4,1);
+    
+//     cScatterEneFrac_vsCaloFrac[it.first]->cd(1);
+    h2EneReco_vsEneTruth[it.first]->Draw("COLZ");
+    h2EneReco_vsEneTruth[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneReco_vsEneTruth[it.first]->GetXaxis()->SetTitle("Ene MC");
+    h2EneReco_vsEneTruth[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene MC");
+    h2EneReco_vsEneTruth[it.first]->SetStats(0);
+    
+    /*
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(2);
+    h2EneNarrowFracECAL_HCAL[it.first]->Draw("COLZ");
+    h2EneNarrowFracECAL_HCAL[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneNarrowFracECAL_HCAL[it.first]->GetXaxis()->SetTitle("Ene TOT narrow cluster / Ene MC");
+    h2EneNarrowFracECAL_HCAL[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene TOT narrow clust");
+    h2EneNarrowFracECAL_HCAL[it.first]->SetStats(0);
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(3);
+    h2EneECALFracECAL_HCAL[it.first]->Draw("COLZ");
+    h2EneECALFracECAL_HCAL[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneECALFracECAL_HCAL[it.first]->GetXaxis()->SetTitle("Ene ECAL cluster / Ene MC");
+    h2EneECALFracECAL_HCAL[it.first]->GetYaxis()->SetTitle("Ene ECAL clust / Ene TOT narrow clust");
+    h2EneECALFracECAL_HCAL[it.first]->SetStats(0);
+    
+    
+    cScatterEneFrac_vsCaloFrac[it.first]->cd(4);
+    h2EneECALFracECAL_Seed[it.first]->Draw("COLZ");
+    h2EneECALFracECAL_Seed[it.first]->SetTitle(Form("Gen particle: %s", it.second.c_str() ) );
+    h2EneECALFracECAL_Seed[it.first]->GetXaxis()->SetTitle("Ene ECAL seed / Ene ECAL cluster");
+    h2EneECALFracECAL_Seed[it.first]->GetYaxis()->SetTitle("Ene ECAL Front / Ene ECAL Rear");
+    h2EneECALFracECAL_Seed[it.first]->SetStats(0);*/
+    
+    if (SAVEPLOTS) cScatterEneReco_vs_EneTruth[it.first]->SaveAs(Form("plots_pfa/cScatterEneReco_vs_EneTruth_pdgId%d.png", it.first));
+  }
   
   TCanvas * cFracHcalOnlyClusters = new TCanvas ("cFracHcalOnlyClusters", "cFracHcalOnlyClusters", 600, 500);
   cFracHcalOnlyClusters->cd();
