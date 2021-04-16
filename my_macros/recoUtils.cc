@@ -48,14 +48,23 @@ void  CalSeed::SetSide (int this_side) {side = this_side;}
 void  CalSeed::SetTheta (float this_theta)  { theta = this_theta;}
 void  CalSeed::SetPhi (float this_phi)  {  phi = this_phi;}
 void  CalSeed::SetEne (float this_ene)  {  ene = this_ene;}
+void CalSeed::SetEne3x3(float this_ene3x3)      {  ene3x3= this_ene3x3;}
+void CalSeed::SetWeighedPhi(float this_phi)     {  weighed_phi= this_phi;}
+void CalSeed::SetWeighedTheta(float this_theta)  {  weighed_theta= this_theta;}
 void  CalSeed::AddGenMatch (int thisPdgId){  gen_matched_pdgId.push_back(thisPdgId);}
 
 int   CalSeed::GetHitId ()  {  return hit_id;}
-int   CalSeed::GetSide ()  {  return side;}
-float CalSeed::GetTheta() {  return theta;}
-float CalSeed::GetEta() {  return -log(tan(theta/2));}
-float CalSeed::GetPhi() {  return phi;}
-float CalSeed::GetEne(){  return ene;}
+int   CalSeed::GetSide ()   {  return side;}
+float CalSeed::GetTheta()   {  return theta;}
+float CalSeed::GetEta()     {  return -log(tan(theta/2));}
+float CalSeed::GetPhi()     {  return phi;}
+float CalSeed::GetEne()     {  return ene;}
+
+
+float CalSeed::GetEne3x3()      {  return ene3x3;}
+float CalSeed::GetWeighedTheta(){  return weighed_theta;}
+float CalSeed::GetWeighedPhi()  {  return weighed_phi;}
+
 std::vector<int> CalSeed::GetGenMatch(){  return gen_matched_pdgId;}
 
 
@@ -228,8 +237,73 @@ std::vector<CalSeed> CleanSeeds (std::vector<CalSeed> allSeeds, float deltaR)
         }
           
         if (maxIsolatedHit)  CleanedSeeds.push_back(i_seed);
-    }
-    
+    }    
         
     return CleanedSeeds;
+}
+
+
+
+
+
+std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<CalHit> allHits, float deltaR, float superSeedTh)
+{
+
+    std::vector<CalSeed> SuperSeeds;
+    std::vector<CalHit> thisHits = allHits;
+    
+    
+    float R3x3 = 0.006;
+    
+    for (long unsigned int iseed = 0; iseed < allSeeds.size(); iseed++)
+    {
+        CalSeed i_seed = allSeeds.at(iseed);
+        float i_theta = i_seed.GetTheta();
+        float i_phi   = i_seed.GetPhi();         
+        float ene_super_seed = 0;
+        float phi_weighed = 0;
+        float theta_weighed = 0;
+        float w_tot = 0;
+        
+//         std::cout << " seed[ " << iseed << "] with Ene = " << i_seed.GetEne() << std::endl;
+          
+        for (auto i_hit : thisHits)
+        {
+//             CalHit i_hit = thisHits.at(i_hit);
+            float j_theta = i_hit.GetTheta();
+            float j_phi   = i_hit.GetPhi();
+            
+            float dd = sqrt(pow(j_theta-i_theta,2) + pow(j_phi-i_phi,2));
+            
+            if (dd < R3x3)
+            {
+                float this_ene = i_hit.GetEne();
+                
+                ene_super_seed += this_ene;
+                phi_weighed    += j_phi*this_ene;
+                theta_weighed  += j_theta*this_ene;
+                w_tot          += this_ene;                
+            }
+        }
+        if (w_tot>0.)
+        {
+            phi_weighed/=w_tot;
+            theta_weighed/=w_tot;
+            i_seed.SetWeighedPhi(phi_weighed);
+            i_seed.SetWeighedTheta(theta_weighed);
+            
+            
+            i_seed.SetEne3x3(ene_super_seed);
+            
+//             std::cout << "iseed = " << iseed << " \n" << std::endl;
+//             std::cout << "      --> ene = " << i_seed.GetEne()     << " :: super_ene = "   << i_seed.GetEne3x3() << std::endl;
+//             std::cout << "      --> phi = " << i_seed.GetPhi()     << " :: weigh_phi = "   << i_seed.GetWeighedPhi() << std::endl;
+//             std::cout << "      --> theta = " << i_seed.GetTheta() << " :: weigh_theta = " << i_seed.GetWeighedTheta() << std::endl;
+//             std::cout << "***************************************************************************** " << std::endl;
+//         
+            if (ene_super_seed>superSeedTh)  SuperSeeds.push_back(i_seed);
+        }
+    }    
+        
+    return SuperSeeds;
 }
