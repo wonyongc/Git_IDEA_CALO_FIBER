@@ -121,6 +121,7 @@ int main(int argc, char** argv)
   if (argc>4) x_factor_ecal = atof(argv[4]);   
   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
+  std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
 
   double ecal_S_norm = 0.985;
   double ecal_C_norm = 7286;
