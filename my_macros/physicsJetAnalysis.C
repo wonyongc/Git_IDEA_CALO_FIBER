@@ -88,7 +88,7 @@ bool RootFileExists(const char *filename)
 int main(int argc, char** argv)
 {
 
-  TApplication* theApp = new TApplication("App", &argc, argv);
+//   TApplication* theApp = new TApplication("App", &argc, argv);
           
   //set Root style
   gStyle->SetTitleXOffset (1.00) ;                                                                                       
@@ -107,22 +107,27 @@ int main(int argc, char** argv)
   
   //init  
   bool SAVEPLOTS = false;
-  std::string output_tag = "wwlj";
+//   std::string output_tag = "wwlj";
+  std::string output_tag = "zjj_scan_100";
+  
   int NFILES = 100;
+  //  double x_factor_hcal = 0.43;
+  double x_factor_hcal = 0.445;
+  double x_factor_ecal = 0.371;
+  
   if (argc>1) output_tag = argv[1];   
-  if (argc>2) NFILES = atoi(argv[2]);   
+  if (argc>2) NFILES = atoi(argv[2]);
+  if (argc>3) x_factor_hcal = atof(argv[3]);   
+  if (argc>4) x_factor_ecal = atof(argv[4]);   
+  
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
 
   double ecal_S_norm = 0.985;
   double ecal_C_norm = 7286;
-  float LO  = 2000;
-  float CLO = 160;
+  double LO  = 2000;
+  double CLO = 160;
   double drh_S_norm  = 407;
-  double drh_C_norm  = 103.2;  
-  
-  //  double x_factor_hcal = 0.43;
-  double x_factor_hcal = 0.445;
-  double x_factor_ecal = 0.371;
+  double drh_C_norm  = 103.2;
   
   
 // choose a jet definition
@@ -135,7 +140,10 @@ int main(int argc, char** argv)
     // single truth jet
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
 
-  float etaAcceptance = 1.4;  //accept only  jet within this eta
+  double etaAcceptance = 1.4;  //accept only  jet within this eta
+  double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
+  double deltaR_match = 1.0;
+  
   SCEPCal_GeometryHelper myGeometry;
 
   
@@ -158,8 +166,11 @@ int main(int argc, char** argv)
        fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
        fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
     }
-    // std::string fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
-    // std::string fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
+//     fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    
+//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+//     fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
@@ -183,7 +194,7 @@ int main(int argc, char** argv)
   int flag_JES = 3;
   int flag_JEC = 4;
   
-  bool debugMode = true;
+  bool debugMode = false;
   
   //define histos
   
@@ -222,16 +233,17 @@ int main(int argc, char** argv)
     std::cout << "processing event: " << iEvt << "\r" << std::flush;
     //    std::cout << "processing event: " << iEvt << std::endl;
     std::vector<PseudoJet> allHitsForJet;
+    std::vector<PseudoJet> allMCHitsForJet;
       
     bool goodEvent = true;
     int nMuons = 0;
     int nNeutrinos = 0;
     int nHeavyQuarks = 0;
-    float neutrinoEne = 0;
-    float muonEne = 0;
+    double neutrinoEne = 0;
+    double muonEne = 0;
 
-    float mc_phi_muon = -999;
-    float mc_eta_muon = -999;
+    double mc_phi_muon = -999;
+    double mc_eta_muon = -999;
 
       //filling truth
     TruthTree->GetEntry(iEvt);
@@ -248,22 +260,45 @@ int main(int argc, char** argv)
 //           int charge = myTruthTV.mcs_charge->at(i);
           double theta = 2*atan(exp(-eta));
           theta = M_PI- theta;
+          
+//           std::cout << " phi particle = " << phi << std::endl;
                       
 //           if (debugMode) std::cout << "pdgId[" << i << "] = " << pdgId << std::endl;
           
           if (   fabs(pdgId)!=12 && fabs(pdgId)!=14 && fabs(pdgId)!=16 && fabs(pdgId)!=13  // exclude neutrinos and muons
-                && fabs(pdgId)<10000 // exclude BSM
-		 &&  fabs(pdgId)!=5 &&  fabs(pdgId)!=6 // exclude heavy quark decay of the Z
-              //           && fabs(eta)<etaAcceptance                    // make sure jets are fully contained in calorimeters
+                 && fabs(pdgId)<10000 // exclude BSM
+		 && fabs(pdgId)!=5 &&  fabs(pdgId)!=6 // exclude heavy quark decay of the Z
+//                         && fabs(eta)<etaAcceptance    // exclude particles outside the calorimeter
           )      
           {
-              float px = pT*cos(phi);
-              float py = pT*sin(phi);
-              float pz = pT*sinh(eta);                    
               
-              PseudoJet this_MCT = PseudoJet(px*1e-19, py*1e-19, pz*1e-19, ene*1e-19);        
-              this_MCT.set_user_index(flag_MCT);                        
-              allHitsForJet.push_back(this_MCT);    
+              double px, py;
+              px = pT*cos(phi);
+              py = pT*sin(phi);
+              
+//               if (phi<0) 
+//               {
+//                   px = - pT*cos(phi);
+//                   py = - pT*sin(phi);
+//               }
+//               if (phi>0)
+//               {
+//                   px = - pT*cos(phi);
+//                   py = pT*sin(phi);
+//               }
+              
+//               if (px<0. && py <0.)   {phi = phi - M_PI;}
+//               if (px<0. && py >0.)   {phi = M_PI + phi;}
+              
+              double pz = pT*sinh(eta);                    
+              
+              PseudoJet this_MCT = PseudoJet(px, py, pz, ene);        
+//               this_MCT.set_user_index(flag_MCT);                        
+              allMCHitsForJet.push_back(this_MCT);
+              
+              PseudoJet this_MCT_ghost = PseudoJet(px*1.0e-20, py*1.0e-20, pz*1.0e-20, ene*1.0e-20);        
+              this_MCT_ghost.set_user_index(flag_MCT);                        
+              allHitsForJet.push_back(this_MCT_ghost);
                                           
           }
           
@@ -277,7 +312,7 @@ int main(int argc, char** argv)
 		  mc_eta_muon = eta;
 	      }
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) nNeutrinos++;
-              if (fabs(pdgId)==14) 
+              if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) 
               {
                   neutrinoEne += ene;
 		  //                  std::cout << "neutrino Ene = " <<  ene << std::endl;
@@ -334,10 +369,10 @@ int main(int argc, char** argv)
         continue;
     }
     
-    float ene_HC_th   = 0.01;    
-    float totS = 0;
-    float totEneDRH = 0;
-    float edepMuonCalo = 0;
+    double ene_HC_th   = 0.01;    
+    double totS = 0;
+    double totEneDRH = 0;
+    double edepMuonCalo = 0;
     
     for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
     {                                        
@@ -349,9 +384,9 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherL->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
-	float tower_phi_seed = this_vec.Phi();
-	float tower_eta_seed = this_vec.Eta();
-	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+	double tower_phi_seed = this_vec.Phi();
+	double tower_eta_seed = this_vec.Eta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
         if (deltaR <0.1)
  	{
 	    edepMuonCalo+=S;
@@ -382,9 +417,9 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherR->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
-	float tower_phi_seed = this_vec.Phi();
-	float tower_eta_seed = this_vec.Eta();
-	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+	double tower_phi_seed = this_vec.Phi();
+	double tower_eta_seed = this_vec.Eta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
 
         if (deltaR <0.1)
  	{
@@ -407,7 +442,7 @@ int main(int argc, char** argv)
     }
         
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV " << std::endl;
-    // float thismass = 100;
+    // double thismass = 100;
     // if (output_tag == "wwlj") thismass = 80;
     // if (output_tag == "hzjnbn") thismass = 90;
     // if (output_tag == "hzbn") thismass = 125;
@@ -426,17 +461,17 @@ int main(int argc, char** argv)
     //**************************************************************//
 
       
-    float ene_EC_th = 0.01;    
-    float totEcalEne = 0;
+    double ene_EC_th = 0.01;    
+    double totEcalEne = 0;
             
     for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
     {
      
         TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
         double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
-	float tower_phi_seed = this_vec.Phi();
-	float tower_eta_seed = this_vec.Eta();
-	float deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+	double tower_phi_seed = this_vec.Phi();
+	double tower_eta_seed = this_vec.Eta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
         // if (this_ene>0.1 && deltaR < 0.1)
 	// {
 	//   std::cout << "tower_phi = "  << tower_phi_seed << " :: mc_phi_muon =  " << mc_phi_muon << 
@@ -475,13 +510,13 @@ int main(int argc, char** argv)
         continue;
     }
 
-    float thismass = 100;
+    double thismass = 100;
     if (output_tag == "wwlj") thismass = 80;
     if (output_tag == "hzjnbn") thismass = 90;
     if (output_tag == "hznb") thismass = 125;
     if (output_tag == "zjj_scan_100") thismass = 100;
     hScatterEneVis->Fill(totS,totEneDRH);
-    std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
+//     std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
 
     if ((totS+totEcalEne)/thismass<0.8)
@@ -497,13 +532,17 @@ int main(int argc, char** argv)
 //       std::cout << "Running fastjet for clustering calo hits..." << std::endl;            
 
       // run the clustering, extract the jets
+      ClusterSequence csMCOnly(allMCHitsForJet, jet_def);
+      
       ClusterSequence cs(allHitsForJet, jet_def);
       
 //       std::vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
       std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
-      std::vector<PseudoJet> mct_jets;
+      std::vector<PseudoJet> mct_ghost_jets;
       std::vector<PseudoJet> raw_jets;
       std::vector<PseudoJet> dro_jets;
+      
+      std::vector<PseudoJet> mct_jets = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));;
 
 
       for (unsigned i = 0; i < jets.size(); i++) 
@@ -513,11 +552,11 @@ int main(int argc, char** argv)
           std::vector<PseudoJet> constituents = jets[i].constituents();
           std::vector<PseudoJet> mct_constituents;
           
-          float E_MCT = 0;
-          float E_JHS = 0;
-          float E_JHC = 0;
-          float E_JES = 0;
-          float E_JEC = 0;
+          double E_MCT = 0;
+          double E_JHS = 0;
+          double E_JHC = 0;
+          double E_JES = 0;
+          double E_JEC = 0;
           
           for (unsigned j = 0; j < constituents.size(); j++) 
           {
@@ -534,8 +573,8 @@ int main(int argc, char** argv)
               else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
               else if (constituents[j].user_index() == flag_MCT) 
               {
-                  mct_constituents.push_back(PseudoJet(constituents[j].px()*1e19,constituents[j].py()*1e19,constituents[j].pz()*1e19,constituents[j].E()*1e19));
-                  E_MCT += constituents[j].E()*1e19;              
+                  mct_constituents.push_back(PseudoJet(constituents[j].px()*1.0e20,constituents[j].py()*1.0e20,constituents[j].pz()*1.0e20,constituents[j].E()*1.0e20));
+                  E_MCT += constituents[j].E()*1.0e20;              
               }
           }
           
@@ -544,72 +583,115 @@ int main(int argc, char** argv)
           {
               ClusterSequence csMC(mct_constituents, jet_mc);
               std::vector<PseudoJet> this_mct_jet = sorted_by_pt(csMC.exclusive_jets(int(1) ) );
-              if (this_mct_jet.size()>0) mct_jets.push_back(this_mct_jet[0]);
+              if (this_mct_jet.size()>0) mct_ghost_jets.push_back(this_mct_jet[0]);
           }
               
 //           PseudoJet this_mct_jet = jets[i]*(E_MCT)/jets[i].E();
-//           mct_jets.push_back(this_mct_jet);
+//           mct_ghost_jets.push_back(this_mct_jet);
           
           PseudoJet this_raw_jet = jets[i]*(E_JES+E_JHS)/jets[i].E();
           raw_jets.push_back(this_raw_jet);          
           
-          float E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
-          float E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
-          float E_JTot = E_JE+E_JH;
+          double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
+          double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
+          double E_JTot = E_JE+E_JH;
           PseudoJet dro_corr_jet = jets[i]*E_JTot/jets[i].E();
           dro_jets.push_back(dro_corr_jet);
           
       }
       
+//       mct_jets = mct_ghost_jets;
+      
       if(mct_jets.size()==2)
       {
           //reject jets not fully contained in the calorimeter
-          if (fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance) 
+          if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance 
+//             || fabs(mct_jets[0].phi()) > phiAcceptance || fabs(mct_jets[1].phi()) > phiAcceptance
+        )
+              
 	  {
 	    goodEvent = false;
-  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) << std::endl;
+  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
 	    continue;
 	  }
       }
 
-      float jjMassMCT = 0;
+      
+      
+      double jjMassMCT = 0;
+//       double mct_phi1  = 0;
+//       double mct_phi2  = 0;
+//       double mct_e1  = 0;
+//       double mct_e2  = 0;
+      
       if (mct_jets.size()==2 && goodEvent)
       {
-          float e1 = std::max(mct_jets[0].E(), mct_jets[1].E());
-          float e2 = std::min(mct_jets[0].E(), mct_jets[1].E());
-          float p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
+          double e1 = mct_jets[0].E();
+          double e2 = mct_jets[1].E();
+          double p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hMCT_MassJJ->Fill(jjMassMCT);
 	  //	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
-      float jjMassRAW = 0;
+      
+      double jjMassRAW = 0;
       if (raw_jets.size()==2 && goodEvent)
       {
           
-          float e1 = std::max(raw_jets[0].E(), raw_jets[1].E());
-          float e2 = std::min(raw_jets[0].E(), raw_jets[1].E());
-          float p1p2Sum = sqrt(pow(raw_jets[0].px()+raw_jets[1].px(),2) + pow(raw_jets[0].py()+raw_jets[1].py(),2) + pow(raw_jets[0].pz()+raw_jets[1].pz(),2) );
+          double e1 = raw_jets[0].E();
+          double e2 = raw_jets[1].E();
+          double p1p2Sum = sqrt(pow(raw_jets[0].px()+raw_jets[1].px(),2) + pow(raw_jets[0].py()+raw_jets[1].py(),2) + pow(raw_jets[0].pz()+raw_jets[1].pz(),2) );
           
           jjMassRAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hRAW_MassJJ->Fill(jjMassRAW);
           hRAW_MassDiff->Fill((jjMassRAW-jjMassMCT)/jjMassMCT);
-	  hRAW_ScatterEne->Fill(e1 - std::max(mct_jets[0].E(), mct_jets[1].E()), e2-std::min(mct_jets[0].E(), mct_jets[1].E()) );
+          
+          
+          
+          if (sqrt(pow(raw_jets[0].phi() - mct_jets[0].phi(),2) + pow(raw_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(raw_jets[0].phi() - mct_jets[1].phi(),2) + pow(raw_jets[0].theta() - mct_jets[1].theta(),2))) 
+          {                 
+            hRAW_ScatterEne->Fill(e1 - mct_jets[0].E(), e2-mct_jets[1].E() );
+          }
+          else
+          {
+            hRAW_ScatterEne->Fill(e1 - mct_jets[1].E(), e2-mct_jets[0].E() );
+          }
 	  //	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
       }
-      float jjMassDRO = 0;
+      double jjMassDRO = 0;
       if (dro_jets.size()==2 && goodEvent)
       {
-          float e1 = std::max(dro_jets[0].E(), dro_jets[1].E());
-          float e2 = std::min(dro_jets[0].E(), dro_jets[1].E());
-          float p1p2Sum = sqrt(pow(dro_jets[0].px()+dro_jets[1].px(),2) + pow(dro_jets[0].py()+dro_jets[1].py(),2) + pow(dro_jets[0].pz()+dro_jets[1].pz(),2) );
+          double e1 = dro_jets[0].E();
+          double e2 = dro_jets[1].E();
+          double p1p2Sum = sqrt(pow(dro_jets[0].px()+dro_jets[1].px(),2) + pow(dro_jets[0].py()+dro_jets[1].py(),2) + pow(dro_jets[0].pz()+dro_jets[1].pz(),2) );
                   
           jjMassDRO = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hDRO_MassJJ->Fill(jjMassDRO);
           hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
-          hDRO_Jet1EneDiff->Fill((std::max(mct_jets[0].E(), mct_jets[1].E())-e1)/e1);
-  	  hDRO_Jet2EneDiff->Fill((std::min(mct_jets[0].E(), mct_jets[1].E())-e2)/e2);
-	  hDRO_ScatterEne->Fill(e1 - std::max(mct_jets[0].E(), mct_jets[1].E()), e2-std::min(mct_jets[0].E(), mct_jets[1].E()) );
+          
+          
+          if (sqrt(pow(dro_jets[0].phi() - mct_jets[0].phi(),2) + pow(dro_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(dro_jets[0].phi() - mct_jets[1].phi(),2) + pow(dro_jets[0].theta() - mct_jets[1].theta(),2))) 
+          {                             
+            hDRO_ScatterEne  -> Fill(e1 - mct_jets[0].E(), e2 - mct_jets[1].E() );
+            hDRO_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hDRO_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+          }
+          else 
+          {
+            hDRO_ScatterEne->Fill(e1 - mct_jets[1].E(), e2 - mct_jets[0].E() );
+            hDRO_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hDRO_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+          }
+          
+          
+          
+	  
+          
+//           if (fabs(e1 -mct_jets[0].E()>10)
+//               std::cout << "max dro jet ene = " << e1 << " :: min dro jet ene = " << e2 << " :: max mct jet ene = " << std::max(mct_jets[0].E(), mct_jets[1].E()) << " :: min mct jet ene = " << std::min(mct_jets[0].E(), mct_jets[1].E()) << std::endl;
+//           float MC_phi_jet1, DRO_phi_jet1;  
+//           std::cout  << "MC_phi_jet1 =  " << MC_phi_jet1 << ":: DRO_phi_jet1 =  " << DRO_phi_jet1 << std::endl;
 	  //	  if (debugMode) std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
 	  hScatterEneVisEH->Fill(jjMassDRO, totEcalEne/totEneDRH);
       }
@@ -619,7 +701,7 @@ int main(int argc, char** argv)
 
   
   
-  std::cout << "selection efficiency: " << float(countGoodEvents)/float(NEVENTS) << std::endl;
+  std::cout << "selection efficiency: " << double(countGoodEvents)/double(NEVENTS) << std::endl;
   
   //plotting
   
@@ -636,8 +718,17 @@ int main(int argc, char** argv)
   hRAW_MassJJ->Draw("same");
   hRAW_MassJJ->SetLineColor(kRed+1);
   
+  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 0, 140);
+  fitGaus->SetLineColor(kRed);
+  hRAW_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  
+  
   hDRO_MassJJ->Draw("same");
   hDRO_MassJJ->SetLineColor(kGreen+1);
+  fitGaus->SetLineColor(kGreen);
+  hDRO_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
   
   
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
@@ -702,7 +793,7 @@ int main(int argc, char** argv)
   hScatterEneVisEH->GetYaxis()->SetTitle("S_{ECAL}/S_{HCAL}");
     
   
-  TFile * outputFile = new TFile (Form("output_jjMass_%s.root",output_tag.c_str() ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_%s_xh%.3f_xe%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hRAW_MassJJ->Write();
@@ -718,7 +809,7 @@ int main(int argc, char** argv)
   outputFile->Write();
   outputFile->Close();
   
-  theApp->Run();
+//   theApp->Run();
 }
 
 
