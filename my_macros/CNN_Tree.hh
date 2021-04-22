@@ -22,9 +22,13 @@ struct myCNNTreeVars
     float theta_seed;
     float phi_seed;    
     
-    float image_TT[2025];    
-    float image_E1[2025];
-    float image_E2[2025];
+//     float image_TT[2025];    
+//     float image_E1[2025];
+//     float image_E2[2025];
+    
+    float image_TT[225];    
+    float image_E1[225];
+    float image_E2[225];
     
 //     float image_DRT_S[2025];
 //     float image_DRT_C[2025];
