@@ -1,10 +1,11 @@
-// g++ -Wall -o truthClusterMatchEfficiency truthClusterMatchEfficiency.C  myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs`
+// g++ -Wall -o truthClusterMatchEfficiency truthClusterMatchEfficiency.C  myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh CNN_Tree.cc CNN_Tree.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs`
 
 
 #include "SCEPCal_GeometryHelper.hh"
 #include "myG4Tree.hh"
 #include "myTruthTree.hh"
 #include "recoUtils.hh"
+#include "CNN_Tree.hh"
 
 #include <fstream>
 #include <iostream>
@@ -102,14 +103,17 @@ int main(int argc, char** argv)
 
   int mycolors[10] = {kBlack, kGreen+1, kBlue, kRed, kYellow+1, kCyan+1, kViolet, kOrange+1, kGray+1, kPink};
 
-  bool SAVEPLOTS = false;
-  bool makePlots = false;
+  bool SAVEPLOTS   = true;
+  bool WRITEOUTPUT = true;
+  bool makePlots   = false;
   
   std::string output_tag = "zjj_scan_100";
   int NFILES = 4;
   if (argc>1) output_tag = argv[1];   
   if (argc>2) NFILES = atoi(argv[2]);   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
+  
+  
 
   double ecal_S_norm = 0.985;
 //   double ecal_S_norm = 1.;
@@ -154,6 +158,19 @@ int main(int argc, char** argv)
   
   myPdgId [11] = "e^{#pm}";
   myPdgId [13] = "#mu^{#pm}";
+  
+  
+  std::map <int, std::string> pdgToName;
+  pdgToName [22]   = "gamma";
+  pdgToName [130]  = "kaon0L";
+  pdgToName [2112] = "n";
+  
+  pdgToName [211]  = "pi+-";
+  pdgToName [321]  = "K+-";
+  pdgToName [2212] = "p";
+  
+  pdgToName [11] = "e+-";
+  pdgToName [13] = "mu+-";
   
   
   int NBIN = 300;
@@ -277,6 +294,13 @@ int main(int argc, char** argv)
   InitTruthTree (TruthTree, myTruthTV);
   
   
+  TFile* outputFile = new TFile(Form("../CNN_trees/output_JetClusters_forCNN_%s.root", output_tag.c_str()),"RECREATE");
+  TTree* outputTree = new TTree("CNN", "Tree for CNN");
+  myCNNTreeVars cnnTV;
+  InitCNNTree (outputTree, cnnTV);
+  
+  
+  
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
@@ -388,8 +412,8 @@ int main(int argc, char** argv)
       for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
       { 
           CalSeed this_seed = myHcSuperSeeds.at(iseed);
-          float seed_theta = this_seed.GetTheta();
-          float seed_phi   = this_seed.GetPhi();
+          float seed_theta = this_seed.GetWeighedTheta();
+          float seed_phi   = this_seed.GetWeighedPhi();
           
           int nGenMatchedToHcalCluster = 0;
           for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
@@ -479,15 +503,15 @@ int main(int argc, char** argv)
       for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
       { 
           CalSeed this_seed = myEcSuperSeeds.at(iseed);
-          float seed_theta = this_seed.GetTheta();
-          float seed_phi   = this_seed.GetPhi();
+          float seed_theta = this_seed.GetWeighedTheta();
+          float seed_phi   = this_seed.GetWeighedPhi();
 //           if (abs(this_seed.GetEta())>etaAcceptance) continue;
           int nGenMatchedToCaloCluster = 0;
           
           for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
           {
               
-              int    pdgId = myTruthTV.mcs_pdgId->at(i);                          
+              int pdgId = myTruthTV.mcs_pdgId->at(i);                          
               if (pdgId == 12 || pdgId == 14 || pdgId == 16) continue; //ignore neutrinos
 
               double mc_ene   = myTruthTV.mcs_E->at(i);
@@ -502,6 +526,7 @@ int main(int argc, char** argv)
               if (dd < maxDeltaRMatchEcal)
               {
                   this_seed.AddGenMatch(pdgId);
+                  this_seed.AddGenEne(mc_ene);                  
                   nGenMatchedToCaloCluster++;
               }
           }
@@ -532,11 +557,15 @@ int main(int argc, char** argv)
                     
                   hImage_HC->SetBinContent(iBinX+1, iBinY+1, image_HC[pixel]);
                   hImage_HC_Sum->Fill(iBinX+0.5, iBinY+0.5, image_HC[pixel]);
+                  
+                  cnnTV.image_E1[pixel]   = image_E1[pixel];
+                  cnnTV.image_E2[pixel]   = image_E2[pixel];
               }
           }
         
           CalSeed clust_seed = thisCluster.GetSeed();
           std::vector<int> truth_in_seed =  clust_seed.GetGenMatch();
+          std::vector<float> truth_in_seed_ene =  clust_seed.GetGenEne();
           if (truth_in_seed.size()>0)
           {
               if (truth_in_seed.at(0)==22 && makePlots)
@@ -568,24 +597,41 @@ int main(int argc, char** argv)
                   hImage_HC_Sum->Draw("COLZ");
                   cPlotImageSum->Update();
               }
+              
+              
+                                          
           }
+          if (truth_in_seed.size()==1)
+          {
+              //for all ecal seeds matched to a truth particle fill the CNN tree
+              int this_pdgId = truth_in_seed.at(0);
+              auto it = myPdgId.find(abs(this_pdgId));
+              if (it== myPdgId.end()) continue; 
+              
+              cnnTV.PrimaryParticleEnergy      =  truth_in_seed_ene.at(0);
+              cnnTV.CNNPrimaryParticleName     =  pdgToName[abs(this_pdgId)];
+              cnnTV.theta_seed = seed_theta;
+              cnnTV.phi_seed   = seed_phi;              
+              outputTree->Fill();
+          }
+          
           hNGenMatchedToEcalCluster->Fill(nGenMatchedToCaloCluster);                        
       }
       
       int nHcalOnlyCluster = 0;
       for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
       { 
-          CalSeed this_seed = myHcSuperSeeds.at(iseed);
-          float seed_theta = this_seed.GetTheta();
-          float seed_phi   = this_seed.GetPhi();            
+          CalSeed this_seed = myHcSuperSeeds.at(iseed);          
+          float seed_theta = this_seed.GetWeighedTheta();
+          float seed_phi   = this_seed.GetWeighedPhi();
           bool HcalMatchedToEcalCluster = false;
           
           //check if HCAL cluster is matched to ECAL cluster, if so skip HCAL cluster since already present in CalCluster collection
           for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
           { 
             CalSeed ec_this_seed = myEcSuperSeeds.at(iseed);
-            float ec_seed_theta = ec_this_seed.GetTheta();
-            float ec_seed_phi   = ec_this_seed.GetPhi();
+            float ec_seed_theta = ec_this_seed.GetWeighedTheta();
+            float ec_seed_phi   = ec_this_seed.GetWeighedPhi();
             float dd = sqrt(pow(seed_theta-ec_seed_theta,2) + pow(seed_phi-ec_seed_phi,2));              
             if (dd < maxDeltaRMatchHcal)
             {
@@ -679,8 +725,8 @@ int main(int argc, char** argv)
           for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
           { 
               CalSeed this_seed = myEcSuperSeeds.at(iseed);
-              float seed_theta = this_seed.GetTheta();
-              float seed_phi   = this_seed.GetPhi();            
+              float seed_theta = this_seed.GetWeighedTheta();
+              float seed_phi   = this_seed.GetWeighedPhi();          
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaRMatchEcal)   matchedToEcalCluster ++;                            
           }
@@ -692,8 +738,8 @@ int main(int argc, char** argv)
           for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
           { 
               CalSeed this_seed = myHcSuperSeeds.at(iseed);
-              float seed_theta = this_seed.GetTheta();
-              float seed_phi   = this_seed.GetPhi();            
+              float seed_theta = this_seed.GetWeighedTheta();
+              float seed_phi   = this_seed.GetWeighedPhi();         
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaRMatchHcal)   matchedToHcalCluster ++;                            
           }                    
@@ -710,8 +756,8 @@ int main(int argc, char** argv)
               CalCluster this_cluster = myCalClusters.at(icluster);
               CalSeed this_seed = this_cluster.GetSeed();
               
-              float seed_theta = this_seed.GetTheta();
-              float seed_phi   = this_seed.GetPhi();            
+              float seed_theta = this_seed.GetWeighedTheta();
+              float seed_phi   = this_seed.GetWeighedPhi();
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));
               float this_cluster_deltaR;
               if (this_cluster.GetType() == "ecal") this_cluster_deltaR = maxDeltaRMatchEcal;
@@ -1331,6 +1377,17 @@ int main(int argc, char** argv)
   hFracHcalOnlyClusters->GetXaxis()->SetTitle("Fraction of HCAL only clusters (not matched to ECAL)");
   gPad->SetLogy();
   if (SAVEPLOTS) cFracHcalOnlyClusters->SaveAs("plots_pfa/cFracHcalOnlyClusters.png");
+  
+  
+  
+  
+  if (WRITEOUTPUT)
+  {
+    outputFile->cd();
+    outputTree->Write();
+    outputFile->Close();
+    std::cout << "done writing output file!" << std::endl;
+  }
   
   
   theApp->Run();
