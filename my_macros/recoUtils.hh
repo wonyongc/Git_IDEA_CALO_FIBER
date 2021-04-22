@@ -51,6 +51,7 @@ class CalSeed
     float weighed_phi;
     
     std::vector<int> gen_matched_pdgId;
+    std::vector<float> gen_matched_ene;
     
     public:
         void Init(int, float, float, float);
@@ -73,9 +74,11 @@ class CalSeed
         float GetEne3x3();        
         float GetWeighedTheta();       
         float GetWeighedPhi();
-        std::vector<int> GetGenMatch();
+        std::vector<int>   GetGenMatch();
+        std::vector<float> GetGenEne();
         
         void AddGenMatch(int);
+        void AddGenEne(float);
     
 };
 

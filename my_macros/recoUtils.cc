@@ -52,6 +52,7 @@ void CalSeed::SetEne3x3(float this_ene3x3)      {  ene3x3= this_ene3x3;}
 void CalSeed::SetWeighedPhi(float this_phi)     {  weighed_phi= this_phi;}
 void CalSeed::SetWeighedTheta(float this_theta)  {  weighed_theta= this_theta;}
 void  CalSeed::AddGenMatch (int thisPdgId){  gen_matched_pdgId.push_back(thisPdgId);}
+void  CalSeed::AddGenEne   (float thisGenEne){  gen_matched_ene.push_back(thisGenEne);}
 
 int   CalSeed::GetHitId ()  {  return hit_id;}
 int   CalSeed::GetSide ()   {  return side;}
@@ -61,11 +62,12 @@ float CalSeed::GetPhi()     {  return phi;}
 float CalSeed::GetEne()     {  return ene;}
 
 
-float CalSeed::GetEne3x3()      {  return ene3x3;}
-float CalSeed::GetWeighedTheta(){  return weighed_theta;}
-float CalSeed::GetWeighedPhi()  {  return weighed_phi;}
+float CalSeed::GetEne3x3()      {return ene3x3;}
+float CalSeed::GetWeighedTheta(){return weighed_theta;}
+float CalSeed::GetWeighedPhi()  {return weighed_phi;}
 
-std::vector<int> CalSeed::GetGenMatch(){  return gen_matched_pdgId;}
+std::vector<int>   CalSeed::GetGenMatch(){return gen_matched_pdgId;}
+std::vector<float> CalSeed::GetGenEne()  {return gen_matched_ene;}
 
 
 void CalCluster::Init (CalSeed this_seed, float deltaR_ECAL, float deltaR_HCAL, int imageSize, std::string type) 
