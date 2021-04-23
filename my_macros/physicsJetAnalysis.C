@@ -199,9 +199,9 @@ int main(int argc, char** argv)
   
   //define histos
   
-  int NBIN = 170;
+  int NBIN = 300;
   int minMass = 0;
-  int maxMass = 170;
+  int maxMass = 300;
   
   TH1F * hMCT_MassJJ = new TH1F ("hMCT_MassJJ", "hMCT_MassJJ", NBIN, minMass, maxMass);
   TH1F * hRAW_MassJJ = new TH1F ("hRAW_MassJJ", "hRAW_MassJJ", NBIN, minMass, maxMass);
@@ -214,8 +214,8 @@ int main(int argc, char** argv)
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
   TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
-  TH2F * hScatterEneVis  = new TH2F ("hScatterEneVis", "hScatterEneVis", 170, 0, 170, 170, 0, 170);
-  TH2F * hScatterEneVisEH = new TH2F ("hScatterEneVisEH", "hScatterEneVisEH", 170, 0, 170, 200, 0, 5);
+  TH2F * hScatterEneVis  = new TH2F ("hScatterEneVis", "hScatterEneVis", 300, 0, 300, 300, 0, 300);
+  TH2F * hScatterEneVisEH = new TH2F ("hScatterEneVisEH", "hScatterEneVisEH", 300, 0, 300, 200, 0, 5);
 
   ///*******************************************///
   ///		 Run over events	        ///
@@ -342,7 +342,7 @@ int main(int argc, char** argv)
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;      
         continue;
     } 
-    if (output_tag == "zjj_scan_100" && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
+    if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
     {
         goodEvent = false;
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
@@ -357,7 +357,7 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if ((output_tag == "hznb" || output_tag == "zjj_scan_100") && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
+    if ((output_tag == "hznb" || output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
     {
       if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
         goodEvent = false;
@@ -515,7 +515,13 @@ int main(int argc, char** argv)
     if (output_tag == "wwlj") thismass = 80;
     if (output_tag == "hzjnbn") thismass = 90;
     if (output_tag == "hznb") thismass = 125;
+    if (output_tag == "zjj_scan_30")  thismass = 30;
+    if (output_tag == "zjj_scan_50")  thismass = 50;
+    if (output_tag == "zjj_scan_70")  thismass = 70;
+    if (output_tag == "zjj_scan_90")  thismass = 90;
     if (output_tag == "zjj_scan_100") thismass = 100;
+    if (output_tag == "zjj_scan_150") thismass = 150;
+    if (output_tag == "zjj_scan_250") thismass = 250;
     hScatterEneVis->Fill(totS,totEneDRH);
 //     std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
