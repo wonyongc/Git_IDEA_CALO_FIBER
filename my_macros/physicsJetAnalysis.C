@@ -199,7 +199,7 @@ int main(int argc, char** argv)
   
   //define histos
   
-  int NBIN = 300;
+  int NBIN = 600;
   int minMass = 0;
   int maxMass = 300;
   
