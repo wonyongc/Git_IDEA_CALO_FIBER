@@ -142,8 +142,8 @@ int main(int argc, char** argv)
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
 
   double etaAcceptance = 1.4;  //accept only  jet within this eta
-  double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
-  double deltaR_match = 1.0;
+//   double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
+//   double deltaR_match = 1.0;
   
   SCEPCal_GeometryHelper myGeometry;
 
@@ -209,9 +209,15 @@ int main(int argc, char** argv)
   TH1F * hRAW_MassDiff = new TH1F ("hRAW_MassDiff", "hRAW_MassDiff", NBIN, -1, 1);
   TH1F * hDRO_MassDiff = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
   TH1F * hDRO_Jet1EneDiff = new TH1F ("hDRO_Jet1EneDiff", "hDRO_Jet1EneDiff", NBIN, -1, 1);
-  TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);
-  
+  TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);      
   TH1F * hDRO_JetEneDiff = new TH1F ("hDRO_JetEneDiff", "hDRO_JetEneDiff", NBIN, -1, 1);
+  
+  TH1F * hMCT_Jet1Ene = new TH1F ("hMCT_Jet1Ene", "hMCT_Jet1Ene", NBIN, 0, maxMass);
+  TH1F * hRAW_Jet1Ene = new TH1F ("hRAW_Jet1Ene", "hRAW_Jet1Ene", NBIN, 0, maxMass);
+  TH1F * hDRO_Jet1Ene = new TH1F ("hDRO_Jet1Ene", "hDRO_Jet1Ene", NBIN, 0, maxMass);
+  TH1F * hMCT_Jet2Ene = new TH1F ("hMCT_Jet2Ene", "hMCT_Jet2Ene", NBIN, 0, maxMass);
+  TH1F * hRAW_Jet2Ene = new TH1F ("hRAW_Jet2Ene", "hRAW_Jet2Ene", NBIN, 0, maxMass);
+  TH1F * hDRO_Jet2Ene = new TH1F ("hDRO_Jet2Ene", "hDRO_Jet2Ene", NBIN, 0, maxMass);
 
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -641,6 +647,8 @@ int main(int argc, char** argv)
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hMCT_MassJJ->Fill(jjMassMCT);
+          hMCT_Jet1Ene->Fill(e1);
+          hMCT_Jet2Ene->Fill(e2);
 	  //	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
       
@@ -655,6 +663,8 @@ int main(int argc, char** argv)
           jjMassRAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hRAW_MassJJ->Fill(jjMassRAW);
           hRAW_MassDiff->Fill((jjMassRAW-jjMassMCT)/jjMassMCT);
+          hRAW_Jet1Ene->Fill(e1);
+          hRAW_Jet2Ene->Fill(e2);
           
           
           
@@ -678,6 +688,8 @@ int main(int argc, char** argv)
           jjMassDRO = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hDRO_MassJJ->Fill(jjMassDRO);
           hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
+          hDRO_Jet1Ene->Fill(e1);
+          hDRO_Jet2Ene->Fill(e2);
           
           
           if (sqrt(pow(dro_jets[0].phi() - mct_jets[0].phi(),2) + pow(dro_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(dro_jets[0].phi() - mct_jets[1].phi(),2) + pow(dro_jets[0].theta() - mct_jets[1].theta(),2))) 
@@ -820,6 +832,9 @@ int main(int argc, char** argv)
   hDRO_Jet1EneDiff->Write();
   hDRO_Jet2EneDiff->Write();
   hDRO_JetEneDiff->Write();
+  hMCT_Jet1Ene->Write();
+  hRAW_Jet1Ene->Write();
+  hDRO_Jet1Ene->Write();
   hScatterEneVis->Write();
   hScatterEneVisEH->Write();
   outputFile->Write();
