@@ -210,6 +210,8 @@ int main(int argc, char** argv)
   TH1F * hDRO_MassDiff = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
   TH1F * hDRO_Jet1EneDiff = new TH1F ("hDRO_Jet1EneDiff", "hDRO_Jet1EneDiff", NBIN, -1, 1);
   TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);
+  
+  TH1F * hDRO_JetEneDiff = new TH1F ("hDRO_JetEneDiff", "hDRO_JetEneDiff", NBIN, -1, 1);
 
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -683,12 +685,18 @@ int main(int argc, char** argv)
             hDRO_ScatterEne  -> Fill(e1 - mct_jets[0].E(), e2 - mct_jets[1].E() );
             hDRO_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hDRO_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+            
+            hDRO_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hDRO_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
           }
           else 
           {
             hDRO_ScatterEne->Fill(e1 - mct_jets[1].E(), e2 - mct_jets[0].E() );
             hDRO_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hDRO_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+            
+            hDRO_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hDRO_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
           }
           
           
@@ -811,6 +819,7 @@ int main(int argc, char** argv)
   hDRO_ScatterEne->Write();
   hDRO_Jet1EneDiff->Write();
   hDRO_Jet2EneDiff->Write();
+  hDRO_JetEneDiff->Write();
   hScatterEneVis->Write();
   hScatterEneVisEH->Write();
   outputFile->Write();
