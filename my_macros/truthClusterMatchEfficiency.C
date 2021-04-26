@@ -84,7 +84,7 @@ bool RootFileExists(const char *filename)
 int main(int argc, char** argv)
 {
 
-  TApplication* theApp = new TApplication("App", &argc, argv);
+  //  TApplication* theApp = new TApplication("App", &argc, argv);
       
   using namespace std;
   
@@ -103,7 +103,7 @@ int main(int argc, char** argv)
 
   int mycolors[10] = {kBlack, kGreen+1, kBlue, kRed, kYellow+1, kCyan+1, kViolet, kOrange+1, kGray+1, kPink};
 
-  bool SAVEPLOTS   = true;
+  bool SAVEPLOTS   = false;
   bool WRITEOUTPUT = true;
   bool makePlots   = false;
   
@@ -1390,7 +1390,7 @@ int main(int argc, char** argv)
   }
   
   
-  theApp->Run();
+  //  theApp->Run();
 }
 
 
