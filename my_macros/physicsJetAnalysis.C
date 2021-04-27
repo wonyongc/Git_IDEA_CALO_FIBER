@@ -820,7 +820,7 @@ int main(int argc, char** argv)
   hScatterEneVisEH->GetYaxis()->SetTitle("S_{ECAL}/S_{HCAL}");
     
   
-  TFile * outputFile = new TFile (Form("output_jjMass_%s_xh%.3f_xe%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("histos/output_jjMass_%s_xh%.3f_xe%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hRAW_MassJJ->Write();
