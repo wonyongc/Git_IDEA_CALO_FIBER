@@ -305,13 +305,14 @@ int main(int argc, char** argv)
       std::cout << "Number of HCAL seeds found: " << myHcSeeds.size() << std::endl;
       std::cout << "Cleaning up HCAL seeds too close to each other" << std::endl;
       std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaR_Hcal);
+      std::vector<CalSeed>  myHcSuperSeeds   = MakeSuperSeeds(myHcSeedsCleaned, myHcHits, myHcHits, myHcHits, maxDeltaR_Hcal, HC_seed_th);
                         
       std::cout << "Matching HCAL clusters with gen level" << std::endl;
-      for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+      for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
       { 
-          CalSeed this_seed = myHcSeedsCleaned.at(iseed);
-          float seed_theta = this_seed.GetTheta();
-          float seed_phi   = this_seed.GetPhi();
+          CalSeed this_seed = myHcSuperSeeds.at(iseed);
+          float seed_theta = this_seed.GetWeighedTheta();
+          float seed_phi   = this_seed.GetWeighedPhi();
           
           
           TruthTree->GetEntry(selEv);
@@ -384,14 +385,15 @@ int main(int argc, char** argv)
       std::cout << "Number of ECAL seeds found: " << myEcSeeds.size() << std::endl;      
       std::cout << "Cleaning up ECAL seeds too close to each other" << std::endl;
       std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaR_Ecal);
+      std::vector<CalSeed>  myEcSuperSeeds   = MakeSuperSeeds(myEcSeedsCleaned, myEcHits, myEcHits, myEcHits, maxDeltaR_Ecal, EC_seed_th);
       
     
       std::cout << "Matching ECAL clusters with gen level" << std::endl;
-      for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+      for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
       { 
-          CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-          float seed_theta = this_seed.GetTheta();
-          float seed_phi   = this_seed.GetPhi();
+          CalSeed this_seed = myEcSuperSeeds.at(iseed);
+          float seed_theta = this_seed.GetWeighedTheta();
+          float seed_phi   = this_seed.GetWeighedPhi();
           
           
           TruthTree->GetEntry(selEv);
@@ -439,11 +441,11 @@ int main(int argc, char** argv)
           truth_theta = M_PI- truth_theta;
           
           
-          for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+          for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
           { 
-              CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-              float seed_theta = this_seed.GetTheta();
-              float seed_phi   = this_seed.GetPhi();
+              CalSeed this_seed = myEcSuperSeeds.at(iseed);
+              float seed_theta = this_seed.GetWeighedTheta();
+              float seed_phi   = this_seed.GetWeighedPhi();
             
               float dd = sqrt(pow(seed_theta-truth_theta,2) + pow(seed_phi-truth_phi,2));              
               if (dd < maxDeltaR_Ecal)
@@ -602,11 +604,11 @@ int main(int argc, char** argv)
   hGrid_EC_T->GetXaxis()->SetRangeUser(minTheta, maxTheta);
   hGrid_EC_T->GetYaxis()->SetRangeUser(minPhi, maxPhi);
       
-  for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+  for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
   {          
-      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
-      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      CalSeed this_seed = myEcSuperSeeds.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetWeighedTheta(),this_seed.GetWeighedPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
+      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetWeighedTheta() <<  ", phi = " << this_seed.GetWeighedPhi() << std::endl;
       el1->SetLineColor(kRed);
       el1->SetFillStyle(0);
       el1->SetLineWidth(2);
@@ -624,11 +626,11 @@ int main(int argc, char** argv)
   hGrid_DRT_S->GetXaxis()->SetRangeUser(minTheta, maxTheta);
   hGrid_DRT_S->GetYaxis()->SetRangeUser(minPhi, maxPhi);
   
-  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+  for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
   {          
-      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
-      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      CalSeed this_seed = myHcSuperSeeds.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetWeighedTheta(),this_seed.GetWeighedPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
+      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetWeighedTheta() <<  ", phi = " << this_seed.GetWeighedPhi() << std::endl;
       el1->SetLineColor(kYellow+2);
       el1->SetFillStyle(0);
       el1->SetLineWidth(2);
@@ -638,22 +640,22 @@ int main(int argc, char** argv)
   cCalSeeds->cd(3);
   
   hStackedTruth->Draw("BOX");
-  for (long unsigned int iseed = 0; iseed < myEcSeedsCleaned.size(); iseed++)
+  for (long unsigned int iseed = 0; iseed < myEcSuperSeeds.size(); iseed++)
   {          
-      CalSeed this_seed = myEcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
-      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      CalSeed this_seed = myEcSuperSeeds.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetWeighedTheta(),this_seed.GetWeighedPhi(), maxDeltaR_Ecal, maxDeltaR_Ecal);
+      std::cout << "ECAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetWeighedTheta() <<  ", phi = " << this_seed.GetWeighedPhi() << std::endl;
       el1->SetLineColor(kRed);
       el1->SetFillStyle(0);
       el1->SetLineWidth(2);
       el1->SetLineStyle(7);
       el1->Draw();
   }
-  for (long unsigned int iseed = 0; iseed < myHcSeedsCleaned.size(); iseed++)
+  for (long unsigned int iseed = 0; iseed < myHcSuperSeeds.size(); iseed++)
   {          
-      CalSeed this_seed = myHcSeedsCleaned.at(iseed);
-      TEllipse * el1 = new TEllipse(this_seed.GetTheta(),this_seed.GetPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
-      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetTheta() <<  ", phi = " << this_seed.GetPhi() << std::endl;
+      CalSeed this_seed = myHcSuperSeeds.at(iseed);
+      TEllipse * el1 = new TEllipse(this_seed.GetWeighedTheta(),this_seed.GetWeighedPhi(), maxDeltaR_Hcal, maxDeltaR_Hcal);
+      std::cout << "HCAL seed: " << iseed << " :: ene = " << this_seed.GetEne() << " :: theta = " << this_seed.GetWeighedTheta() <<  ", phi = " << this_seed.GetWeighedPhi() << std::endl;
       el1->SetLineColor(kYellow+2);
       el1->SetFillStyle(0);
       el1->SetLineWidth(2);
