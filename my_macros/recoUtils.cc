@@ -64,6 +64,8 @@ float CalSeed::GetTheta()   {  return theta;}
 float CalSeed::GetEta()     {  return -log(tan(theta/2));}
 float CalSeed::GetPhi()     {  return phi;}
 float CalSeed::GetEne()     {  return ene;}
+float CalSeed::GetEneFront()     {  return ene;}
+float CalSeed::GetEneRear()     {  return ene;}
 
 
 float CalSeed::GetEne3x3()      {return ene3x3;}
