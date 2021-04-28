@@ -48,8 +48,8 @@ void  CalSeed::SetSide (int this_side) {side = this_side;}
 void  CalSeed::SetTheta (float this_theta)  { theta = this_theta;}
 void  CalSeed::SetPhi (float this_phi)  {  phi = this_phi;}
 void  CalSeed::SetEne (float this_ene)  {  ene = this_ene;}
-void  CalSeed::SetEneFront (float this_ene)  {  eneF = this_ene;}
-void  CalSeed::SetEneRear (float this_ene)  {  eneR = this_ene;}
+void  CalSeed::SetEneFront (float this_eneF)  {  eneF = this_eneF;}
+void  CalSeed::SetEneRear (float this_eneR)  {  eneR = this_eneR;}
 void  CalSeed::SetEne3x3(float this_ene3x3)      {  ene3x3= this_ene3x3;}
 void  CalSeed::SetEne3x3Front(float this_ene3x3F)      {  ene3x3F= this_ene3x3F;}
 void  CalSeed::SetEne3x3Rear(float this_ene3x3R)      {  ene3x3R= this_ene3x3R;}
@@ -64,8 +64,8 @@ float CalSeed::GetTheta()   {  return theta;}
 float CalSeed::GetEta()     {  return -log(tan(theta/2));}
 float CalSeed::GetPhi()     {  return phi;}
 float CalSeed::GetEne()     {  return ene;}
-float CalSeed::GetEneFront()     {  return ene;}
-float CalSeed::GetEneRear()     {  return ene;}
+float CalSeed::GetEneFront()     {  return eneF;}
+float CalSeed::GetEneRear()     {  return eneR;}
 
 
 float CalSeed::GetEne3x3()      {return ene3x3;}
