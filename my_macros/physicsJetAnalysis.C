@@ -115,10 +115,29 @@ int main(int argc, char** argv)
   double x_factor_hcal = 0.445;
   double x_factor_ecal = 0.371;
   
+  float maxDeltaRMatchEcal = 0.013;
+  float maxDeltaRMatchHcal = 0.2;  
+  
+  
   if (argc>1) output_tag = argv[1];   
   if (argc>2) NFILES = atoi(argv[2]);
   if (argc>3) x_factor_hcal = atof(argv[3]);   
   if (argc>4) x_factor_ecal = atof(argv[4]);   
+  if (argc>5) maxDeltaRMatchEcal = atof(argv[5]);   
+  if (argc>6) maxDeltaRMatchHcal = atof(argv[6]);   
+  
+  double thismass = 100;
+  if (output_tag == "wwlj") thismass = 80;
+  if (output_tag == "hzjnbn") thismass = 90;
+  if (output_tag == "hznb") thismass = 125;
+  if (output_tag == "zjj_scan_30")  thismass = 30;
+  if (output_tag == "zjj_scan_50")  thismass = 50;
+  if (output_tag == "zjj_scan_70")  thismass = 70;
+  if (output_tag == "zjj_scan_90")  thismass = 90;
+  if (output_tag == "zjj_scan_100") thismass = 100;
+  if (output_tag == "zjj_scan_150") thismass = 150;
+  if (output_tag == "zjj_scan_250") thismass = 250;
+  
   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
@@ -130,6 +149,8 @@ int main(int argc, char** argv)
   double drh_S_norm  = 407;
   double drh_C_norm  = 103.2;
   
+  float ene_EC_th  = 0.01;
+  float ene_HC_th  = 0.01;
   
 // choose a jet definition
   double R = 2*M_PI;
@@ -170,8 +191,8 @@ int main(int argc, char** argv)
 //     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
 //     fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
     
-//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
-//     fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+    fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
@@ -197,27 +218,68 @@ int main(int argc, char** argv)
   
   bool debugMode = false;
   
+  float ecal_stoch = 0.025;
+  float ecal_const = 0.01;
+  float hcal_stoch = 0.30;
+  float hcal_const = 0.023;
+  
+  TF1 * funcEcalRes = new TF1 ("funcEcalRes", "sqrt(pow([0]/sqrt(x),2) + pow([1],2))", 0, 300);
+  funcEcalRes->SetParameters(ecal_stoch, ecal_const);
+  TF1 * funcHcalRes = new TF1 ("funcHcalRes", "sqrt(pow([0]/sqrt(x),2) + pow([1],2))", 0, 300);
+  funcHcalRes->SetParameters(hcal_stoch, hcal_const);
+  
+  TF1 * funcTrackerRes = new TF1 ("funcTrackerRes", "[0]/sqrt(x)", 0, 300);
+  funcTrackerRes->SetParameter(0,0.003);
+  
   //define histos
   
   int NBIN = 1200;
   int minMass = 0;
   int maxMass = 300;
   
-  TH1F * hMCT_MassJJ = new TH1F ("hMCT_MassJJ", "hMCT_MassJJ", NBIN, minMass, maxMass);
-  TH1F * hRAW_MassJJ = new TH1F ("hRAW_MassJJ", "hRAW_MassJJ", NBIN, minMass, maxMass);
-  TH1F * hDRO_MassJJ = new TH1F ("hDRO_MassJJ", "hDRO_MassJJ", NBIN, minMass, maxMass);
-  TH1F * hRAW_MassDiff = new TH1F ("hRAW_MassDiff", "hRAW_MassDiff", NBIN, -1, 1);
-  TH1F * hDRO_MassDiff = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
+  TH1F * hMCT_MassJJ        = new TH1F ("hMCT_MassJJ", "hMCT_MassJJ", NBIN, minMass, maxMass);
+  TH1F * hRAW_MassJJ        = new TH1F ("hRAW_MassJJ", "hRAW_MassJJ", NBIN, minMass, maxMass);
+  TH1F * hDRO_MassJJ        = new TH1F ("hDRO_MassJJ", "hDRO_MassJJ", NBIN, minMass, maxMass);
+  TH1F * hMCTFastSim_MassJJ = new TH1F ("hMCTFastSim_MassJJ", "hMCTFastSim_MassJJ", NBIN, minMass, maxMass);
+  TH1F * hPFA_MassJJ        = new TH1F ("hPFA_MassJJ", "hPFA_MassJJ", NBIN, minMass, maxMass);
+  TH1F * hPFA_RAW_MassJJ    = new TH1F ("hPFA_RAW_MassJJ", "hPFA_RAW_MassJJ", NBIN, minMass, maxMass);
+  
+  TH1F * hRAW_MassDiff        = new TH1F ("hRAW_MassDiff", "hRAW_MassDiff", NBIN, -1, 1);
+  TH1F * hDRO_MassDiff        = new TH1F ("hDRO_MassDiff", "hDRO_MassDiff", NBIN, -1, 1);
+  TH1F * hMCTFastSim_MassDiff = new TH1F ("hMCTFastSim_MassDiff", "hMCTFastSim_MassDiff", NBIN, -1, 1);
+  TH1F * hPFA_MassDiff        = new TH1F ("hPFA_MassDiff", "hPFA_MassDiff", NBIN, -1, 1);
+  TH1F * hPFA_RAW_MassDiff    = new TH1F ("hPFA_RAW_MassDiff", "hPFA_RAW_MassDiff", NBIN, -1, 1);
+  
   TH1F * hDRO_Jet1EneDiff = new TH1F ("hDRO_Jet1EneDiff", "hDRO_Jet1EneDiff", NBIN, -1, 1);
   TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);      
-  TH1F * hDRO_JetEneDiff = new TH1F ("hDRO_JetEneDiff", "hDRO_JetEneDiff", NBIN, -1, 1);
+  TH1F * hDRO_JetEneDiff  = new TH1F ("hDRO_JetEneDiff", "hDRO_JetEneDiff", NBIN, -1, 1);
+  
+  TH1F * hFastSim_Jet1EneDiff = new TH1F ("hFastSim_Jet1EneDiff", "hFastSim_Jet1EneDiff", NBIN, -1, 1);
+  TH1F * hFastSim_Jet2EneDiff = new TH1F ("hFastSim_Jet2EneDiff", "hFastSim_Jet2EneDiff", NBIN, -1, 1);      
+  TH1F * hFastSim_JetEneDiff  = new TH1F ("hFastSim_JetEneDiff", "hFastSim_JetEneDiff", NBIN, -1, 1);
+  
+  TH1F * hPFA_RAW_Jet1EneDiff = new TH1F ("hPFA_RAW_Jet1EneDiff", "hPFA_RAW_Jet1EneDiff", NBIN, -1, 1);
+  TH1F * hPFA_RAW_Jet2EneDiff = new TH1F ("hPFA_RAW_Jet2EneDiff", "hPFA_RAW_Jet2EneDiff", NBIN, -1, 1);      
+  TH1F * hPFA_RAW_JetEneDiff  = new TH1F ("hPFA_RAW_JetEneDiff", "hPFA_RAW_JetEneDiff", NBIN, -1, 1);
+  
+  TH1F * hPFA_Jet1EneDiff = new TH1F ("hPFA_Jet1EneDiff", "hPFA_Jet1EneDiff", NBIN, -1, 1);
+  TH1F * hPFA_Jet2EneDiff = new TH1F ("hPFA_Jet2EneDiff", "hPFA_Jet2EneDiff", NBIN, -1, 1);      
+  TH1F * hPFA_JetEneDiff  = new TH1F ("hPFA_JetEneDiff", "hPFA_JetEneDiff", NBIN, -1, 1);
   
   TH1F * hMCT_Jet1Ene = new TH1F ("hMCT_Jet1Ene", "hMCT_Jet1Ene", NBIN, 0, maxMass);
   TH1F * hRAW_Jet1Ene = new TH1F ("hRAW_Jet1Ene", "hRAW_Jet1Ene", NBIN, 0, maxMass);
   TH1F * hDRO_Jet1Ene = new TH1F ("hDRO_Jet1Ene", "hDRO_Jet1Ene", NBIN, 0, maxMass);
   TH1F * hMCT_Jet2Ene = new TH1F ("hMCT_Jet2Ene", "hMCT_Jet2Ene", NBIN, 0, maxMass);
   TH1F * hRAW_Jet2Ene = new TH1F ("hRAW_Jet2Ene", "hRAW_Jet2Ene", NBIN, 0, maxMass);
-  TH1F * hDRO_Jet2Ene = new TH1F ("hDRO_Jet2Ene", "hDRO_Jet2Ene", NBIN, 0, maxMass);
+  TH1F * hDRO_Jet2Ene = new TH1F ("hDRO_Jet2Ene", "hDRO_Jet2Ene", NBIN, 0, maxMass);  
+  
+  TH1F* hGammaEneMC      = new TH1F ("hGammaEneMC", "hGammaEneMC", NBIN/2, 0, 1);
+  TH1F* hNeutrHadMC      = new TH1F ("hNeutrHadMC", "hNeutrHadMC", NBIN/2, 0, 1);
+  TH1F* hNeutralsMC      = new TH1F ("hNeutralsMC", "hNeutralsMC", NBIN/2, 0, 1);
+  TH1F* hNeutralResidual = new TH1F ("hNeutralResidual", "hNeutralResidual", NBIN, -3, 3);
+  TH1F* hECALResidual = new TH1F ("hECALResidual", "hECALResidual", NBIN, -3, 3);
+  TH1F* hHCALResidual = new TH1F ("hHCALResidual", "hHCALResidual", NBIN, -3, 3);
+  TH1F* hNeutralResidualDRO = new TH1F ("hNeutralResidualDRO", "hNeutralResidualDRO", NBIN, -3, 3);
 
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -243,22 +305,28 @@ int main(int argc, char** argv)
     //    std::cout << "processing event: " << iEvt << std::endl;
     std::vector<PseudoJet> allHitsForJet;
     std::vector<PseudoJet> allMCHitsForJet;
+    std::vector<PseudoJet> allMCHitsForJetFastSim;
+    std::vector<PseudoJet> allHitsForJetPFA;
       
     bool goodEvent = true;
     int nMuons = 0;
     int nNeutrinos = 0;
-    int nHeavyQuarks = 0;
     double neutrinoEne = 0;
     double muonEne = 0;
 
     double mc_phi_muon = -999;
-    double mc_eta_muon = -999;
+    double mc_theta_muon = -999;
 
       //filling truth
     TruthTree->GetEntry(iEvt);
 //       std::cout << "n MC truth particles found: " << myTruthTV.mcs_n << std::endl;
 //       std::cout << "\n*******************************************************\n" << std::endl;
-              
+
+    double gamma_ene = 0;
+    double neutralhad_ene = 0;
+    double neutrals_ene = 0;
+    
+    
     for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
     {          
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
@@ -266,7 +334,7 @@ int main(int argc, char** argv)
           double phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
           double pT    = myTruthTV.mcs_pt->at(i);
-//           int charge = myTruthTV.mcs_charge->at(i);
+          int charge   = myTruthTV.mcs_charge->at(i);
           double theta = 2*atan(exp(-eta));
           theta = M_PI- theta;
           
@@ -276,7 +344,6 @@ int main(int argc, char** argv)
           
           if (   fabs(pdgId)!=12 && fabs(pdgId)!=14 && fabs(pdgId)!=16 && fabs(pdgId)!=13  // exclude neutrinos and muons
                  && fabs(pdgId)<10000 // exclude BSM
-		 && fabs(pdgId)!=5 &&  fabs(pdgId)!=6 // exclude heavy quark decay of the Z
 //                         && fabs(eta)<etaAcceptance    // exclude particles outside the calorimeter
           )      
           {
@@ -285,25 +352,50 @@ int main(int argc, char** argv)
               px = pT*cos(phi);
               py = pT*sin(phi);
               
-//               if (phi<0) 
-//               {
-//                   px = - pT*cos(phi);
-//                   py = - pT*sin(phi);
-//               }
-//               if (phi>0)
-//               {
-//                   px = - pT*cos(phi);
-//                   py = pT*sin(phi);
-//               }
-              
-//               if (px<0. && py <0.)   {phi = phi - M_PI;}
-//               if (px<0. && py >0.)   {phi = M_PI + phi;}
-              
               double pz = pT*sinh(eta);                    
               
-              PseudoJet this_MCT = PseudoJet(px, py, pz, ene);        
-//               this_MCT.set_user_index(flag_MCT);                        
+              PseudoJet this_MCT = PseudoJet(px, py, pz, ene);
               allMCHitsForJet.push_back(this_MCT);
+              
+              
+              
+//               float smeared_ene = funcTrackerRes->Eval(pT)*pT;
+              float smeared_ene = ene;
+              if (charge!=0 )//|| fabs(pdgId) != 130 || fabs(pdgId) != 2112 )
+              {
+                  PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
+                  this_charged_track.set_user_index(flag_MCT);                        
+                  allHitsForJetPFA.push_back(this_charged_track);
+              }
+              
+              //EM showers
+              if (fabs(pdgId) == 22) gamma_ene+=ene;
+              
+              
+              if (fabs(pdgId) == 22  || fabs(pdgId) == 11)
+                  smeared_ene = gRandom->Gaus(ene, funcEcalRes->Eval(ene)*ene);
+              //neutral hadrons
+              else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112) 
+              {
+                  neutralhad_ene+= ene;
+                  smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
+              }
+              //charged hadrons
+              else if (fabs(pdgId) == 211 || fabs(pdgId) == 321 || fabs(pdgId)==2212) 
+                  smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
+//               else
+//                   std::cout << "particle not smeared (" << pdgId << "): " << ene << std::endl;
+              
+  
+              if ( smeared_ene > 0.01 
+//                   && fabs(pdgId) != 130 
+//                   && fabs(pdgId) != 2112
+            )
+              {
+                  PseudoJet this_MCT_FS = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
+                  allMCHitsForJetFastSim.push_back(this_MCT_FS);
+              }
+              
               
               PseudoJet this_MCT_ghost = PseudoJet(px*1.0e-20, py*1.0e-20, pz*1.0e-20, ene*1.0e-20);        
               this_MCT_ghost.set_user_index(flag_MCT);                        
@@ -318,7 +410,7 @@ int main(int argc, char** argv)
                   nMuons++;
 		  muonEne+= ene;
 		  mc_phi_muon = phi;
-		  mc_eta_muon = eta;
+		  mc_theta_muon = theta;
 	      }
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) nNeutrinos++;
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) 
@@ -326,34 +418,38 @@ int main(int argc, char** argv)
                   neutrinoEne += ene;
 		  //                  std::cout << "neutrino Ene = " <<  ene << std::endl;
               }
-              if (fabs(pdgId)==5 || fabs(pdgId)==6) nHeavyQuarks++;
           }
     }
+    
+    hGammaEneMC->Fill(gamma_ene/thismass);
+    hNeutrHadMC->Fill(neutralhad_ene/thismass);
+    neutrals_ene = gamma_ene+neutralhad_ene;
+    hNeutralsMC->Fill(neutrals_ene/thismass);
   
-    if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 || nHeavyQuarks>0))
+    if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 ))
     {
         goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     }
   
-    if (output_tag == "hzjnbn" && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
+    if (output_tag == "hzjnbn" && (nMuons>0 || nNeutrinos >0  ))
     {
         goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     } 
                                         
-    if (output_tag == "hznb" && (nMuons>0 || nNeutrinos >2 || nHeavyQuarks>0))
+    if (output_tag == "hznb" && (nMuons>0 || nNeutrinos >2  ))
     {
         goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;      
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;      
         continue;
     } 
-    if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0 || nHeavyQuarks>0))
+    if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0  ))
     {
         goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos and %d heavy quarks ", output_tag.c_str(), nMuons, nNeutrinos, nHeavyQuarks) << std::endl;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     } 
      
@@ -365,9 +461,15 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if ((output_tag == "hznb" || output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
+    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
     {
       if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
+        goodEvent = false;
+        continue;
+    }
+    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3)) 
+    {
+      if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
         goodEvent = false;
         continue;
     }
@@ -378,7 +480,7 @@ int main(int argc, char** argv)
         continue;
     }
     
-    double ene_HC_th   = 0.01;    
+//     double ene_HC_th   = 0.01;    
     double totS = 0;
     double totEneDRH = 0;
     double edepMuonCalo = 0;
@@ -394,8 +496,9 @@ int main(int argc, char** argv)
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
 	double tower_phi_seed = this_vec.Phi();
-	double tower_eta_seed = this_vec.Eta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+// 	double tower_eta_seed = this_vec.Eta();
+        double tower_theta_seed = this_vec.Theta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR <0.1)
  	{
 	    edepMuonCalo+=S;
@@ -410,8 +513,37 @@ int main(int argc, char** argv)
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
-            allHitsForJet.push_back(this_JHC);            
-        }          
+            allHitsForJet.push_back(this_JHC);
+            
+            bool matchedToCharged = false;            
+            for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
+            {
+                int i_charge   = myTruthTV.mcs_charge->at(i);
+                if (i_charge!=0)
+                {
+                    int    pdgId = myTruthTV.mcs_pdgId->at(i);
+//                 double ene   = myTruthTV.mcs_E->at(i);
+                    double i_phi   = myTruthTV.mcs_phi->at(i);
+                    double i_eta   = myTruthTV.mcs_eta->at(i);                
+                    double i_theta = 2*atan(exp(-i_eta));
+                    i_theta = M_PI-i_theta;
+                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+                
+                    if (dd<maxDeltaRMatchHcal)//matched to charge
+                    {                    
+                        matchedToCharged = true;
+//                         std::cout << "HCAL hit matched to charged MC particle " << pdgId << std::endl;
+                        break;
+                    }
+                }
+            }
+            if (!matchedToCharged)
+            {
+//                 std::cout << "HCAL hit NOT matched to charged MC particle " << std::endl;
+                allHitsForJetPFA.push_back(this_JHS);
+                allHitsForJetPFA.push_back(this_JHC);
+            }
+        }
         totS+=S;        
 	totEneDRH+=this_ene;
     }
@@ -427,8 +559,9 @@ int main(int argc, char** argv)
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
 	double tower_phi_seed = this_vec.Phi();
-	double tower_eta_seed = this_vec.Eta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+// 	double tower_eta_seed = this_vec.Eta();
+        double tower_theta_seed = this_vec.Theta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
 
         if (deltaR <0.1)
  	{
@@ -444,8 +577,35 @@ int main(int argc, char** argv)
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
-            allHitsForJet.push_back(this_JHC);            
-        }                
+            allHitsForJet.push_back(this_JHC);   
+            
+            bool matchedToCharged = false;            
+            for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
+            {
+                int i_charge   = myTruthTV.mcs_charge->at(i);
+                if (i_charge!=0)
+                {
+//                 int    pdgId = myTruthTV.mcs_pdgId->at(i);
+//                 double ene   = myTruthTV.mcs_E->at(i);
+                    double i_phi   = myTruthTV.mcs_phi->at(i);
+                    double i_eta   = myTruthTV.mcs_eta->at(i);                
+                    double i_theta = 2*atan(exp(-i_eta));
+                    i_theta = M_PI-i_theta;
+                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+                
+                    if (dd<maxDeltaRMatchHcal)//matched to charge
+                    {                    
+                        matchedToCharged = true;
+                        break;
+                    }
+                }
+            }
+            if (!matchedToCharged)
+            {
+                allHitsForJetPFA.push_back(this_JHS);
+                allHitsForJetPFA.push_back(this_JHC);
+            }        
+        }
         totS+=S;        
 	totEneDRH+=this_ene;
     }
@@ -470,7 +630,7 @@ int main(int argc, char** argv)
     //**************************************************************//
 
       
-    double ene_EC_th = 0.01;    
+//     double ene_EC_th = 0.01;    
     double totEcalEne = 0;
             
     for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
@@ -479,8 +639,9 @@ int main(int argc, char** argv)
         TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
         double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
 	double tower_phi_seed = this_vec.Phi();
-	double tower_eta_seed = this_vec.Eta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_eta_seed+mc_eta_muon,2) );
+// 	double tower_eta_seed = this_vec.Eta();
+        double tower_theta_seed = this_vec.Theta();
+	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         // if (this_ene>0.1 && deltaR < 0.1)
 	// {
 	//   std::cout << "tower_phi = "  << tower_phi_seed << " :: mc_phi_muon =  " << mc_phi_muon << 
@@ -507,6 +668,34 @@ int main(int argc, char** argv)
             PseudoJet this_JEC = PseudoJet(this_vec.X()*ecal_C, this_vec.Y()*ecal_C, this_vec.Z()*ecal_C, ecal_C);
             this_JEC.set_user_index(flag_JEC);
             allHitsForJet.push_back(this_JEC);
+            
+            bool matchedToCharged = false;            
+            for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
+            {
+                int i_charge   = myTruthTV.mcs_charge->at(i);
+                if (i_charge!=0)
+                {
+//                 int    pdgId = myTruthTV.mcs_pdgId->at(i);
+//                 double ene   = myTruthTV.mcs_E->at(i);
+                    double i_phi   = myTruthTV.mcs_phi->at(i);
+                    double i_eta   = myTruthTV.mcs_eta->at(i);                
+                    double i_theta = 2*atan(exp(-i_eta));
+                    i_theta = M_PI-i_theta;
+                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+                
+                    if (dd<maxDeltaRMatchEcal)//matched to charge
+                    {                    
+                        matchedToCharged = true;
+                        break;
+                    }
+                }
+            }
+            if (!matchedToCharged)
+            {
+                allHitsForJetPFA.push_back(this_JES);
+                allHitsForJetPFA.push_back(this_JEC);
+            }
+        
         }
         
         totEcalEne+=this_ene;
@@ -519,17 +708,7 @@ int main(int argc, char** argv)
         continue;
     }
 
-    double thismass = 100;
-    if (output_tag == "wwlj") thismass = 80;
-    if (output_tag == "hzjnbn") thismass = 90;
-    if (output_tag == "hznb") thismass = 125;
-    if (output_tag == "zjj_scan_30")  thismass = 30;
-    if (output_tag == "zjj_scan_50")  thismass = 50;
-    if (output_tag == "zjj_scan_70")  thismass = 70;
-    if (output_tag == "zjj_scan_90")  thismass = 90;
-    if (output_tag == "zjj_scan_100") thismass = 100;
-    if (output_tag == "zjj_scan_150") thismass = 150;
-    if (output_tag == "zjj_scan_250") thismass = 250;
+    
     hScatterEneVis->Fill(totS,totEneDRH);
 //     std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
@@ -542,24 +721,34 @@ int main(int argc, char** argv)
       continue;
     }
 
-            
-    //      std::cout << "Total energy in ECAL: " << totEcalEne << std::endl;     
-//       std::cout << "Running fastjet for clustering calo hits..." << std::endl;            
-
       // run the clustering, extract the jets
+      // Monte Carlo truth
       ClusterSequence csMCOnly(allMCHitsForJet, jet_def);
       
+      //fast sim
+      ClusterSequence csMCFastSim(allMCHitsForJetFastSim, jet_def);
+      
+      //reco
       ClusterSequence cs(allHitsForJet, jet_def);
+      
+      //pfa
+      ClusterSequence csPFA(allHitsForJetPFA, jet_def);
+      
       
 //       std::vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
       std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
       std::vector<PseudoJet> mct_ghost_jets;
       std::vector<PseudoJet> raw_jets;
       std::vector<PseudoJet> dro_jets;
+                  
+      std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
+      std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
       
-      std::vector<PseudoJet> mct_jets = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));;
+      std::vector<PseudoJet> pfa_jets     = sorted_by_pt(csPFA.exclusive_jets(nExpJets));
+      std::vector<PseudoJet> pfa_jets_raw;
+      std::vector<PseudoJet> pfa_jets_dro;
 
-
+      //reco jets
       for (unsigned i = 0; i < jets.size(); i++) 
       {
 //           cout << "jet " << i << ": "<< jets[i].pt() << " " << jets[i].rap() << " " << jets[i].phi() << endl;
@@ -615,8 +804,61 @@ int main(int argc, char** argv)
           
       }
       
+      double neutralhad_ene_reco = 0;
+      double neutralhad_ene_reco_ecal = 0;
+      double neutralhad_ene_reco_hcal = 0;
+      double neutralhad_ene_reco_dro = 0;
+      
+      //pfa jets
+      for (unsigned i = 0; i < pfa_jets.size(); i++) 
+      {
+          std::vector<PseudoJet> constituents = pfa_jets[i].constituents();
+          double E_MCT = 0;
+          double E_JHS = 0;
+          double E_JHC = 0;
+          double E_JES = 0;
+          double E_JEC = 0;
+          
+          for (unsigned j = 0; j < constituents.size(); j++) 
+          {      
+              if      (constituents[j].user_index() == flag_JES) E_JES += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
+              else if (constituents[j].user_index() == flag_MCT) E_MCT += constituents[j].E();
+          }          	            
+          
+          PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT)/pfa_jets[i].E();
+          pfa_jets_raw.push_back(this_raw_jet);
+          
+          double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
+          double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
+          double E_JTot = E_JE+E_JH+E_MCT;
+          PseudoJet dro_corr_jet = pfa_jets[i]*E_JTot/pfa_jets[i].E();
+          pfa_jets_dro.push_back(dro_corr_jet);
+          
+          neutralhad_ene_reco     += E_JES+E_JHS;
+          neutralhad_ene_reco_dro += E_JE+E_JH;
+          
+          neutralhad_ene_reco_ecal += E_JES;
+          neutralhad_ene_reco_hcal += E_JHS;
+          
+//           neutralhad_ene_reco_dro += E_JE;
+//           neutralhad_ene_reco_dro += E_JH;
+          
+      }
+      
+      
+      hECALResidual->Fill((neutralhad_ene_reco_ecal-gamma_ene)/gamma_ene);
+      hHCALResidual->Fill((neutralhad_ene_reco_hcal-neutralhad_ene)/neutralhad_ene);
+      
+      hNeutralResidual->Fill((neutralhad_ene_reco-neutrals_ene)/neutrals_ene);
+      hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro-neutrals_ene)/neutrals_ene);
+      
+
 //       mct_jets = mct_ghost_jets;
       
+      //MCT jets
       if(mct_jets.size()==2)
       {
           //reject jets not fully contained in the calorimeter
@@ -630,15 +872,9 @@ int main(int argc, char** argv)
 	    continue;
 	  }
       }
-
       
-      
+      //Monte Carlo truth
       double jjMassMCT = 0;
-//       double mct_phi1  = 0;
-//       double mct_phi2  = 0;
-//       double mct_e1  = 0;
-//       double mct_e2  = 0;
-      
       if (mct_jets.size()==2 && goodEvent)
       {
           double e1 = mct_jets[0].E();
@@ -652,6 +888,96 @@ int main(int argc, char** argv)
 	  //	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
       
+      //Fast Sim
+      double jjMassMCT_FS = 0;
+      if (fastSim_jets.size()==2 && goodEvent)
+      {
+          double e1 = fastSim_jets[0].E();
+          double e2 = fastSim_jets[1].E();
+          double p1p2Sum = sqrt(pow(fastSim_jets[0].px()+fastSim_jets[1].px(),2) + pow(fastSim_jets[0].py()+fastSim_jets[1].py(),2) + pow(fastSim_jets[0].pz()+fastSim_jets[1].pz(),2) );
+          
+          jjMassMCT_FS = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hMCTFastSim_MassJJ  ->Fill(jjMassMCT_FS);
+          hMCTFastSim_MassDiff->Fill((jjMassMCT_FS-jjMassMCT)/jjMassMCT);
+          
+          if (sqrt(pow(fastSim_jets[0].phi() - mct_jets[0].phi(),2) + pow(fastSim_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(fastSim_jets[0].phi() - mct_jets[1].phi(),2) + pow(fastSim_jets[0].theta() - mct_jets[1].theta(),2))) 
+          {                             
+            hFastSim_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hFastSim_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+            
+            hFastSim_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hFastSim_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+          }
+          else 
+          {
+            hFastSim_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hFastSim_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+            
+            hFastSim_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hFastSim_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+          }          
+      }
+      
+      //PFA Sim raw
+      double jjMassMCT_PFA_RAW = 0;
+      if (pfa_jets_raw.size()==2 && goodEvent)
+      {
+          double e1 = pfa_jets_raw[0].E();
+          double e2 = pfa_jets_raw[1].E();
+          double p1p2Sum = sqrt(pow(pfa_jets_raw[0].px()+pfa_jets_raw[1].px(),2) + pow(pfa_jets_raw[0].py()+pfa_jets_raw[1].py(),2) + pow(pfa_jets_raw[0].pz()+pfa_jets_raw[1].pz(),2) );
+          
+          jjMassMCT_PFA_RAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hPFA_RAW_MassJJ  ->Fill(jjMassMCT_PFA_RAW);
+          hPFA_RAW_MassDiff->Fill((jjMassMCT_PFA_RAW-jjMassMCT)/jjMassMCT);
+          
+          if (sqrt(pow(pfa_jets_raw[0].phi() - mct_jets[0].phi(),2) + pow(pfa_jets_raw[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(pfa_jets_raw[0].phi() - mct_jets[1].phi(),2) + pow(pfa_jets_raw[0].theta() - mct_jets[1].theta(),2))) 
+          {                             
+            hPFA_RAW_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hPFA_RAW_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+            
+            hPFA_RAW_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hPFA_RAW_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+          }
+          else 
+          {
+            hPFA_RAW_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hPFA_RAW_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+            
+            hPFA_RAW_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hPFA_RAW_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+          } 
+      }
+      //PFA Sim dro
+      double jjMassMCT_PFA = 0;
+      if (pfa_jets_dro.size()==2 && goodEvent)
+      {
+          double e1 = pfa_jets_dro[0].E();
+          double e2 = pfa_jets_dro[1].E();
+          double p1p2Sum = sqrt(pow(pfa_jets_dro[0].px()+pfa_jets_dro[1].px(),2) + pow(pfa_jets_dro[0].py()+pfa_jets_dro[1].py(),2) + pow(pfa_jets_dro[0].pz()+pfa_jets_dro[1].pz(),2) );
+          
+          jjMassMCT_PFA = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          hPFA_MassJJ  ->Fill(jjMassMCT_PFA);
+          hPFA_MassDiff->Fill((jjMassMCT_PFA-jjMassMCT)/jjMassMCT);
+          
+          if (sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[0].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[1].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[1].theta(),2))) 
+          {                             
+            hPFA_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hPFA_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+            
+            hPFA_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
+            hPFA_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
+          }
+          else 
+          {
+            hPFA_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hPFA_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+            
+            hPFA_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
+            hPFA_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
+          }          
+      }
+
+      //Reco raw
       double jjMassRAW = 0;
       if (raw_jets.size()==2 && goodEvent)
       {
@@ -678,6 +1004,8 @@ int main(int argc, char** argv)
           }
 	  //	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
       }
+      
+      //Reco DRO
       double jjMassDRO = 0;
       if (dro_jets.size()==2 && goodEvent)
       {
@@ -746,6 +1074,13 @@ int main(int argc, char** argv)
   hRAW_MassJJ->SetLineColor(kRed+1);
   
   TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 0, 140);
+  hMCTFastSim_MassJJ->Draw("same");
+  hMCTFastSim_MassJJ->SetLineColor(kBlue);
+  fitGaus->SetLineColor(kBlue);
+  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  
+  
   fitGaus->SetLineColor(kRed);
   hRAW_MassJJ->Fit(fitGaus, "QR");
   std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
@@ -758,10 +1093,25 @@ int main(int argc, char** argv)
   std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
   
   
+  hPFA_RAW_MassJJ->Draw("same");
+  hPFA_RAW_MassJJ->SetLineColor(kCyan);
+  fitGaus->SetLineColor(kCyan);
+  hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  
+  hPFA_MassJJ->Draw("same");
+  hPFA_MassJJ->SetLineColor(kViolet);
+  fitGaus->SetLineColor(kViolet);
+  hPFA_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  
+  
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
   leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
+  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
   leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
   leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
+  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
 
   leg->Draw();
   
@@ -780,8 +1130,12 @@ int main(int argc, char** argv)
   hRAW_MassDiff->Draw("same");
   hRAW_MassDiff->SetLineColor(kRed+1);
   
+  hMCTFastSim_MassDiff->Draw("same");
+  hMCTFastSim_MassDiff->SetLineColor(kBlue);
+  
   
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
+  leg->AddEntry(hMCTFastSim_MassDiff, "Fast sim jet", "lpf");
   leg->AddEntry(hRAW_MassDiff, "Raw calo jet", "lpf");
   leg->AddEntry(hDRO_MassDiff, "DRO calo jet", "lpf");
 
@@ -818,25 +1172,117 @@ int main(int argc, char** argv)
   hScatterEneVisEH->Draw("COLZ");
   hScatterEneVisEH->GetXaxis()->SetTitle("M_{jj}^{HCAL}");
   hScatterEneVisEH->GetYaxis()->SetTitle("S_{ECAL}/S_{HCAL}");
+  
+  
+  TCanvas * cPFA_Checks = new TCanvas ("cPFA_Checks", "cPFA_Checks", 1000, 500);
+  cPFA_Checks->Divide(2,1);
+  cPFA_Checks->cd(1);
+    
+  hGammaEneMC->Draw();
+  hGammaEneMC->SetStats(0);
+  hGammaEneMC->GetXaxis()->SetTitle("E_{tot} [GeV]");
+  hGammaEneMC->GetYaxis()->SetTitle("Counts");
+  hGammaEneMC->SetLineColor(kGreen+1);
+  
+  hNeutrHadMC->Draw("same");
+  hNeutrHadMC->SetLineColor(kRed+1);
+  
+  hNeutralsMC->Draw("same");
+  hNeutralsMC->SetLineColor(kBlack);
+    
+  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");  
+  leg->AddEntry(hGammaEneMC, "#gamma", "lpf");
+  leg->AddEntry(hNeutrHadMC, "K^{0,L}, neutrons", "lpf");
+  leg->AddEntry(hNeutralsMC, "All neutrals", "lpf");
+  leg->Draw();
+  
+  
+  cPFA_Checks->cd(2);
+//   hNeutralResidual->Rebin(4);  
+  hNeutralResidual->SetLineColor(kBlack);
+  hNeutralResidual->Draw();
+  hNeutralResidual->SetStats(0);
+  hNeutralResidual->GetXaxis()->SetTitle("(E_{reco, neutr} - E_{MC, neutr}) / E_{MC,neutr}");
+  hNeutralResidual->GetYaxis()->SetTitle("Counts");
+  
+//   hNeutralResidualDRO->Rebin(4);
+  hNeutralResidualDRO->SetLineColor(kBlue+1);
+  hNeutralResidualDRO->Draw("same");
+  
+//   hECALResidual->Rebin(4);
+  hECALResidual->SetLineColor(kGreen+1);
+  hECALResidual->Draw("same");
+//   
+//   hHCALResidual->Rebin(4);
+  hHCALResidual->SetLineColor(kRed+1);
+  hHCALResidual->Draw("same");
+  
+  std::cout << " ecal_reco - mc_gamma --> " << hECALResidual->GetMean() << " +/- " << hECALResidual->GetRMS() << std::endl;
+  std::cout << " hcal_reco - mc_nhadrons  --> " << hHCALResidual->GetMean() << " +/- " << hHCALResidual->GetRMS() << std::endl;
+  std::cout << " neutral residual  --> " << hNeutralResidual->GetMean() << " +/- " << hNeutralResidual->GetRMS() << std::endl;
+  std::cout << " neutral residual DRO --> " << hNeutralResidualDRO->GetMean() << " +/- " << hNeutralResidualDRO->GetRMS() << std::endl;
+  
+  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");  
+  leg->AddEntry(hNeutralResidual, "raw", "lpf");
+  leg->AddEntry(hNeutralResidualDRO, "dro", "lpf");
+  leg->AddEntry(hECALResidual, "ecal_reco - mc_gamma", "lpf");
+  leg->AddEntry(hHCALResidual, "hcal_reco - mc_nhadrons", "lpf");
+  leg->Draw();
     
   
-  TFile * outputFile = new TFile (Form("histos/output_jjMass_%s_xh%.3f_xe%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("histos/output_jjMass_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
+  hMCTFastSim_MassJJ->Write();
+  hPFA_MassJJ->Write();  
+  hPFA_RAW_MassJJ->Write();  
   hRAW_MassJJ->Write();
   hDRO_MassJJ->Write();
+  
+  hPFA_MassDiff->Write();
+  hPFA_RAW_MassDiff->Write();
+  hMCTFastSim_MassDiff->Write();
   hRAW_MassDiff->Write();
   hDRO_MassDiff->Write();
+  
   hRAW_ScatterEne->Write();
   hDRO_ScatterEne->Write();
+  
+  hPFA_Jet1EneDiff->Write();
+  hPFA_Jet2EneDiff->Write();
+  hPFA_JetEneDiff->Write();
+  
+  hPFA_RAW_Jet1EneDiff->Write();
+  hPFA_RAW_Jet2EneDiff->Write();
+  hPFA_RAW_JetEneDiff->Write();
+  
+  hFastSim_Jet1EneDiff->Write();
+  hFastSim_Jet2EneDiff->Write();
+  hFastSim_JetEneDiff->Write();
+  
   hDRO_Jet1EneDiff->Write();
   hDRO_Jet2EneDiff->Write();
   hDRO_JetEneDiff->Write();
+  
   hMCT_Jet1Ene->Write();
   hRAW_Jet1Ene->Write();
   hDRO_Jet1Ene->Write();
+  hMCT_Jet2Ene->Write();
+  hRAW_Jet2Ene->Write();
+  hDRO_Jet2Ene->Write();
+  
   hScatterEneVis->Write();
   hScatterEneVisEH->Write();
+    
+  hGammaEneMC->Write();
+  hNeutrHadMC->Write();
+  hNeutralsMC->Write();
+  
+  hNeutralResidual->Write();
+  hNeutralResidualDRO->Write();
+  hECALResidual->Write();
+  hHCALResidual->Write();
+  
   outputFile->Write();
   outputFile->Close();
   
