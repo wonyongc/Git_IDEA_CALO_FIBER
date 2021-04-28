@@ -264,10 +264,10 @@ int main(int argc, char** argv)
     }
     else 
     {
-       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
-       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
-//         fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
-//         fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+//        fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+//        fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+        fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+        fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     }
 
@@ -404,7 +404,7 @@ int main(int argc, char** argv)
 //       std::cout << "Cleaning up HCAL seeds too close to each other" << std::endl;
 
       std::vector<CalSeed>  myHcSeedsCleaned = CleanSeeds(myHcSeeds, maxDeltaRSeedHcal);                        
-      std::vector<CalSeed>  myHcSuperSeeds   = MakeSuperSeeds(myHcSeedsCleaned, myHcHits, maxDeltaRSeedHcal, HC_seed_th);
+      std::vector<CalSeed>  myHcSuperSeeds   = MakeSuperSeeds(myHcSeedsCleaned, myHcHits, myHcHits, myHcHits, maxDeltaRSeedHcal, HC_seed_th);
       hNHcalSeeds->Fill(myHcSuperSeeds.size());
       
       
@@ -461,17 +461,25 @@ int main(int argc, char** argv)
           double this_phi = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
-          double ecal_S = gRandom->Poisson(this_ene*LO)/ecal_S_norm/LO;
+//           double ecal_S = gRandom->Poisson(this_ene*LO)/ecal_S_norm/LO;
+          
+          double this_eneF = myTV.VecHit_ScepEneDepF->at(i)/1000.;                    
+          double this_eneR = myTV.VecHit_ScepEneDepR->at(i)/1000.;                    
+          double ecalS_F   = gRandom->Poisson(this_eneF*LO)/ecal_S_norm/LO;
+          double ecalS_R   = gRandom->Poisson(this_eneR*LO)/ecal_S_norm/LO;
+          double ecal_S    = ecalS_F+ecalS_R;
+          
           this_ene = ecal_S;
+          
           if (this_ene>ene_EC_th/4)
           {
               CalHit new_hit;
               new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, this_ene);
               myEcHits.push_back(new_hit);
               
-              new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i));
+              new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, ecalS_F);
               myEcHitsF.push_back(new_hit);
-              new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i));
+              new_hit.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, ecalS_R);
               myEcHitsR.push_back(new_hit);
           }
 
@@ -480,6 +488,8 @@ int main(int argc, char** argv)
           {
               CalSeed new_seed;
               new_seed.Init(myTV.VecHit_CrystalID->at(i), this_theta, this_phi, this_ene);
+              new_seed.SetEneFront(ecalS_F);
+              new_seed.SetEneRear(ecalS_R);
               myEcSeeds.push_back(new_seed);
           }
       }
@@ -489,7 +499,7 @@ int main(int argc, char** argv)
 //       std::vector<CalSeed>  myEcSeedsCleaned = FindSeeds(myEcHits, maxDeltaRSeedEcal, seed_clust_size);
 
       std::vector<CalSeed>  myEcSeedsCleaned = CleanSeeds(myEcSeeds, maxDeltaRSeedEcal);
-      std::vector<CalSeed>  myEcSuperSeeds   = MakeSuperSeeds(myEcSeedsCleaned, myEcHits, maxDeltaRSeedEcal, EC_seed_th);
+      std::vector<CalSeed>  myEcSuperSeeds   = MakeSuperSeeds(myEcSeedsCleaned, myEcHits, myEcHitsF, myEcHitsR, maxDeltaRSeedEcal, EC_seed_th);
       hNEcalSeeds->Fill(myEcSuperSeeds.size());
       
       
@@ -508,6 +518,17 @@ int main(int argc, char** argv)
 //           if (abs(this_seed.GetEta())>etaAcceptance) continue;
           int nGenMatchedToCaloCluster = 0;
           
+//           std::cout << "    ene  = " << this_seed.GetEne() 
+//                     << " :: eneF = " << this_seed.GetEneFront() 
+//                     << " :: eneR = " << this_seed.GetEneRear() 
+//                     << " :: SUM  = " << this_seed.GetEneRear()  + this_seed.GetEneFront() 
+//                     << "------------- ----------- " 
+//                     << "    ene3x3  = " << this_seed.GetEne3x3() 
+//                     << " :: ene3x3F = " << this_seed.GetEne3x3Front() 
+//                     << " :: ene3x3R = " << this_seed.GetEne3x3Rear() 
+//                     << " :: SUM3x3  = " << this_seed.GetEne3x3Rear() +this_seed.GetEne3x3Front() 
+//                     << std::endl;
+//           
           for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
           {
               
