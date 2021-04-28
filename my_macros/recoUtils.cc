@@ -48,9 +48,13 @@ void  CalSeed::SetSide (int this_side) {side = this_side;}
 void  CalSeed::SetTheta (float this_theta)  { theta = this_theta;}
 void  CalSeed::SetPhi (float this_phi)  {  phi = this_phi;}
 void  CalSeed::SetEne (float this_ene)  {  ene = this_ene;}
-void CalSeed::SetEne3x3(float this_ene3x3)      {  ene3x3= this_ene3x3;}
-void CalSeed::SetWeighedPhi(float this_phi)     {  weighed_phi= this_phi;}
-void CalSeed::SetWeighedTheta(float this_theta)  {  weighed_theta= this_theta;}
+void  CalSeed::SetEneFront (float this_ene)  {  eneF = this_ene;}
+void  CalSeed::SetEneRear (float this_ene)  {  eneR = this_ene;}
+void  CalSeed::SetEne3x3(float this_ene3x3)      {  ene3x3= this_ene3x3;}
+void  CalSeed::SetEne3x3Front(float this_ene3x3F)      {  ene3x3F= this_ene3x3F;}
+void  CalSeed::SetEne3x3Rear(float this_ene3x3R)      {  ene3x3R= this_ene3x3R;}
+void  CalSeed::SetWeighedPhi(float this_phi)     {  weighed_phi= this_phi;}
+void  CalSeed::SetWeighedTheta(float this_theta)  {  weighed_theta= this_theta;}
 void  CalSeed::AddGenMatch (int thisPdgId){  gen_matched_pdgId.push_back(thisPdgId);}
 void  CalSeed::AddGenEne   (float thisGenEne){  gen_matched_ene.push_back(thisGenEne);}
 
@@ -63,6 +67,8 @@ float CalSeed::GetEne()     {  return ene;}
 
 
 float CalSeed::GetEne3x3()      {return ene3x3;}
+float CalSeed::GetEne3x3Front()      {return ene3x3F;}
+float CalSeed::GetEne3x3Rear()      {return ene3x3R;}
 float CalSeed::GetWeighedTheta(){return weighed_theta;}
 float CalSeed::GetWeighedPhi()  {return weighed_phi;}
 
@@ -248,7 +254,7 @@ std::vector<CalSeed> CleanSeeds (std::vector<CalSeed> allSeeds, float deltaR)
 
 
 
-std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<CalHit> allHits, float deltaR, float superSeedTh)
+std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<CalHit> allHits, std::vector<CalHit> allHitsF, std::vector<CalHit> allHitsR, float deltaR, float superSeedTh)
 {
 
     std::vector<CalSeed> SuperSeeds;
@@ -262,16 +268,23 @@ std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<
         CalSeed i_seed = allSeeds.at(iseed);
         float i_theta = i_seed.GetTheta();
         float i_phi   = i_seed.GetPhi();         
-        float ene_super_seed = 0;
+        float ene_super_seed  = 0;
+        float ene_super_seedF = 0;
+        float ene_super_seedR = 0;
         float phi_weighed = 0;
         float theta_weighed = 0;
         float w_tot = 0;
         
 //         std::cout << " seed[ " << iseed << "] with Ene = " << i_seed.GetEne() << std::endl;
           
-        for (auto i_hit : thisHits)
+//         for (auto i_hit : thisHits)
+        for (unsigned int i = 0; i< thisHits.size(); i++)
         {
-//             CalHit i_hit = thisHits.at(i_hit);
+            
+            CalHit i_hit  = thisHits.at(i);
+            CalHit i_hitF = allHitsF.at(i);
+            CalHit i_hitR = allHitsR.at(i);
+            
             float j_theta = i_hit.GetTheta();
             float j_phi   = i_hit.GetPhi();
             
@@ -285,6 +298,9 @@ std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<
                 phi_weighed    += j_phi*this_ene;
                 theta_weighed  += j_theta*this_ene;
                 w_tot          += this_ene;                
+                
+                ene_super_seedF += i_hitF.GetEne();
+                ene_super_seedR += i_hitR.GetEne();
             }
         }
         if (w_tot>0.)
@@ -296,6 +312,8 @@ std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<
             
             
             i_seed.SetEne3x3(ene_super_seed);
+            i_seed.SetEne3x3Front(ene_super_seedF);
+            i_seed.SetEne3x3Rear(ene_super_seedR);
             
 //             std::cout << "iseed = " << iseed << " \n" << std::endl;
 //             std::cout << "      --> ene = " << i_seed.GetEne()     << " :: super_ene = "   << i_seed.GetEne3x3() << std::endl;

@@ -45,8 +45,12 @@ class CalSeed
     float theta;
     float phi;
     float ene;
+    float eneF;
+    float eneR;
     
     float ene3x3;
+    float ene3x3F;
+    float ene3x3R;
     float weighed_theta;
     float weighed_phi;
     
@@ -61,7 +65,11 @@ class CalSeed
         void SetTheta(float);
         void SetPhi(float);
         void SetEne(float);
+        void SetEneFront(float);
+        void SetEneRear(float);
         void SetEne3x3(float);
+        void SetEne3x3Front(float);
+        void SetEne3x3Rear(float);
         void SetWeighedTheta(float);       
         void SetWeighedPhi(float);
         
@@ -71,7 +79,11 @@ class CalSeed
         float GetEta();
         float GetPhi();
         float GetEne();
+        float GetEneFront();
+        float GetEneRear();
         float GetEne3x3();        
+        float GetEne3x3Front();        
+        float GetEne3x3Rear();        
         float GetWeighedTheta();       
         float GetWeighedPhi();
         std::vector<int>   GetGenMatch();
@@ -84,7 +96,7 @@ class CalSeed
 
 
 std::vector<CalSeed> CleanSeeds (std::vector<CalSeed> allSeeds, float deltaR);
-std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<CalHit> allHits, float deltaR, float superSeedTh);
+std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<CalHit> allHits, std::vector<CalHit> allHitsF, std::vector<CalHit> allHitsR, float deltaR, float superSeedTh);
 
 
 
