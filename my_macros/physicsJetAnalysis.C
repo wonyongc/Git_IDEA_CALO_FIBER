@@ -1230,7 +1230,7 @@ int main(int argc, char** argv)
   leg->Draw();
     
   
-  TFile * outputFile = new TFile (Form("histos/output_jjMass_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hMCTFastSim_MassJJ->Write();
