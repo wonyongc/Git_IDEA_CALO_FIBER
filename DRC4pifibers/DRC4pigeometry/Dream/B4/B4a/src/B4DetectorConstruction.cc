@@ -454,7 +454,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     tower_height = 2000; //tower height 2500
     NbOfBarrel = 40; //(it was 52 before) number of towers in barrel right (left)
     NbOfEndcap = NbOfBarrel-1; //number of towers in endcap
-    NbOfZRot = 36; //number of Z to round around the center
+    NbOfZRot = 252; //number of Z to round around the center
     //PMTT = 1*mm;
     PMTT = 0*mm;
     fulltheta = 0;
