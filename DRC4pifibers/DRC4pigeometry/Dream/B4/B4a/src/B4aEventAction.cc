@@ -166,7 +166,7 @@ void B4aEventAction::BeginOfEventAction(const G4Event* event)
   
   int fNbOfBarrel = 40;
   int fNbOfEndcap = 35;
-  int fNbOfZRot = 36;
+  int fNbOfZRot = 252;
   /*for(int i=0;i<64;i++){
    Signalfibre[i]=0;
   }*///only if you want to use SignalFibre[64]
@@ -318,7 +318,7 @@ void B4aEventAction::EndOfEventAction(const G4Event* event)
   
   std::cout << "evt: " << G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID()  << " :: filling ntuple with: " 
             << SCEP_Timing_EnergyDepF  << " MeV in T1 and "  << SCEP_Timing_EnergyDepR  << " MeV in T2 :: " 
-            << SCEP_EnergyDepF         << " MeV in E1 and " << SCEP_EnergyDepR         << " MeV in E2" 
+            << SCEP_EnergyDepF         << " MeV in E1 and " << SCEP_EnergyDepR         << " MeV in E2 :: " 
             << EnergyScin              << " Scint DRH and " << NofCherenkovDetected         << " Cher photons in DRH"              
             << std::endl;
             
