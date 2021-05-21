@@ -84,7 +84,7 @@ bool RootFileExists(const char *filename)
 int main(int argc, char** argv)
 {
 
-  //  TApplication* theApp = new TApplication("App", &argc, argv);
+   TApplication* theApp = new TApplication("App", &argc, argv);
       
   using namespace std;
   
@@ -103,12 +103,12 @@ int main(int argc, char** argv)
 
   int mycolors[10] = {kBlack, kGreen+1, kBlue, kRed, kYellow+1, kCyan+1, kViolet, kOrange+1, kGray+1, kPink};
 
-  bool SAVEPLOTS   = false;
-  bool WRITEOUTPUT = true;
+  bool SAVEPLOTS   = true;
+  bool WRITEOUTPUT = false;
   bool makePlots   = false;
   
-  std::string output_tag = "zjj_scan_100";
-  int NFILES = 4;
+  std::string output_tag = "zjj_scan_90";
+  int NFILES = 20;
   if (argc>1) output_tag = argv[1];   
   if (argc>2) NFILES = atoi(argv[2]);   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
@@ -122,7 +122,7 @@ int main(int argc, char** argv)
   
   float maxDeltaRMatchEcal   = 0.01;
   float maxDeltaRSeedEcal    = 0.01;
-  float maxDeltaRClusterEcal = 0.01;
+  float maxDeltaRClusterEcal = 0.013;
   
   float maxDeltaRMatchHcal = 0.1;  
   float maxDeltaRSeedHcal  = 0.1;
@@ -133,9 +133,11 @@ int main(int argc, char** argv)
   float EC_seed_th = 0.15;
   
   float ene_HC_th  = 0.01;    
-  float HC_seed_th = 0.15;
+  float HC_seed_th = 0.05;
   
   float MC_ene_th = 0.4;
+  
+  int phiGran = 252;
       
 //   std::vector<float> ene_thresholds;
 //   ene_thresholds.push_back(0.025);
@@ -266,7 +268,7 @@ int main(int argc, char** argv)
     {
 //        fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
 //        fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
-        fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
+        fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
         fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     }
@@ -356,7 +358,7 @@ int main(int argc, char** argv)
       
       for (unsigned int i = 0; i<myTV.VectorSignalsL->size(); i++)
       {                                        
-          TVector3 this_vec = myGeometry.GetTowerVec(i,'l');
+          TVector3 this_vec = myGeometry.GetTowerVec(i,'l', phiGran);
           double this_phi   = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_scint = myTV.VectorSignalsL->at(i);                
@@ -378,7 +380,7 @@ int main(int argc, char** argv)
       
       for (unsigned int i = 0; i<myTV.VectorSignalsR->size(); i++)
       {                                        
-          TVector3 this_vec = myGeometry.GetTowerVec(i,'r');
+          TVector3 this_vec = myGeometry.GetTowerVec(i,'r', phiGran);
           double this_phi   = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_scint = myTV.VectorSignalsR->at(i);
@@ -1262,6 +1264,7 @@ int main(int argc, char** argv)
     
       
     hEneECALRes[it.first]->Draw("histo");
+    hEneECALRes[it.first]->SetStats(0);
     hEneECALRes[it.first]->SetTitle(Form("Gen particle %s", it.second.c_str() ) );
     hEneECALRes[it.first]->GetXaxis()->SetTitle("(E_{calo,cluster} - E_{truth}) / E_{truth}");
     hEneECALRes[it.first]->GetYaxis()->SetTitle("Frequency");
@@ -1269,6 +1272,7 @@ int main(int argc, char** argv)
     hEneECALRes[it.first]->SetLineColor(kGreen+1);
     hEneECALRes[it.first]->SetFillColor(kGreen+1);
     hEneECALRes[it.first]->SetLineWidth(2);  
+    hEneECALRes[it.first]->GetXaxis()->SetRangeUser(-1.1, 3);
     hEneECALRes[it.first]->GetYaxis()->SetRangeUser(0.0001, 1.1);
     
     hEneTotNarrowRes[it.first]->Draw("same histo");
@@ -1278,11 +1282,14 @@ int main(int argc, char** argv)
     hEneTotRes[it.first]->SetLineColor(kBlack);
     hEneTotRes[it.first]->SetLineWidth(2);
     
-    leg = new TLegend(0.65,0.5,0.88,0.88,NULL,"brNDC");
-    leg->AddEntry(hEneECALRes[it.first], "ECAL energy", "lp");
-    leg->AddEntry(hEneECALRes[it.first], "CALO narrow", "lp");
-    leg->AddEntry(hEneECALRes[it.first], "CALO total", "lp");
+    std::cout << "ecal clust :: " << it.second << " :: mean = " << hEneECALRes[it.first]->GetMean() << " :: rms = " << hEneECALRes[it.first]->GetRMS() << std::endl;
+    std::cout << "calo clust :: " << it.second << " :: mean = " << hEneTotRes[it.first]->GetMean() << " :: rms = " << hEneTotRes[it.first]->GetRMS() << std::endl;
     
+    leg = new TLegend(0.65,0.65,0.88,0.88,NULL,"brNDC");
+    leg->AddEntry(hEneECALRes[it.first], "ECAL energy", "lp");
+    leg->AddEntry(hEneTotNarrowRes[it.first], "CALO narrow", "lp");
+    leg->AddEntry(hEneTotRes[it.first], "CALO total", "lp");
+    leg->Draw();
     
     gPad->SetLogy();
     if (SAVEPLOTS) cCaloClusterEneRes[it.first]->SaveAs(Form("plots_pfa/cCaloClusterEneRes_pdgId%d.png", it.first));
@@ -1411,7 +1418,7 @@ int main(int argc, char** argv)
   }
   
   
-  //  theApp->Run();
+   theApp->Run();
 }
 
 
