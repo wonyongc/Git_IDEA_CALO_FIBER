@@ -150,7 +150,7 @@ int main(int argc, char** argv)
   double drh_C_norm  = 103.2;
   
   float ene_EC_th  = 0.01;
-  float ene_HC_th  = 0.01;
+  float ene_HC_th  = 0.005;
   
   int phiGran = 252; //vs 36 as default
   
@@ -333,6 +333,7 @@ int main(int argc, char** argv)
     {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
+          if (ene<0) continue;
           double phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
           double pT    = myTruthTV.mcs_pt->at(i);
@@ -533,7 +534,7 @@ int main(int argc, char** argv)
 	    //	    std::cout << "HCAL --> muon ene in cone R=" <<deltaR << " : " << this_ene << " :: totMuonCaloDep = "  << edepMuonCalo << std::endl;
 	}
         
-        if (this_ene>ene_HC_th)
+        if (S>ene_HC_th)
         {            
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
@@ -618,7 +619,7 @@ int main(int argc, char** argv)
 	    //	    std::cout << "HCAL --> muon ene in cone R=" <<deltaR << " : " << this_ene << " :: totMuonCaloDep = "  << edepMuonCalo << std::endl;
 	}
         
-        if (this_ene>ene_HC_th)
+        if (S>ene_HC_th)
         {
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
@@ -1154,76 +1155,7 @@ int main(int argc, char** argv)
   
   //plotting
   
-  TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
-  cMassJJ->cd();
-    
-  hMCT_MassJJ->Draw();
-  //  hMCT_MassJJ->SetStats(0);
-  hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
-  hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
-  hMCT_MassJJ->GetXaxis()->SetRangeUser(50, 140);
-  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
-  hMCT_MassJJ->SetLineColor(kBlack);
-  hMCT_MassJJ->SetStats(0);
-  
-  hRAW_MassJJ->Draw("same");
-  hRAW_MassJJ->SetLineColor(kRed+1);
-  
-  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 0, 140);
-  hMCTFastSim_MassJJ->Draw("same");
-  hMCTFastSim_MassJJ->SetLineColor(kBlue);
-  fitGaus->SetLineColor(kBlue);
-  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetMean() << " / " << hMCTFastSim_MassJJ->GetRMS() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
-  
-  
-  fitGaus->SetLineColor(kRed);
-  hRAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetMean() << " / " << hRAW_MassJJ->GetRMS() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
-  
-  
-  hDRO_MassJJ->Draw("same");
-  hDRO_MassJJ->SetLineColor(kGreen+1);
-  hDRO_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kGreen);
-  hDRO_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetMean() << " / " << hDRO_MassJJ->GetRMS() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
-  
-  
-  hPFA_RAW_MassJJ->Draw("same");
-  hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->SetLineWidth(2);
-//   hPFA_RAW_MassJJ->SetFillColor(kCyan);
-  fitGaus->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetMean() << " / " << hPFA_RAW_MassJJ->GetRMS() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
-  
-  
-  hPFA_MassJJ->Draw("same");
-  hPFA_MassJJ->SetLineColor(kViolet);
-//   hPFA_MassJJ->SetFillColor(kViolet);
-  hPFA_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kViolet);
-  hPFA_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetMean() << " / " << hPFA_MassJJ->GetRMS() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
-  
-  
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
-  leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
-  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
-  leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
-  leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
-  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
-  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
 
-  leg->Draw();
-  gPad->SetLogy();
-  
   
     
   TCanvas * cMassJJ_Diff = new TCanvas ("cMassJJ_Diff", "cMassJJ_Diff", 600, 500);
@@ -1411,7 +1343,79 @@ int main(int argc, char** argv)
   std::cout << " neutral residual  --> " << hNeutralResidual->GetMean() << " +/- " << hNeutralResidual->GetRMS() << std::endl;
   std::cout << " neutral residual DRO --> " << hNeutralResidualDRO->GetMean() << " +/- " << hNeutralResidualDRO->GetRMS() << std::endl;
   
+
+
+std::cout << "************************************************" << std::endl;
+  TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
+  cMassJJ->cd();
+    
+  hMCT_MassJJ->Draw();
+  //  hMCT_MassJJ->SetStats(0);
+  hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
+  hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
+  hMCT_MassJJ->GetXaxis()->SetRangeUser(50, 140);
+  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
+  hMCT_MassJJ->SetLineColor(kBlack);
+  hMCT_MassJJ->SetStats(0);
   
+  hRAW_MassJJ->Draw("same");
+  hRAW_MassJJ->SetLineColor(kRed+1);
+  
+  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 0, 140);
+  hMCTFastSim_MassJJ->Draw("same");
+  hMCTFastSim_MassJJ->SetLineColor(kBlue);
+  fitGaus->SetLineColor(kBlue);
+  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetMean() << " / " << hMCTFastSim_MassJJ->GetRMS() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
+  
+  
+  fitGaus->SetLineColor(kRed);
+  hRAW_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetMean() << " / " << hRAW_MassJJ->GetRMS() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
+  
+  
+  hDRO_MassJJ->Draw("same");
+  hDRO_MassJJ->SetLineColor(kGreen+1);
+  hDRO_MassJJ->SetLineWidth(2);
+  fitGaus->SetLineColor(kGreen);
+  hDRO_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetMean() << " / " << hDRO_MassJJ->GetRMS() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
+  
+  
+//   hPFA_RAW_MassJJ->Draw("same");
+//   hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
+//   hPFA_RAW_MassJJ->SetLineWidth(2);
+// //   hPFA_RAW_MassJJ->SetFillColor(kCyan);
+//   fitGaus->SetLineColor(kYellow+1);
+//   hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
+//   std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetMean() << " / " << hPFA_RAW_MassJJ->GetRMS() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
+//   
+//   
+//   hPFA_MassJJ->Draw("same");
+//   hPFA_MassJJ->SetLineColor(kViolet);
+// //   hPFA_MassJJ->SetFillColor(kViolet);
+//   hPFA_MassJJ->SetLineWidth(2);
+//   fitGaus->SetLineColor(kViolet);
+//   hPFA_MassJJ->Fit(fitGaus, "QR");
+//   std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetMean() << " / " << hPFA_MassJJ->GetRMS() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
+//   
+  
+  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
+  leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
+  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
+  leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
+  leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
+  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
+  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
+
+  leg->Draw();
+  gPad->SetLogy();
+    
   
   theApp->Run();
   
