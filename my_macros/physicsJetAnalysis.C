@@ -88,7 +88,7 @@ bool RootFileExists(const char *filename)
 int main(int argc, char** argv)
 {
 
-//   TApplication* theApp = new TApplication("App", &argc, argv);
+  TApplication* theApp = new TApplication("App", &argc, argv);
           
   //set Root style
   gStyle->SetTitleXOffset (1.00) ;                                                                                       
@@ -108,7 +108,7 @@ int main(int argc, char** argv)
   //init  
   bool SAVEPLOTS = false;
 //   std::string output_tag = "wwlj";
-  std::string output_tag = "zjj_scan_100";
+  std::string output_tag = "zjj_scan_90";
   
   int NFILES = 100;
   //  double x_factor_hcal = 0.43;
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
   double x_factor_ecal = 0.371;
   
   float maxDeltaRMatchEcal = 0.013;
-  float maxDeltaRMatchHcal = 0.2;  
+  float maxDeltaRMatchHcal = 0.1;
   
   
   if (argc>1) output_tag = argv[1];   
@@ -151,6 +151,8 @@ int main(int argc, char** argv)
   
   float ene_EC_th  = 0.01;
   float ene_HC_th  = 0.01;
+  
+  int phiGran = 252; //vs 36 as default
   
 // choose a jet definition
   double R = 2*M_PI;
@@ -191,8 +193,8 @@ int main(int argc, char** argv)
 //     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
 //     fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
     
-//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
-//     fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+    fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
+    fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
@@ -328,7 +330,7 @@ int main(int argc, char** argv)
     
     
     for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
-    {          
+    {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
           double phi   = myTruthTV.mcs_phi->at(i);
@@ -352,7 +354,7 @@ int main(int argc, char** argv)
               px = pT*cos(phi);
               py = pT*sin(phi);
               
-              double pz = pT*sinh(eta);                    
+              double pz = -pT*sinh(eta);                    
               
               PseudoJet this_MCT = PseudoJet(px, py, pz, ene);
               allMCHitsForJet.push_back(this_MCT);
@@ -361,12 +363,38 @@ int main(int argc, char** argv)
               
 //               float smeared_ene = funcTrackerRes->Eval(pT)*pT;
               float smeared_ene = ene;
-              if (charge!=0 )//|| fabs(pdgId) != 130 || fabs(pdgId) != 2112 )
-              {
+              if (charge!=0)// || fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
+              {                  
                   PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
-                  this_charged_track.set_user_index(flag_MCT);                        
+                  this_charged_track.set_user_index(flag_MCT);
                   allHitsForJetPFA.push_back(this_charged_track);
               }
+                  
+//               if (charge!=0)
+//               {
+//                   bool isolated = true;
+//                   for (unsigned int j = 0; j< myTruthTV.mcs_E->size(); j++)
+//                   {
+//                       int    j_pdgId = myTruthTV.mcs_pdgId->at(j);
+//                       if (fabs(j_pdgId)!= 130 && fabs(j_pdgId)!= 2112) continue;
+//                       
+//                       double j_phi   = myTruthTV.mcs_phi->at(j);
+//                       double j_theta = M_PI- 2*atan(exp(-myTruthTV.mcs_eta->at(j)));
+//                       double dd = sqrt(pow(j_phi-phi,2)+pow(j_theta-theta,2) );
+//                       
+//                       if (dd<maxDeltaRMatchHcal)
+//                       {
+//                           isolated = false;
+//                           break;
+//                       }
+//                   }
+//                   if (isolated)
+//                   {
+//                       PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
+//                       this_charged_track.set_user_index(flag_MCT);
+//                       allHitsForJetPFA.push_back(this_charged_track);
+//                   }
+//               }
               
               //EM showers
               if (fabs(pdgId) == 22) gamma_ene+=ene;
@@ -375,13 +403,13 @@ int main(int argc, char** argv)
               if (fabs(pdgId) == 22  || fabs(pdgId) == 11)
                   smeared_ene = gRandom->Gaus(ene, funcEcalRes->Eval(ene)*ene);
               //neutral hadrons
-              else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112) 
+              else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112)
               {
                   neutralhad_ene+= ene;
                   smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
               }
               //charged hadrons
-              else if (fabs(pdgId) == 211 || fabs(pdgId) == 321 || fabs(pdgId)==2212) 
+              else if (fabs(pdgId) == 211 || fabs(pdgId) == 321 || fabs(pdgId)==2212)
                   smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
 //               else
 //                   std::cout << "particle not smeared (" << pdgId << "): " << ene << std::endl;
@@ -487,7 +515,7 @@ int main(int argc, char** argv)
     
     for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
     {                                        
-        TVector3 this_vec = myGeometry.GetTowerVec(i,'l');
+        TVector3 this_vec = myGeometry.GetTowerVec(i,'l', phiGran);
 //         double this_phi   = this_vec.Phi();
 //         double this_theta = this_vec.Theta();
         double this_ene   = myTV.VectorL->at(i)/1000.;      
@@ -515,34 +543,55 @@ int main(int argc, char** argv)
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);
             
-            bool matchedToCharged = false;            
+            bool matchedToCharged  = false;
+            bool matchedToNeutral  = false;
+            bool matchedToNeutrHad = false;
+            bool matchedToGamma = false;
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
                 int i_charge   = myTruthTV.mcs_charge->at(i);
-                if (i_charge!=0)
-                {
-                    int    pdgId = myTruthTV.mcs_pdgId->at(i);
-//                 double ene   = myTruthTV.mcs_E->at(i);
-                    double i_phi   = myTruthTV.mcs_phi->at(i);
-                    double i_eta   = myTruthTV.mcs_eta->at(i);                
-                    double i_theta = 2*atan(exp(-i_eta));
-                    i_theta = M_PI-i_theta;
-                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+
+                int    pdgId = myTruthTV.mcs_pdgId->at(i);
+//               double ene   = myTruthTV.mcs_E->at(i);
+                double i_phi   = myTruthTV.mcs_phi->at(i);
+                double i_eta   = myTruthTV.mcs_eta->at(i);                
+                double i_theta = 2*atan(exp(-i_eta));
+                i_theta = M_PI-i_theta;
+                double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
                 
-                    if (dd<maxDeltaRMatchHcal)//matched to charge
-                    {                    
-                        matchedToCharged = true;
-//                         std::cout << "HCAL hit matched to charged MC particle " << pdgId << std::endl;
-                        break;
+                if (dd<maxDeltaRMatchHcal)//matched to charge
+                {                    
+                    if (i_charge!=0) 
+                    {
+                         matchedToCharged = true;
                     }
+                    else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
+                    {
+                        matchedToNeutrHad = true;
+                        matchedToNeutral = true;
+                    }
+                    else if (fabs(pdgId) == 22)     
+                    {
+                        matchedToNeutral = true;
+                        matchedToGamma   = true;
+                        
+                    }
+//                        std::cout << "HCAL hit matched to charged MC particle " << pdgId << std::endl;
+//                        break;
                 }
             }
-            if (!matchedToCharged)
+            if (!matchedToCharged )// && !matchedToNeutrHad)// && matchedToNeutral)
             {
 //                 std::cout << "HCAL hit NOT matched to charged MC particle " << std::endl;
                 allHitsForJetPFA.push_back(this_JHS);
                 allHitsForJetPFA.push_back(this_JHC);
             }
+            else if (matchedToCharged && matchedToNeutrHad)
+            {
+//                 allHitsForJetPFA.push_back(this_JHS);
+//                 allHitsForJetPFA.push_back(this_JHC);
+            }
+
         }
         totS+=S;        
 	totEneDRH+=this_ene;
@@ -550,7 +599,7 @@ int main(int argc, char** argv)
     
     for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
     {                                        
-        TVector3 this_vec = myGeometry.GetTowerVec(i,'r');
+        TVector3 this_vec = myGeometry.GetTowerVec(i,'r', phiGran);
 //         double this_phi   = this_vec.Phi();
 //         double this_theta = this_vec.Theta();
         double this_ene   = myTV.VectorR->at(i)/1000.;
@@ -580,34 +629,53 @@ int main(int argc, char** argv)
             allHitsForJet.push_back(this_JHC);   
             
             bool matchedToCharged = false;            
+            bool matchedToNeutral = false;  
+            bool matchedToNeutrHad = false;
+            bool matchedToGamma = false;
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
                 int i_charge   = myTruthTV.mcs_charge->at(i);
-                if (i_charge!=0)
-                {
-//                 int    pdgId = myTruthTV.mcs_pdgId->at(i);
+                int    pdgId = myTruthTV.mcs_pdgId->at(i);
 //                 double ene   = myTruthTV.mcs_E->at(i);
-                    double i_phi   = myTruthTV.mcs_phi->at(i);
-                    double i_eta   = myTruthTV.mcs_eta->at(i);                
-                    double i_theta = 2*atan(exp(-i_eta));
-                    i_theta = M_PI-i_theta;
-                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+                double i_phi   = myTruthTV.mcs_phi->at(i);
+                double i_eta   = myTruthTV.mcs_eta->at(i);                
+                double i_theta = 2*atan(exp(-i_eta));
+                i_theta = M_PI-i_theta;
+                double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
                 
-                    if (dd<maxDeltaRMatchHcal)//matched to charge
-                    {                    
+                if (dd<maxDeltaRMatchHcal)//matched to charge
+                {                    
+                    if (i_charge!=0) 
+                    {
                         matchedToCharged = true;
-                        break;
+                    }
+                    else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
+                    {
+                        matchedToNeutrHad = true;
+                        matchedToNeutral = true;
+                    }
+                    else if (fabs(pdgId) == 22) 
+                    {
+                        matchedToNeutral = true;
+                        matchedToGamma   = true;
                     }
                 }
             }
-            if (!matchedToCharged)
+            if (!matchedToCharged)// && !matchedToNeutrHad)// && matchedToNeutral)
             {
+//                 std::cout << "HCAL hit NOT matched to charged MC particle " << std::endl;
                 allHitsForJetPFA.push_back(this_JHS);
                 allHitsForJetPFA.push_back(this_JHC);
-            }        
+            }
+            else if (matchedToCharged && matchedToNeutrHad)
+            {
+//                 allHitsForJetPFA.push_back(this_JHS);
+//                 allHitsForJetPFA.push_back(this_JHC);
+            }
         }
         totS+=S;        
 	totEneDRH+=this_ene;
+        
     }
         
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV " << std::endl;
@@ -669,31 +737,57 @@ int main(int argc, char** argv)
             this_JEC.set_user_index(flag_JEC);
             allHitsForJet.push_back(this_JEC);
             
-            bool matchedToCharged = false;            
+            bool matchedToCharged = false;
+            bool matchedToNeutral = false;
+            bool matchedToNeutrHad = false;
+            bool matchedToGamma = false;
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
                 int i_charge   = myTruthTV.mcs_charge->at(i);
-                if (i_charge!=0)
-                {
-//                 int    pdgId = myTruthTV.mcs_pdgId->at(i);
+                int    pdgId = myTruthTV.mcs_pdgId->at(i);
 //                 double ene   = myTruthTV.mcs_E->at(i);
-                    double i_phi   = myTruthTV.mcs_phi->at(i);
-                    double i_eta   = myTruthTV.mcs_eta->at(i);                
-                    double i_theta = 2*atan(exp(-i_eta));
-                    i_theta = M_PI-i_theta;
-                    double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
+                double i_phi   = myTruthTV.mcs_phi->at(i);
+                double i_eta   = myTruthTV.mcs_eta->at(i);                
+                double i_theta = 2*atan(exp(-i_eta));
+                i_theta = M_PI-i_theta;
+                double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
                 
-                    if (dd<maxDeltaRMatchEcal)//matched to charge
-                    {                    
+                if (dd<maxDeltaRMatchEcal)//matched to charge
+                {                    
+                    if (i_charge!=0) 
+                    {
                         matchedToCharged = true;
-                        break;
                     }
+                    else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
+                    {
+                        matchedToNeutrHad = true;
+                        matchedToNeutral = true;
+                    }
+                    else if (fabs(pdgId) == 22)    
+                    {
+                        matchedToNeutral = true;
+                        matchedToGamma   = true;
+                    }
+
                 }
             }
-            if (!matchedToCharged)
+            
+            if (!matchedToCharged && matchedToGamma)
             {
+//                 std::cout << "HCAL hit NOT matched to charged MC particle " << std::endl;
+                allHitsForJetPFA.push_back(this_JES*1.13);
+                allHitsForJetPFA.push_back(this_JEC*1.13);
+            }
+            if (!matchedToCharged && matchedToNeutrHad)
+            {
+//                 std::cout << "HCAL hit NOT matched to charged MC particle " << std::endl;
                 allHitsForJetPFA.push_back(this_JES);
                 allHitsForJetPFA.push_back(this_JEC);
+            }
+            else if (matchedToCharged && matchedToNeutrHad)
+            {
+//                 allHitsForJetPFA.push_back(this_JES);
+//                 allHitsForJetPFA.push_back(this_JEC);
             }
         
         }
@@ -1067,8 +1161,10 @@ int main(int argc, char** argv)
   //  hMCT_MassJJ->SetStats(0);
   hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
   hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
-  hMCT_MassJJ->GetXaxis()->SetRangeUser(0, 140);
+  hMCT_MassJJ->GetXaxis()->SetRangeUser(50, 140);
+  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
   hMCT_MassJJ->SetLineColor(kBlack);
+  hMCT_MassJJ->SetStats(0);
   
   hRAW_MassJJ->Draw("same");
   hRAW_MassJJ->SetLineColor(kRed+1);
@@ -1079,31 +1175,42 @@ int main(int argc, char** argv)
   fitGaus->SetLineColor(kBlue);
   hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
   std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetMean() << " / " << hMCTFastSim_MassJJ->GetRMS() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
   
   
   fitGaus->SetLineColor(kRed);
   hRAW_MassJJ->Fit(fitGaus, "QR");
   std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetMean() << " / " << hRAW_MassJJ->GetRMS() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
   
   
   hDRO_MassJJ->Draw("same");
   hDRO_MassJJ->SetLineColor(kGreen+1);
+  hDRO_MassJJ->SetLineWidth(2);
   fitGaus->SetLineColor(kGreen);
   hDRO_MassJJ->Fit(fitGaus, "QR");
   std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetMean() << " / " << hDRO_MassJJ->GetRMS() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
   
   
   hPFA_RAW_MassJJ->Draw("same");
-  hPFA_RAW_MassJJ->SetLineColor(kCyan);
-  fitGaus->SetLineColor(kCyan);
+  hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
+  hPFA_RAW_MassJJ->SetLineWidth(2);
+//   hPFA_RAW_MassJJ->SetFillColor(kCyan);
+  fitGaus->SetLineColor(kYellow+1);
   hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
   std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetMean() << " / " << hPFA_RAW_MassJJ->GetRMS() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
+  
   
   hPFA_MassJJ->Draw("same");
   hPFA_MassJJ->SetLineColor(kViolet);
+//   hPFA_MassJJ->SetFillColor(kViolet);
+  hPFA_MassJJ->SetLineWidth(2);
   fitGaus->SetLineColor(kViolet);
   hPFA_MassJJ->Fit(fitGaus, "QR");
   std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+  std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetMean() << " / " << hPFA_MassJJ->GetRMS() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
   
   
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
@@ -1112,8 +1219,10 @@ int main(int argc, char** argv)
   leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
   leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
   leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
+  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
 
   leg->Draw();
+  gPad->SetLogy();
   
   
     
@@ -1197,6 +1306,7 @@ int main(int argc, char** argv)
   leg->Draw();
   
   
+  
   cPFA_Checks->cd(2);
 //   hNeutralResidual->Rebin(4);  
   hNeutralResidual->SetLineColor(kBlack);
@@ -1217,10 +1327,6 @@ int main(int argc, char** argv)
   hHCALResidual->SetLineColor(kRed+1);
   hHCALResidual->Draw("same");
   
-  std::cout << " ecal_reco - mc_gamma --> " << hECALResidual->GetMean() << " +/- " << hECALResidual->GetRMS() << std::endl;
-  std::cout << " hcal_reco - mc_nhadrons  --> " << hHCALResidual->GetMean() << " +/- " << hHCALResidual->GetRMS() << std::endl;
-  std::cout << " neutral residual  --> " << hNeutralResidual->GetMean() << " +/- " << hNeutralResidual->GetRMS() << std::endl;
-  std::cout << " neutral residual DRO --> " << hNeutralResidualDRO->GetMean() << " +/- " << hNeutralResidualDRO->GetRMS() << std::endl;
   
   leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");  
   leg->AddEntry(hNeutralResidual, "raw", "lpf");
@@ -1286,7 +1392,31 @@ int main(int argc, char** argv)
   outputFile->Write();
   outputFile->Close();
   
-//   theApp->Run();
+  
+  hECALResidual->Rebin(4);
+  hHCALResidual->Rebin(4);
+  hNeutralResidual->Rebin(4);
+  hNeutralResidualDRO->Rebin(4);
+  
+  hMCT_MassJJ->Rebin(4);
+  hMCTFastSim_MassJJ->Rebin(4);
+  hRAW_MassJJ->Rebin(4);
+  hDRO_MassJJ->Rebin(4);
+  hPFA_MassJJ->Rebin(4);
+  hPFA_RAW_MassJJ->Rebin(4);
+  
+  std::cout << "************************************************" << std::endl;
+  std::cout << " ecal_reco - mc_gamma --> " << hECALResidual->GetMean() << " +/- " << hECALResidual->GetRMS() << std::endl;
+  std::cout << " hcal_reco - mc_nhadrons  --> " << hHCALResidual->GetMean() << " +/- " << hHCALResidual->GetRMS() << std::endl;
+  std::cout << " neutral residual  --> " << hNeutralResidual->GetMean() << " +/- " << hNeutralResidual->GetRMS() << std::endl;
+  std::cout << " neutral residual DRO --> " << hNeutralResidualDRO->GetMean() << " +/- " << hNeutralResidualDRO->GetRMS() << std::endl;
+  
+  
+  
+  theApp->Run();
+  
+  
+  
 }
 
 
