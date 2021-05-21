@@ -58,7 +58,9 @@ std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair
 
 
 
-std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
+std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
+                                    float x_factor_ecal, float x_factor_hcal,
+                                    TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
     float hcal_stoch = 0.30;
@@ -70,9 +72,9 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     funcTotHadRawResponse->SetParameters(0.46923, -0.962149, -0.000170362 ,0.97);
 
     
-    float eneResponse = 0.95;
+    float eneResponse = 0.99;
     float maxDeltaR_ECAL = 0.05;
-    float maxDeltaR_HCAL = 1;
+    float maxDeltaR_HCAL = 0.5;
     
       
     int flag_MCT = 0;
@@ -83,10 +85,6 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     
     float trueTotCharged = 0;
     float recoTotCharged = 0;
-    
-    double x_factor_hcal = 0.445;
-    double x_factor_ecal = 0.371;
-    
     
     
     std::vector<std::pair<PseudoJet, PseudoJet>> leftCaloHits = hitsForJet;
@@ -131,18 +129,17 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
             float deltaR  = scint_hit.delta_R(track);
 //             std::cout << "deltaR = " << hit.delta_R(track) << " :: deltaDD = "  << deltaDD << std:: endl;
             
+            double this_E_DRO;
+            if      (scint_hit.user_index()==flag_JES) this_E_DRO = (scint_hit.E()-x_factor_ecal*cher_hit.E() )/(1-x_factor_ecal);
+            else if (scint_hit.user_index()==flag_JHS) this_E_DRO = (scint_hit.E()-x_factor_hcal*cher_hit.E() )/(1-x_factor_hcal);
             
             if (totCaloE < targetEne &&
+                fabs(totCaloE+this_E_DRO-targetEne) < fabs(totCaloE-targetEne) &&
                 ((scint_hit.user_index()==flag_JES  && deltaR < maxDeltaR_ECAL) ||
                  (scint_hit.user_index()==flag_JHS  && deltaR < maxDeltaR_HCAL) )
             )
             {
-                double E_DRO;
-                if      (scint_hit.user_index()==flag_JES) E_DRO = (scint_hit.E()-x_factor_ecal*cher_hit.E() )/(1-x_factor_ecal);
-                else if (scint_hit.user_index()==flag_JHS) E_DRO = (scint_hit.E()-x_factor_hcal*cher_hit.E() )/(1-x_factor_hcal);
-                
-//                 totCaloE += scint_hit.E();                
-                totCaloE += E_DRO;
+                totCaloE += this_E_DRO;
                 matchedCaloHits.push_back(hit);
             }
             else
