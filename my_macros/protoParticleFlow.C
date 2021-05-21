@@ -117,7 +117,7 @@ int main(int argc, char** argv)
   double x_factor_ecal = 0.371;
   
   float maxDeltaRMatchEcal = 0.013;
-  float maxDeltaRMatchHcal = 0.03;
+  float maxDeltaRMatchHcal = 0.1;
   
   
   if (argc>1) output_tag = argv[1];   
@@ -128,9 +128,9 @@ int main(int argc, char** argv)
   if (argc>6) maxDeltaRMatchHcal = atof(argv[6]);   
   
   double thismass = 100;
-  if (output_tag == "wwlj") thismass = 80;
-  if (output_tag == "hzjnbn") thismass = 90;
-  if (output_tag == "hznb") thismass = 125;
+  if (output_tag == "wwlj")         thismass = 80;
+  if (output_tag == "hzjnbn")       thismass = 90;
+  if (output_tag == "hznb")         thismass = 125;
   if (output_tag == "zjj_scan_30")  thismass = 30;
   if (output_tag == "zjj_scan_50")  thismass = 50;
   if (output_tag == "zjj_scan_70")  thismass = 70;
@@ -218,6 +218,7 @@ int main(int argc, char** argv)
   int flag_JHC = 2;
   int flag_JES = 3;
   int flag_JEC = 4;
+  int flag_GAM = 5;
   
   bool debugMode = false;
   
@@ -280,8 +281,9 @@ int main(int argc, char** argv)
   TH1F* hNeutrHadMC      = new TH1F ("hNeutrHadMC", "hNeutrHadMC", NBIN/2, 0, 1);
   TH1F* hNeutralsMC      = new TH1F ("hNeutralsMC", "hNeutralsMC", NBIN/2, 0, 1);
   TH1F* hNeutralResidual = new TH1F ("hNeutralResidual", "hNeutralResidual", NBIN, -3, 3);
-  TH1F* hECALResidual = new TH1F ("hECALResidual", "hECALResidual", NBIN, -3, 3);
-  TH1F* hHCALResidual = new TH1F ("hHCALResidual", "hHCALResidual", NBIN, -3, 3);
+  TH1F* hNeutrHadResidual = new TH1F ("hNeutrHadResidual", "hNeutrHadResidual",  800, -3, 3);
+  TH1F* hECALResidual = new TH1F ("hECALResidual", "hECALResidual",  800, -2, 2);
+  TH1F* hHCALResidual = new TH1F ("hHCALResidual", "hHCALResidual",  800, -2, 2);
   TH1F* hNeutralResidualDRO = new TH1F ("hNeutralResidualDRO", "hNeutralResidualDRO", NBIN, -3, 3);
 
 
@@ -290,6 +292,20 @@ int main(int argc, char** argv)
   TH2F * hScatterEneVis  = new TH2F ("hScatterEneVis", "hScatterEneVis", 300, 0, 300, 300, 0, 300);
   TH2F * hScatterEneVisEH = new TH2F ("hScatterEneVisEH", "hScatterEneVisEH", 300, 0, 300, 200, 0, 5);
 
+  
+//   TH2F* h2ScatterPFACharged = new TH2F("h2ScatterPFACharged", "h2ScatterPFACharged", 200, 0, 100, 200, 0, 2);
+  TH1F* h1ResidualCharged = new TH1F("h1ResidualCharged", "h1ResidualCharged", 400, -1, 1);
+  TH1F* h1ResidualTotCharged = new TH1F("h1ResidualTotCharged", "h1ResidualTotCharged", 800, -2, 2);
+  TH1F* h1SwappedTrackFrac = new TH1F("h1SwappedTrackFrac", "h1SwappedTrackFrac", 40, 0, 1);
+  
+  TH1F * hEcalHitsEne = new TH1F ("hEcalHitsEne", "hEcalHitsEne", NBIN*2, 0, 25);  
+  TH1F * hHcalHitsEne = new TH1F ("hHcalHitsEne", "hHcalHitsEne", NBIN*2, 0, 25);  
+  
+  TH1F * hEtaJet = new TH1F ("hEtaJet", "hEtaJet", 100, -10, 10);
+  TH1F * hDeltaEtaJet = new TH1F ("hDeltaEtaJet", "hDeltaEtaJet", 100, -10, 10);
+  TH1F * hThetaJet = new TH1F ("hThetaJet", "hThetaJet", 100, 0, 3.15);
+  TH1F * hDeltaThetaJet = new TH1F ("hDeltaThetaJet", "hDeltaThetaJet", 100, -7, 7);
+    
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
@@ -311,7 +327,7 @@ int main(int argc, char** argv)
     std::vector<PseudoJet> allMCHitsForJetFastSim;
     std::vector<PseudoJet> allHitsForJetPFA;
     std::vector<PseudoJet> allChargedTracks;
-    std::vector<PseudoJet> allCaloHits;
+    std::vector<std::pair<PseudoJet, PseudoJet>> allCaloHits;
     std::vector<PseudoJet> allGammaHits;
       
     bool goodEvent = true;
@@ -333,6 +349,7 @@ int main(int argc, char** argv)
     {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
+          if (ene<= 0) continue;
           double phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
           double pT    = myTruthTV.mcs_pt->at(i);
@@ -350,7 +367,7 @@ int main(int argc, char** argv)
               px = pT*cos(phi);
               py = pT*sin(phi);
               
-              double pz = pT*sinh(eta);                    
+              double pz = -pT*sinh(eta);                    
               
               PseudoJet this_MCT = PseudoJet(px, py, pz, ene);
               allMCHitsForJet.push_back(this_MCT);
@@ -359,8 +376,8 @@ int main(int argc, char** argv)
               
 //               float smeared_ene = funcTrackerRes->Eval(pT)*pT;
               float smeared_ene = ene;
-              if (charge!=0)// || fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
-              {                  
+              if (charge!=0 && smeared_ene>ene_EC_th*10)// || fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
+              {
                   PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
                   this_charged_track.set_user_index(flag_MCT);
                   allChargedTracks.push_back(this_charged_track);
@@ -477,6 +494,7 @@ int main(int argc, char** argv)
     double totEneDRH = 0;
     double edepMuonCalo = 0;
     
+    if (debugMode) std::cout << " filling HCAL left calo hits" << std::endl;
     for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
     {                                        
         TVector3 this_vec = myGeometry.GetTowerVec(i,'l', phiGran);
@@ -490,21 +508,26 @@ int main(int argc, char** argv)
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR <0.1)  edepMuonCalo+=S;
         
+        
+        hHcalHitsEne->Fill(S);
         if (S>ene_HC_th)
         {            
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
             allHitsForJet.push_back(this_JHS);
-            allCaloHits.push_back(this_JHS);
+//             allCaloSHits.push_back(this_JHS);
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);
+//             allCaloCHits.push_back(this_JHC);
+            
+            allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
         }
         totS+=S;        
 	totEneDRH+=this_ene;
     }
-    
+    if (debugMode) std::cout << " filling HCAL right calo hits" << std::endl;
     for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
     {                                        
         TVector3 this_vec = myGeometry.GetTowerVec(i,'r', phiGran);
@@ -517,17 +540,21 @@ int main(int argc, char** argv)
         double tower_theta_seed = this_vec.Theta();
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR <0.1)  edepMuonCalo+=S;
+        hHcalHitsEne->Fill(S);
         
         if (S>ene_HC_th)
         {
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
             allHitsForJet.push_back(this_JHS);
-            allCaloHits.push_back(this_JHS);
+//             allCaloSHits.push_back(this_JHS);
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);   
+//             allCaloCHits.push_back(this_JHC);
+            
+            allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
 
         }
         totS+=S;        
@@ -543,7 +570,7 @@ int main(int argc, char** argv)
       
 //     double ene_EC_th = 0.01;    
     double totEcalEne = 0;
-            
+    if (debugMode) std::cout << " filling ECAL calo hits" << std::endl;
     for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
     {
      
@@ -553,6 +580,7 @@ int main(int argc, char** argv)
         double tower_theta_seed = this_vec.Theta();
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR<0.1)  edepMuonCalo+=this_ene;
+        hEcalHitsEne->Fill(this_ene);
         
         if (this_ene>ene_EC_th)
         {
@@ -574,7 +602,7 @@ int main(int argc, char** argv)
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
                 int i_charge   = myTruthTV.mcs_charge->at(i);
-                int    pdgId = myTruthTV.mcs_pdgId->at(i);//          
+                int    pdgId = myTruthTV.mcs_pdgId->at(i);
                 double i_phi   = myTruthTV.mcs_phi->at(i);
                 double i_eta   = myTruthTV.mcs_eta->at(i);                
                 double i_theta = 2*atan(exp(-i_eta));
@@ -582,22 +610,29 @@ int main(int argc, char** argv)
                 double dd = sqrt(pow(tower_phi_seed-i_phi,2)+pow(tower_theta_seed-i_theta,2) );
                 
                 if (dd<maxDeltaRMatchEcal)//matched to charge
-                {                    
+                {
                     if (fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
                     {
                         matchedToNeutrHad = true;
                     }
                     else if (fabs(pdgId) == 22)
-                    {                        
+                    {
                         matchedToGamma   = true;
-                        
                     }
                 }
             }
-            if (!matchedToGamma) allCaloHits.push_back(this_JES);
-            if (matchedToGamma)  allGammaHits.push_back(this_JES);
+            if (!matchedToGamma) 
+            {
+                allCaloHits.push_back(std::make_pair(this_JES, this_JEC));
+            }
+            if (matchedToGamma)  
+            {
+                PseudoJet this_JES_G = PseudoJet(this_vec.X()*ecal_S, this_vec.Y()*ecal_S, this_vec.Z()*ecal_S, ecal_S);
+                this_JES_G.set_user_index(flag_GAM);
+                allGammaHits.push_back(this_JES_G);
+            }
             
-        }        
+        }
         totEcalEne+=this_ene;
     }
 
@@ -625,12 +660,15 @@ int main(int argc, char** argv)
     
     //Run the PFA algorithm
     
-    
-    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits);
-    
+//     float showerCorr = 1.13;
+    float showerCorr = 1.;
+    if (debugMode) std::cout << " filling photons to pfa" << std::endl;
+    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+    float gamma_ene_reco_ecal = 0;
     for (auto gamma : allGammaHits)
     {
-        protoPFAjets.push_back(gamma);
+        protoPFAjets.push_back(gamma*showerCorr);
+        gamma_ene_reco_ecal += gamma.E()*showerCorr;
     }
         
     
@@ -661,6 +699,7 @@ int main(int argc, char** argv)
       std::vector<PseudoJet> pfa_jets_raw;
       std::vector<PseudoJet> pfa_jets_dro;
 
+      if (debugMode) std::cout << " reco jets" << std::endl;
       //reco jets
       for (unsigned i = 0; i < jets.size(); i++) 
       {
@@ -694,6 +733,7 @@ int main(int argc, char** argv)
                   E_MCT += constituents[j].E()*1.0e20;              
               }
           }
+          if (jets[i].E()<= 0)continue;
           
 	  //          if (debugMode) std::cout << "E_JES = " << E_JES << " :: E_JEC = " << E_JEC << " :: E_JHS = " << E_JHS << " :: E_JHC = " << E_JHC << std::endl;
           if (mct_constituents.size()>0) 
@@ -723,6 +763,7 @@ int main(int argc, char** argv)
       double neutralhad_ene_reco_dro = 0;
       
       //pfa jets
+      if (debugMode) std::cout << " pfa jets" << std::endl;
       for (unsigned i = 0; i < pfa_jets.size(); i++) 
       {
           std::vector<PseudoJet> constituents = pfa_jets[i].constituents();
@@ -731,22 +772,26 @@ int main(int argc, char** argv)
           double E_JHC = 0;
           double E_JES = 0;
           double E_JEC = 0;
+          double E_GAM = 0;
           
           for (unsigned j = 0; j < constituents.size(); j++) 
-          {      
+          {
               if      (constituents[j].user_index() == flag_JES) E_JES += constituents[j].E();
               else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
               else if (constituents[j].user_index() == flag_MCT) E_MCT += constituents[j].E();
-          }          	            
+              else if (constituents[j].user_index() == flag_GAM) E_GAM += constituents[j].E();
+          }
+          if (pfa_jets[i].E()<= 0)continue;
           
-          PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT)/pfa_jets[i].E();
+          PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT+E_GAM)/pfa_jets[i].E();
           pfa_jets_raw.push_back(this_raw_jet);
           
           double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
           double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
-          double E_JTot = E_JE+E_JH+E_MCT;
+          
+          double E_JTot = E_JE + E_JH + E_MCT + E_GAM;
           PseudoJet dro_corr_jet = pfa_jets[i]*E_JTot/pfa_jets[i].E();
           pfa_jets_dro.push_back(dro_corr_jet);
           
@@ -755,27 +800,45 @@ int main(int argc, char** argv)
           
           neutralhad_ene_reco_ecal += E_JES;
           neutralhad_ene_reco_hcal += E_JHS;
-          
-//           neutralhad_ene_reco_dro += E_JE;
-//           neutralhad_ene_reco_dro += E_JH;
-          
       }
       
       
-      hECALResidual->Fill((neutralhad_ene_reco_ecal-gamma_ene)/gamma_ene);
-      hHCALResidual->Fill((neutralhad_ene_reco_hcal-neutralhad_ene)/neutralhad_ene);
-      
-      hNeutralResidual->Fill((neutralhad_ene_reco-neutrals_ene)/neutrals_ene);
-      hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro-neutrals_ene)/neutrals_ene);
+//       hECALResidual->Fill((neutralhad_ene_reco_ecal-gamma_ene)/gamma_ene);
+      if (gamma_ene>0)       hECALResidual->Fill((gamma_ene_reco_ecal-gamma_ene)/gamma_ene);
+      if (neutralhad_ene>0)  
+      {
+          hHCALResidual->Fill((neutralhad_ene_reco_hcal-neutralhad_ene)/neutralhad_ene);
+          hNeutrHadResidual->Fill((neutralhad_ene_reco-neutralhad_ene)/neutralhad_ene);
+      }
+      if (neutrals_ene>0)
+      {
+          hNeutralResidual->Fill((neutralhad_ene_reco+gamma_ene-neutrals_ene)/neutrals_ene);
+          hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene-neutrals_ene)/neutrals_ene);
+      }
       
 
 //       mct_jets = mct_ghost_jets;
+      
+      hEtaJet->Fill(mct_jets[0].eta());
+      hEtaJet->Fill(mct_jets[1].eta());
+      hDeltaEtaJet->Fill(mct_jets[0].eta()-mct_jets[1].eta());
+      
+      hThetaJet->Fill(mct_jets[0].theta());
+      hThetaJet->Fill(mct_jets[1].theta());
+      hDeltaThetaJet->Fill(mct_jets[0].theta()-mct_jets[1].theta());
+      
+//       std::cout << "eta 0 = " <<  
       
       //MCT jets
       if(mct_jets.size()==2)
       {
           //reject jets not fully contained in the calorimeter
+          //both jets in barrel
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance 
+//           
+          //at least one jet in the endcap
+//           if ( fabs(mct_jets[0].eta()) < etaAcceptance && fabs(mct_jets[1].eta()) < etaAcceptance 
+              
 //             || fabs(mct_jets[0].phi()) > phiAcceptance || fabs(mct_jets[1].phi()) > phiAcceptance
         )
               
@@ -973,131 +1036,15 @@ int main(int argc, char** argv)
   
   //plotting
   
-  TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
-  cMassJJ->cd();
-    
-  hMCT_MassJJ->Draw();
-  //  hMCT_MassJJ->SetStats(0);
-  hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
-  hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
-  hMCT_MassJJ->GetXaxis()->SetRangeUser(50, 140);
-  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
-  hMCT_MassJJ->SetLineColor(kBlack);
-  hMCT_MassJJ->SetStats(0);
-  
-  hRAW_MassJJ->Draw("same");
-  hRAW_MassJJ->SetLineColor(kRed+1);
-  
-  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 0, 140);
-  hMCTFastSim_MassJJ->Draw("same");
-  hMCTFastSim_MassJJ->SetLineColor(kBlue);
-  fitGaus->SetLineColor(kBlue);
-  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetRMS() << " / " << hMCTFastSim_MassJJ->GetMean() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
-  
-  
-  fitGaus->SetLineColor(kRed);
-  hRAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetRMS() << " / " << hRAW_MassJJ->GetMean() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
-  
-  
-  hDRO_MassJJ->Draw("same");
-  hDRO_MassJJ->SetLineColor(kGreen+1);
-  hDRO_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kGreen);
-  hDRO_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetRMS() << " / " << hDRO_MassJJ->GetMean() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
-  
-  
-  hPFA_RAW_MassJJ->Draw("same");
-  hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->SetLineWidth(2);
-//   hPFA_RAW_MassJJ->SetFillColor(kCyan);
-  fitGaus->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetRMS() << " / " << hPFA_RAW_MassJJ->GetMean() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
-  
-  
-  hPFA_MassJJ->Draw("same");
-  hPFA_MassJJ->SetLineColor(kViolet);
-//   hPFA_MassJJ->SetFillColor(kViolet);
-  hPFA_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kViolet);
-  hPFA_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-  std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetRMS() << " / " << hPFA_MassJJ->GetMean() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
-  
-  
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
-  leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
-  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
-  leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
-  leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
-  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
-  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
-
-  leg->Draw();
-  gPad->SetLogy();
-  
-  
-    
-  TCanvas * cMassJJ_Diff = new TCanvas ("cMassJJ_Diff", "cMassJJ_Diff", 600, 500);
-  cMassJJ_Diff->cd();
-    
-  hDRO_MassDiff->Draw();
-  //  hDRO_MassDiff->SetStats(0);
-  hDRO_MassDiff->GetXaxis()->SetTitle("M_{jj}^{reco} - M_{jj}^{truth} / M_{jj}^{reco}");
-  hDRO_MassDiff->GetYaxis()->SetTitle("Counts");
-//   hMCT_MassJJ->GetXaxis()->SetRangeUser(0, 140);
-  hDRO_MassDiff->SetLineColor(kGreen+1);
-  
-  hRAW_MassDiff->Draw("same");
-  hRAW_MassDiff->SetLineColor(kRed+1);
-  
-  hMCTFastSim_MassDiff->Draw("same");
-  hMCTFastSim_MassDiff->SetLineColor(kBlue);
-  
-  
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
-  leg->AddEntry(hMCTFastSim_MassDiff, "Fast sim jet", "lpf");
-  leg->AddEntry(hRAW_MassDiff, "Raw calo jet", "lpf");
-  leg->AddEntry(hDRO_MassDiff, "DRO calo jet", "lpf");
-
-  leg->Draw();
-  
-  if (SAVEPLOTS) cMassJJ_Diff->SaveAs("plots/cMassJJ_Diff.png");
-
-  TCanvas * cScatterEnergy = new TCanvas ("cScatterEnergy", "cScatterEnergy", 1000, 500);
-  cScatterEnergy->Divide(2,1);
-  
-  cScatterEnergy->cd(1);    
-  hRAW_ScatterEne->Draw("COLZ");
-  //  hRAW_ScatterEne->SetStats(0);
-  hRAW_ScatterEne->GetXaxis()->SetTitle("E_{j,1}^{reco} - E_{j,1}^{truth}");
-  hRAW_ScatterEne->GetYaxis()->SetTitle("E_{j,2}^{reco} - E_{j,2}^{truth}");
-  
-  cScatterEnergy->cd(2);
-  hDRO_ScatterEne->Draw("COLZ");
-  //  hDRO_ScatterEne->SetStats(0);
-  hDRO_ScatterEne->GetXaxis()->SetTitle("E_{j,1}^{reco} - E_{j,1}^{truth}");
-  hDRO_ScatterEne->GetYaxis()->SetTitle("E_{j,2}^{reco} - E_{j,2}^{truth}");
-    
-  
-  if (SAVEPLOTS) cScatterEnergy->SaveAs("plots/cScatterEnergy.png");
-
 
   
-  TCanvas * cPFA_Checks = new TCanvas ("cPFA_Checks", "cPFA_Checks", 1000, 500);
-  cPFA_Checks->Divide(2,1);
-  cPFA_Checks->cd(1);
+/*
+  TCanvas * cJetComposition = new TCanvas ("cJetComposition", "cJetComposition", 500, 500);  
+  cJetComposition->cd();
     
   hGammaEneMC->Draw();
   hGammaEneMC->SetStats(0);
-  hGammaEneMC->GetXaxis()->SetTitle("E_{tot} [GeV]");
+  hGammaEneMC->GetXaxis()->SetTitle("E_{i}/E_{jet}");
   hGammaEneMC->GetYaxis()->SetTitle("Counts");
   hGammaEneMC->SetLineColor(kGreen+1);
   
@@ -1107,42 +1054,123 @@ int main(int argc, char** argv)
   hNeutralsMC->Draw("same");
   hNeutralsMC->SetLineColor(kBlack);
     
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");  
+  leg = new TLegend(0.65,0.65,0.88,0.88,NULL,"brNDC");  
   leg->AddEntry(hGammaEneMC, "#gamma", "lpf");
   leg->AddEntry(hNeutrHadMC, "K^{0,L}, neutrons", "lpf");
   leg->AddEntry(hNeutralsMC, "All neutrals", "lpf");
   leg->Draw();
+  */
   
   
   
-  cPFA_Checks->cd(2);
-//   hNeutralResidual->Rebin(4);  
-  hNeutralResidual->SetLineColor(kBlack);
-  hNeutralResidual->Draw();
-  hNeutralResidual->SetStats(0);
-  hNeutralResidual->GetXaxis()->SetTitle("(E_{reco, neutr} - E_{MC, neutr}) / E_{MC,neutr}");
-  hNeutralResidual->GetYaxis()->SetTitle("Counts");
-  
-//   hNeutralResidualDRO->Rebin(4);
-  hNeutralResidualDRO->SetLineColor(kBlue+1);
-  hNeutralResidualDRO->Draw("same");
-  
-//   hECALResidual->Rebin(4);
-  hECALResidual->SetLineColor(kGreen+1);
-  hECALResidual->Draw("same");
+//   hNeutralResidual->SetLineColor(kBlack);
+//   hNeutralResidual->Draw();
+//   hNeutralResidual->SetStats(0);
+//   hNeutralResidual->GetXaxis()->SetTitle("(E_{reco, neutr} - E_{MC, neutr}) / E_{MC,neutr}");
+//   hNeutralResidual->GetYaxis()->SetTitle("Counts");  
 //   
-//   hHCALResidual->Rebin(4);
-  hHCALResidual->SetLineColor(kRed+1);
-  hHCALResidual->Draw("same");
+//   hNeutralResidualDRO->SetLineColor(kBlue+1);
+//   hNeutralResidualDRO->Draw("same");
   
+//   hECALResidual->SetLineColor(kGreen+1);
+//   hECALResidual->Draw("same");
+//   
+//   hHCALResidual->SetLineColor(kRed+1);
+//   hHCALResidual->Draw("same");
   
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");  
-  leg->AddEntry(hNeutralResidual, "raw", "lpf");
-  leg->AddEntry(hNeutralResidualDRO, "dro", "lpf");
-  leg->AddEntry(hECALResidual, "ecal_reco - mc_gamma", "lpf");
-  leg->AddEntry(hHCALResidual, "hcal_reco - mc_nhadrons", "lpf");
+
+  
+/*      
+  leg = new TLegend(0.25,0.65,0.88,0.88,NULL,"brNDC");  
+  leg->AddEntry(hNeutralResidual, "neutral reco(raw) - neutrals MC", "lpf");
+  leg->AddEntry(hNeutralResidualDRO, "neutral reco(dro) - neutrals MC", "lpf");
+  leg->AddEntry(hECALResidual, "gamma ecal_reco - mc_gamma", "lpf");
+//   leg->AddEntry(hECALResidual, "ecal_reco - mc_gamma", "lpf");
+  leg->AddEntry(hNeutrHadResidual, "neutr.had tot reco - mc_nhadrons", "lpf");
+//   leg->AddEntry(hHCALResidual, "hcal_reco - mc_nhadrons", "lpf");
   leg->Draw();
+    */
+  
+  
+  TCanvas * cCaloHitsEne = new TCanvas ("cCaloHitsEne", "cCaloHitsEne", 1000, 500);
+  cCaloHitsEne->Divide(2);
+  cCaloHitsEne->cd(1);
+  hEcalHitsEne->SetStats(0);
+  hEcalHitsEne->Draw();
+  hEcalHitsEne->SetTitle("ECAL hits ene");
+  hEcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
+  hEcalHitsEne->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
+  cCaloHitsEne->cd(2);
+  hHcalHitsEne->Draw();
+  hHcalHitsEne->SetStats(0);
+  hHcalHitsEne->SetTitle("HCAL hits ene");
+  hHcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
+  hHcalHitsEne->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
     
+  TCanvas * cScatter2DPFA = new TCanvas ("cScatter2DPFA", "cScatter2DPFA", 1000, 500);
+  cScatter2DPFA->Divide(2);
+  cScatter2DPFA->cd(1);
+//   h1SwappedTrackFrac->SetStats(0);
+  h1SwappedTrackFrac->Draw();
+  h1SwappedTrackFrac->SetTitle("Charged tracks");
+  h1SwappedTrackFrac->GetYaxis()->SetTitle("Counts");
+  h1SwappedTrackFrac->GetXaxis()->SetTitle("Fraction of charged tracks swapped");
+  gPad->SetLogy();
+    
+//   TCanvas * cResidualChargedPFA = new TCanvas ("cResidualChargedPFA", "cResidualChargedPFA");
+//   cResidualChargedPFA->cd();
+  cScatter2DPFA->cd(2);
+  h1ResidualCharged->Draw();
+//   h1ResidualCharged->SetStats(0);
+  h1ResidualCharged->SetTitle("Charged tracks");
+  h1ResidualCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+  h1ResidualCharged->GetYaxis()->SetTitle("Counts");
+//   h1ResidualTotCharged->SetLineColor(kGreen+1);
+//   h1ResidualTotCharged->Draw("same");
+  gPad->SetLogy();
+  
+   
+  TCanvas * cJetEta = new TCanvas ("cJetEta", "cJetEta", 1000, 500);
+  cJetEta->Divide(2);
+  cJetEta->cd(1);
+  hEtaJet->SetStats(0);
+  hEtaJet->Draw();
+//   hEtaJet->SetTitle("ECAL hits ene");
+  hEtaJet->GetXaxis()->SetTitle("|#eta|");
+  hEtaJet->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
+  cJetEta->cd(2);
+  hDeltaEtaJet->Draw();
+  hDeltaEtaJet->SetStats(0);
+//   hDeltaEtaJet->SetTitle("HCAL hits ene");
+  hDeltaEtaJet->GetXaxis()->SetTitle("|#Delta #eta|");
+  hDeltaEtaJet->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
+  
+    TCanvas * cJetTheta = new TCanvas ("cJetTheta", "cJetTheta", 1000, 500);
+  cJetTheta->Divide(2);
+  cJetTheta->cd(1);
+  hThetaJet->SetStats(0);
+  hThetaJet->Draw();
+//   hThetaJet->SetTitle("ECAL hits ene");
+  hThetaJet->GetXaxis()->SetTitle("|#theta|");
+  hThetaJet->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
+  cJetTheta->cd(2);
+  hDeltaThetaJet->Draw();
+  hDeltaThetaJet->SetStats(0);
+//   hDeltaThetaJet->SetTitle("HCAL hits ene");
+  hDeltaThetaJet->GetXaxis()->SetTitle("|#Delta #theta|");
+  hDeltaThetaJet->GetYaxis()->SetTitle("Counts");
+  gPad->SetLogy();
+  
   
   TFile * outputFile = new TFile (Form("output_jjMass_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
   outputFile->cd();
@@ -1200,11 +1228,12 @@ int main(int argc, char** argv)
   outputFile->Write();
   outputFile->Close();
   
-  
-  hECALResidual->Rebin(4);
-  hHCALResidual->Rebin(4);
-  hNeutralResidual->Rebin(4);
-  hNeutralResidualDRO->Rebin(4);
+  int REBIN_COEFF = 16;
+//   hECALResidual->Rebin(REBIN_COEFF);
+  hHCALResidual->Rebin(REBIN_COEFF);
+  hNeutralResidual->Rebin(REBIN_COEFF);
+  hNeutrHadResidual->Rebin(REBIN_COEFF);
+  hNeutralResidualDRO->Rebin(REBIN_COEFF);
   
   hMCT_MassJJ->Rebin(4);
   hMCTFastSim_MassJJ->Rebin(4);
@@ -1214,10 +1243,179 @@ int main(int argc, char** argv)
   hPFA_RAW_MassJJ->Rebin(4);
   
   std::cout << "************************************************" << std::endl;
-  std::cout << " ecal_reco - mc_gamma --> " << hECALResidual->GetMean() << " +/- " << hECALResidual->GetRMS() << std::endl;
-  std::cout << " hcal_reco - mc_nhadrons  --> " << hHCALResidual->GetMean() << " +/- " << hHCALResidual->GetRMS() << std::endl;
-  std::cout << " neutral residual  --> " << hNeutralResidual->GetMean() << " +/- " << hNeutralResidual->GetRMS() << std::endl;
-  std::cout << " neutral residual DRO --> " << hNeutralResidualDRO->GetMean() << " +/- " << hNeutralResidualDRO->GetRMS() << std::endl;
+  
+  
+  TCanvas * cPFA_Checks = new TCanvas ("cPFA_Checks", "cPFA_Checks", 2000, 500);
+  cPFA_Checks->Divide(4,1);
+  TF1 * fitGausResidual;  
+  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+  
+  cPFA_Checks->cd(1);
+  
+  hECALResidual->SetTitle("Gamma (in ECAL only)");
+  hECALResidual->SetLineColor(kGreen+1);
+  hECALResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+  hECALResidual->GetYaxis()->SetTitle("Counts");
+  hECALResidual->Draw();
+  hECALResidual->GetXaxis()->SetRangeUser(-1,1);
+  hECALResidual->Fit(fitGausResidual, "SQR");  
+  std::cout << " gamma ecal_reco - mc_gamma --> " << fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+  fitGausResidual->Draw("same");  
+  gPad->SetLogy();
+    
+  
+  cPFA_Checks->cd(2);  
+  hNeutrHadResidual->SetTitle("Neutral Hadrons");
+  hNeutrHadResidual->SetLineColor(kBlue+1);
+  hNeutrHadResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+  hNeutrHadResidual->GetYaxis()->SetTitle("Counts");  
+  hNeutrHadResidual->Draw();
+  hNeutrHadResidual->GetXaxis()->SetRangeUser(-3,3);
+  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+  hNeutrHadResidual->Fit(fitGausResidual, "SQR");  
+  fitGausResidual->Draw("same");
+  std::cout << " n.hadr tot_reco - mc_n.hadr --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
+  gPad->SetLogy();
+  
+  cPFA_Checks->cd(3);  
+  h1ResidualTotCharged->SetTitle("Charged tracks");
+  h1ResidualTotCharged->SetLineColor(kBlack);
+  h1ResidualTotCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+  h1ResidualTotCharged->GetYaxis()->SetTitle("Counts");  
+  h1ResidualTotCharged->Draw();
+  h1ResidualTotCharged->GetXaxis()->SetRangeUser(-0.4,0.4);
+    fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+  h1ResidualTotCharged->Fit(fitGausResidual, "SQR");  
+  std::cout << "swapped charged tot_reco - mc_charged --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+  fitGausResidual->Draw("same");  
+  gPad->SetLogy();
+  
+  
+  cPFA_Checks->cd(4);  
+  hNeutralResidual->SetTitle("Total neutrals");
+  hNeutralResidual->SetLineColor(kBlack);
+  hNeutralResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+  hNeutralResidual->GetYaxis()->SetTitle("Counts");  
+  hNeutralResidual->Draw();
+  hNeutralResidual->GetXaxis()->SetRangeUser(-2,2);
+  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+  hNeutralResidual->Fit(fitGausResidual, "SQR");  
+  std::cout << " neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+  fitGausResidual->Draw("same");  
+  
+  hNeutralResidualDRO->Draw("same");
+  hNeutralResidualDRO->SetLineColor(kYellow+2);
+  fitGausResidual->SetLineColor(kOrange);
+  hNeutralResidualDRO->Fit(fitGausResidual, "SQR");  
+  std::cout << "DRO_neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+  fitGausResidual->Draw("same");  
+  
+  gPad->SetLogy();
+  
+  
+
+  std::cout << "************************************************" << std::endl;
+  TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
+  cMassJJ->cd();
+  hMCT_MassJJ->Draw();
+  //  hMCT_MassJJ->SetStats(0);
+  hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
+  hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
+  hMCT_MassJJ->GetXaxis()->SetRangeUser(50, 140);
+  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
+  hMCT_MassJJ->SetLineColor(kBlack);
+  hMCT_MassJJ->SetStats(0);
+  
+  hRAW_MassJJ->Draw("same");
+  hRAW_MassJJ->SetLineColor(kRed+1);
+  
+  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", 50, 140);
+
+  hMCTFastSim_MassJJ->Draw("same");
+  hMCTFastSim_MassJJ->SetLineColor(kBlue);
+  fitGaus->SetLineColor(kBlue);
+  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetRMS() << " / " << hMCTFastSim_MassJJ->GetMean() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
+  
+  
+  fitGaus->SetLineColor(kRed);
+  hRAW_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetRMS() << " / " << hRAW_MassJJ->GetMean() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
+  
+  
+  hDRO_MassJJ->Draw("same");
+  hDRO_MassJJ->SetLineColor(kGreen+1);
+  hDRO_MassJJ->SetLineWidth(2);
+  fitGaus->SetLineColor(kGreen);
+  hDRO_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetRMS() << " / " << hDRO_MassJJ->GetMean() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
+  
+  
+  hPFA_RAW_MassJJ->Draw("same");
+  hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
+  hPFA_RAW_MassJJ->SetLineWidth(2);
+//   hPFA_RAW_MassJJ->SetFillColor(kCyan);
+  fitGaus->SetLineColor(kYellow+1);
+  hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
+  std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetRMS() << " / " << hPFA_RAW_MassJJ->GetMean() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
+  
+  
+  hPFA_MassJJ->Draw("same");
+  hPFA_MassJJ->SetLineColor(kViolet);
+//   hPFA_MassJJ->SetFillColor(kViolet);
+  hPFA_MassJJ->SetLineWidth(2);
+  fitGaus->SetLineColor(kViolet);
+  hPFA_MassJJ->Fit(fitGaus, "QR");
+  
+  std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+//   std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetRMS() << " / " << hPFA_MassJJ->GetMean() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
+  
+  
+  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
+  leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
+  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
+  leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
+  leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
+  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
+  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
+
+  leg->Draw();
+  gPad->SetLogy();
+  
+  
+  
+  std::cout << "************************************************" << std::endl;
+  
+  TF1 * fitGausJet = new TF1 ("fitGausJet", "gaus", -0.5, 0.5);
+  TCanvas * cJetEneDiff = new TCanvas ("cJetEneDiff", "cJetEneDiff", 1000, 500);
+  cJetEneDiff->Divide(2,1);
+  cJetEneDiff->cd(1);    
+  hPFA_Jet1EneDiff->Rebin(4);
+  hPFA_Jet1EneDiff->Draw();  
+  hPFA_Jet1EneDiff->SetTitle("Jet 1");
+  hPFA_Jet1EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
+  hPFA_Jet1EneDiff->GetYaxis()->SetTitle("Counts");
+  hPFA_Jet1EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
+  gPad->SetLogy();
+  hPFA_Jet1EneDiff->SetLineColor(kBlack);
+  hPFA_Jet1EneDiff->Fit(fitGausJet, "QR");
+  std::cout << "E j1 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
+  
+  cJetEneDiff->cd(2);    
+  hPFA_Jet2EneDiff->Rebin(4);
+  hPFA_Jet2EneDiff->Draw();  
+  hPFA_Jet2EneDiff->SetTitle("Jet 2");
+  hPFA_Jet2EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
+  hPFA_Jet2EneDiff->GetYaxis()->SetTitle("Counts");
+  hPFA_Jet2EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
+  hPFA_Jet2EneDiff->SetLineColor(kBlack);
+  gPad->SetLogy();
+  hPFA_Jet2EneDiff->Fit(fitGausJet, "QR");  
+  std::cout << "E j2 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
   
   
   
