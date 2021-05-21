@@ -663,7 +663,10 @@ int main(int argc, char** argv)
 //     float showerCorr = 1.13;
     float showerCorr = 1.;
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
-    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
+                                                      x_factor_ecal, x_factor_hcal,
+                                                      h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+    
     float gamma_ene_reco_ecal = 0;
     for (auto gamma : allGammaHits)
     {
@@ -763,6 +766,7 @@ int main(int argc, char** argv)
       double neutralhad_ene_reco_dro = 0;
       
       //pfa jets
+      float PFA_JET_CALIB = 1.08;
       if (debugMode) std::cout << " pfa jets" << std::endl;
       for (unsigned i = 0; i < pfa_jets.size(); i++) 
       {
@@ -785,14 +789,14 @@ int main(int argc, char** argv)
           }
           if (pfa_jets[i].E()<= 0)continue;
           
-          PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT+E_GAM)/pfa_jets[i].E();
+          PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT+E_GAM)*PFA_JET_CALIB/pfa_jets[i].E();
           pfa_jets_raw.push_back(this_raw_jet);
           
           double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
           double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
           
           double E_JTot = E_JE + E_JH + E_MCT + E_GAM;
-          PseudoJet dro_corr_jet = pfa_jets[i]*E_JTot/pfa_jets[i].E();
+          PseudoJet dro_corr_jet = pfa_jets[i]*E_JTot*PFA_JET_CALIB/pfa_jets[i].E();
           pfa_jets_dro.push_back(dro_corr_jet);
           
           neutralhad_ene_reco     += E_JES+E_JHS;
