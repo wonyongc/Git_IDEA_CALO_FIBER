@@ -154,23 +154,20 @@ int main(int argc, char** argv)
   
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_gamma_Iso+Uniform1-100_GeV.root","READ");       
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_e-_Iso+Uniform1-100_GeV.root","READ");         
+    TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_fixedPos_kaon0L_Iso+Uniform1-100_GeV.root","READ");       
   
   
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
-  
-//           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s_job_%d.root", output_tag.c_str(), iFile);
-//         fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
-  
-  
+// //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
+
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
   myG4TreeVars myTV;
   InitG4Tree (TreeRun, myTV);
       
       
-  bool isHepMC = true;
+  bool isHepMC = false;
 
   ///*******************************************///
   ///		 Run over events	    ///
@@ -295,6 +292,7 @@ int main(int argc, char** argv)
         std::cout << "input P = " << P/1000. << " GeV :: phi = " << phi << " :: theta = " << theta << std::endl;
         
         hTruthChargedEM  ->Fill(theta, phi, P);
+//         std::cout << "truth theta = " << theta << " :: truth phi = " << phi << std::endl;
       }
           
       //**************************************************************//
@@ -317,6 +315,8 @@ int main(int argc, char** argv)
           if (this_ene>0.03) hPolar_DRT_S ->Fill(this_phi, minRadius_DRT, this_scint/drh_S_norm);
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
+          
+//           std::cout << "hcal reco theta = " << this_theta << " :: hcal reco phi = " << this_phi << std::endl;
       }
       for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
       {                                        
@@ -331,6 +331,8 @@ int main(int argc, char** argv)
           if (this_ene>0.03) hPolar_DRT_S ->Fill(this_phi, minRadius_DRT, this_scint/drh_S_norm);
           totDRHScint+=this_scint;
           totDRHCher+=this_cher;
+          
+//           std::cout << "hcal reco theta = " << this_theta << " :: hcal reco phi = " << this_phi << std::endl;
       }
       
       std::cout << "Total scint in HCAL: " << totDRHScint << std::endl;
@@ -362,6 +364,8 @@ int main(int argc, char** argv)
             hPolar_EC_T ->Fill(this_phi, 1800, this_ene);
             
             totEcalEne+=this_ene;
+            
+            std::cout << "ecal reco theta = " << this_theta << " :: ecal reco phi = " << this_phi << std::endl;
           }
       }
       
