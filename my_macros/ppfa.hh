@@ -12,11 +12,13 @@
 #include "fastjet/ClusterSequence.hh"
 #include "TRandom.h"
 #include "TF1.h"
+#include "TH2F.h"
+#include "TH1F.h"
 
 
 using namespace fastjet; 
 
-std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<PseudoJet> hitsForJet);
+std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, TH1F* check1Histo1D, TH1F *check2Histo1D, TH1F *check3Histo1D);
 
-std::vector<PseudoJet> sorted_by_dd (std::vector<PseudoJet> myJets, PseudoJet refJet);
+std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair<PseudoJet,PseudoJet>> myJets, PseudoJet refJet);
 
