@@ -40,7 +40,7 @@ class SCEPCal_GeometryHelper
         int m_endOIDR[162];
         
         
-        TVector3 GetTowerVec(unsigned int index, char side);
+        TVector3 GetTowerVec(unsigned int index, char side, int phi_gran=36);
         TVector3 GetCrystalVec(long int index);
         TVector3 GetCrystalTimingVec(long int index, int layer_ID);
         TVector3 GetCrystalTimingBothVec(long int index_1, long int index_2);

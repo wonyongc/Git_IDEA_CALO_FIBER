@@ -6,7 +6,8 @@ SCEPCal_GeometryHelper::SCEPCal_GeometryHelper():
 // Dual readout HCAL
   m_NbOfBarrel(40),
   m_NbOfEndCap(35),
-  m_NZrot(36),
+//   m_NZrot(36),
+  m_NZrot(252),
   //SCEPCal
   m_innerR(1800),
   m_nBarrelEtaSeg(180),
@@ -35,7 +36,7 @@ SCEPCal_GeometryHelper::SCEPCal_GeometryHelper():
 }
   
 // Dual readout HCAL
-TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side)
+TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side, int phi_gran)
 {  
   // Create an empty TLorentzVector
 
@@ -48,7 +49,8 @@ TVector3 SCEPCal_GeometryHelper::GetTowerVec(unsigned int index, char side)
   unsigned int sliceindex = index/m_totTower;
   unsigned int towerindex = index-(sliceindex*m_totTower);
   double theta = towerindex*m_deltaTheta+m_deltaTheta/2.;
-  double phi = ((double)sliceindex) * m_phiUnit;
+//   double phi = ((double)sliceindex) * m_phiUnit;
+  double phi = ((double)sliceindex) * 360./phi_gran;
 
   if (side == 'r') theta = theta + 90.;
   else if (side == 'l') theta = 90. - theta;  
