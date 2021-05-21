@@ -86,8 +86,8 @@ int main(int argc, char** argv)
   int NPHI_EC    = 1130;
   int NTHETA_EC  = 360;
   
-  int NPHI_DRT   = 36;
-  int NTHETA_DRT = 320;
+  int NPHI_DRT   = 252;
+  int NTHETA_DRT = 160;
   
   double minPhi = -M_PI;
   double maxPhi = M_PI;  
@@ -131,7 +131,8 @@ int main(int argc, char** argv)
   SCEPCal_GeometryHelper myGeometry;
 
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_wwlj100k_job_12.root","READ");       
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
   
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -148,7 +149,8 @@ int main(int argc, char** argv)
   
   
 //   TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
-  TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_100_job_0_output_tuple.root","READ");
+//   TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_100_job_0_output_tuple.root","READ");
+  TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_90_job_0_output_tuple.root","READ");
   TTree* TruthTree = (TTree*) TruthFile->Get("truth");
   myTruthTreeVars myTruthTV;
   InitTruthTree (TruthTree, myTruthTV);
@@ -206,8 +208,8 @@ int main(int argc, char** argv)
 
   
 
-  float maxDeltaR_Hcal = 0.1;
-  float maxDeltaR_Ecal = 0.02;
+  float maxDeltaR_Hcal = 0.8;
+  float maxDeltaR_Ecal = 0.015;
   
   float ene_EC_th = 0.01;      
   float EC_seed_th = 0.1;
@@ -216,6 +218,8 @@ int main(int argc, char** argv)
   float HC_seed_th = 0.1;
   
   float MC_ene_th = 0.1;
+  
+  int phiGran = NPHI_DRT;
 
 
 //   NEVENTS = 1000;
@@ -242,7 +246,7 @@ int main(int argc, char** argv)
       
       for (unsigned int i = 0; i<myTV.VectorL->size(); i++)
       {                                        
-          TVector3 this_vec = myGeometry.GetTowerVec(i,'l');
+          TVector3 this_vec = myGeometry.GetTowerVec(i,'l', phiGran);
           double this_phi   = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_ene   = myTV.VectorL->at(i)/1000.;      
@@ -271,7 +275,7 @@ int main(int argc, char** argv)
       }
       for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
       {                                        
-          TVector3 this_vec = myGeometry.GetTowerVec(i,'r');
+          TVector3 this_vec = myGeometry.GetTowerVec(i,'r', phiGran);
           double this_phi   = this_vec.Phi();
           double this_theta = this_vec.Theta();
           double this_ene   = myTV.VectorR->at(i)/1000.;
