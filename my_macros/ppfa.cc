@@ -74,7 +74,7 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     
     float eneResponse = 0.99;
     float maxDeltaR_ECAL = 0.05;
-    float maxDeltaR_HCAL = 0.5;
+    float maxDeltaR_HCAL = 0.3;
     
       
     int flag_MCT = 0;
@@ -202,7 +202,48 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
 
 
 
-
+Double_t rms90(TH1F *h) 
+{
+    TAxis *axis = h->GetXaxis();
+    Int_t nbins = axis->GetNbins();
+    Int_t imean = axis->FindBin(h->GetMean());
+    Double_t entries = 0.9*h->GetEntries();
+    Double_t w = h->GetBinContent(imean);
+    Double_t x = h->GetBinCenter(imean);
+    Double_t sumw = w;
+    Double_t sumwx = w*x;
+    Double_t sumwx2 = w*x*x;
+    for (Int_t i=1;i<nbins;i++) 
+    {
+        if (i> 0) 
+        {
+            w = h->GetBinContent(imean-i);
+            x = h->GetBinCenter(imean-i);
+            sumw += w;
+            sumwx += w*x;
+            sumwx2 += w*x*x;
+        }
+        if (i<= nbins) 
+        {
+            w = h->GetBinContent(imean+i);
+            x = h->GetBinCenter(imean+i);
+            sumw += w;
+            sumwx += w*x;
+            sumwx2 += w*x*x;
+        }
+        if (sumw > entries) break;
+    }
+    
+    x = sumwx/sumw;
+    
+    Double_t rms2 = TMath::Abs(sumwx2/sumw -x*x);
+    Double_t result = TMath::Sqrt(rms2);
+    Double_t rms90 = result;
+    
+//     printf(“RMS of central 90% = %g, RMS total = %g\n”,result,h->GetRMS());
+    
+    return rms90;
+}
 
 
 
