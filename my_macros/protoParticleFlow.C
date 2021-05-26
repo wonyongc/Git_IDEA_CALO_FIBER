@@ -108,7 +108,7 @@ int main(int argc, char** argv)
 
     
     
-  bool local = true;
+  bool local = false;
   
   TApplication* theApp;
   
