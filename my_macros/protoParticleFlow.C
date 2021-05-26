@@ -107,8 +107,10 @@ int main(int argc, char** argv)
 {
 
     
-    
-  bool local = false;
+  //init  
+  bool SAVEPLOTS = false;  
+  bool local     = false;
+  bool debugMode = true;
   
   TApplication* theApp;
   
@@ -129,8 +131,7 @@ int main(int argc, char** argv)
     
   
   
-  //init  
-  bool SAVEPLOTS = false;
+  
 //   std::string output_tag = "wwlj";
   std::string output_tag = "zjj_scan_90";
   
@@ -178,7 +179,7 @@ int main(int argc, char** argv)
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
   
-  double PFA_JET_CALIB = 1.0;
+//   double PFA_JET_CALIB = 1.0;
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.005)  PFA_JET_CALIB = 1.05;
@@ -261,8 +262,6 @@ int main(int argc, char** argv)
   int flag_JES = 3;
   int flag_JEC = 4;
   int flag_GAM = 5;
-  
-  bool debugMode = false;
   
   float ecal_stoch = 0.025;
   float ecal_const = 0.01;
@@ -935,6 +934,7 @@ int main(int argc, char** argv)
           double p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          std::cout << "sel evt count: " << countGoodEvents << " ::  jjMassMCT = " << jjMassMCT << std::endl;
           hMCT_MassJJ->Fill(jjMassMCT);
           hMCT_Jet1Ene->Fill(e1);
           hMCT_Jet2Ene->Fill(e2);
