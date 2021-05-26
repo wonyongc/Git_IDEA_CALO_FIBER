@@ -73,7 +73,23 @@ bool RootFileExists(const char *filename)
 {
   bool data = false;
   TFile *f = TFile::Open(filename);
-  if ((!f) || (f->IsZombie()))
+  if ((!f) || (f->IsZombie()) )
+  {
+      data = false;
+      return data;
+  }
+  else
+  {
+    data = true;
+    return data;
+  }
+  f->Close();
+}
+bool KeysExist(const char *filename)
+{
+  bool data = false;
+  TFile *f = TFile::Open(filename);
+  if ((!f) || (f->Recover()==0) )
   {
       data = false;
       return data;
@@ -86,10 +102,17 @@ bool RootFileExists(const char *filename)
   f->Close();
 }
   
+  
 int main(int argc, char** argv)
 {
 
-//   TApplication* theApp = new TApplication("App", &argc, argv);
+    
+    
+  bool local = true;
+  
+  TApplication* theApp;
+  
+  if (local) theApp = new TApplication("App", &argc, argv);
           
   //set Root style
   gStyle->SetTitleXOffset (1.00) ;                                                                                       
@@ -150,8 +173,19 @@ int main(int argc, char** argv)
   double drh_S_norm  = 405;
   double drh_C_norm  = 103.5;
   
+  
+  
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
+  
+  double PFA_JET_CALIB = 1.0;
+//   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
+//   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
+//   if (ene_HC_th == 0.005)  PFA_JET_CALIB = 1.05;
+//   if (ene_HC_th == 0.0075) PFA_JET_CALIB = 1.05;
+//   drh_S_norm*=HCAL_norm;
+//   drh_C_norm*=HCAL_norm;
+//   ecal_S_norm*=HCAL_norm;
   
   int phiGran = 252;
   
@@ -185,23 +219,31 @@ int main(int argc, char** argv)
     {
        fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_HG_%s100k_job_%d.root", output_tag.c_str(), iFile);
        fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+       if (local)
+       {
+           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s100k_job_%d.root", output_tag.c_str(), iFile);
+           fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+       }
     }
     else 
     {
        fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
        fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+       if (local)
+       {   
+           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
+           fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);           
+       }
     }
-//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s100k_job_%d.root", output_tag.c_str(), iFile);
-//     fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
     
-//     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
-//     fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
-
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
-      std::cout << "adding file: " << iFile << std::endl;
-      TreeRun->Add(fname_reco.c_str());
-      TruthTree->Add(fname_truth.c_str());    
+      if (KeysExist(fname_reco.c_str()) &&  KeysExist(fname_truth.c_str()))
+      {
+          std::cout << "adding file: " << iFile << std::endl;
+          TreeRun->Add(fname_reco.c_str());
+          TruthTree->Add(fname_truth.c_str());    
+      }
     }
   }
 
@@ -1566,7 +1608,7 @@ int main(int argc, char** argv)
   gPad->SetLogy();
   
   
-//   theApp->Run();
+  if (local) theApp->Run();
   
   
   
