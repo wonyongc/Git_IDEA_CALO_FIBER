@@ -110,7 +110,7 @@ int main(int argc, char** argv)
   //init  
   bool SAVEPLOTS = false;  
   bool local     = false;
-  bool debugMode = true;
+  bool debugMode = false;
   
   TApplication* theApp;
   
@@ -179,7 +179,7 @@ int main(int argc, char** argv)
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
   
-//   double PFA_JET_CALIB = 1.0;
+  double JET_CALIB = 1.06;
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.005)  PFA_JET_CALIB = 1.05;
@@ -815,7 +815,7 @@ int main(int argc, char** argv)
           double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
           double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
           double E_JTot = E_JE+E_JH;
-          PseudoJet dro_corr_jet = jets[i]*E_JTot/jets[i].E();
+          PseudoJet dro_corr_jet = jets[i]*E_JTot/JET_CALIB/jets[i].E();
           dro_jets.push_back(dro_corr_jet);
           
           totEneRAW+=E_JES+E_JHS;
@@ -830,7 +830,7 @@ int main(int argc, char** argv)
       double neutralhad_ene_reco_dro = 0;
       
       //pfa jets
-      float PFA_JET_CALIB = 1.08;
+      float PFA_JET_CALIB = 1.08/JET_CALIB;
       if (debugMode) std::cout << " pfa jets" << std::endl;
       float totEnePFA = 0;
       for (unsigned i = 0; i < pfa_jets.size(); i++) 
@@ -1410,7 +1410,7 @@ int main(int argc, char** argv)
   latex.SetTextSize(0.035);
   latex.SetTextAlign(12);  //align at top
   latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  cECAL_Hits_Check->SaveAs("plots_pfa/cECAL_Hits_Check.png");
+  if (SAVEPLOTS) cECAL_Hits_Check->SaveAs("plots_pfa/cECAL_Hits_Check.png");
   
     TCanvas * cCharged_Check = new TCanvas ("cCharged_Check", "cCharged_Check", 600, 600);  
   cCharged_Check->cd();
@@ -1429,7 +1429,7 @@ int main(int argc, char** argv)
   latex.SetTextSize(0.035);
   latex.SetTextAlign(12);  //align at top
   latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  cCharged_Check->SaveAs("plots_pfa/cCharged_Check.png");
+  if (SAVEPLOTS) cCharged_Check->SaveAs("plots_pfa/cCharged_Check.png");
   
   
 
@@ -1449,7 +1449,7 @@ int main(int argc, char** argv)
   latex.SetTextSize(0.035);
   latex.SetTextAlign(12);  //align at top
   latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  cNeutralHad_Check->SaveAs("plots_pfa/cNeutralHad_Check.png");
+  if (SAVEPLOTS) cNeutralHad_Check->SaveAs("plots_pfa/cNeutralHad_Check.png");
   
   
   
@@ -1480,7 +1480,7 @@ int main(int argc, char** argv)
   latex.SetTextSize(0.035);
   latex.SetTextAlign(12);  //align at top
   latex.DrawLatexNDC(.15,.75, Form("DRO --> mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  cNeutralsTot_Check->SaveAs("plots_pfa/cNeutralsTot_Check.png");
+  if (SAVEPLOTS) cNeutralsTot_Check->SaveAs("plots_pfa/cNeutralsTot_Check.png");
   
   
   
