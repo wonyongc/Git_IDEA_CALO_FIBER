@@ -1,6 +1,6 @@
 #include <iostream>
 #include "TVector3.h"
-
+#include "TGraph.h"
 
 
 class SCEPCal_GeometryHelper
@@ -56,3 +56,8 @@ class SCEPCal_GeometryHelper
 
 };
     
+
+
+
+TGraph * getTrajectory (float B, float px, float py, float pT, float charge, float maxR);
+

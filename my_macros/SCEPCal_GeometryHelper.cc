@@ -1,5 +1,5 @@
 #include "SCEPCal_GeometryHelper.hh"
-
+#include "TGraph.h"
 #include <iostream>
 
 SCEPCal_GeometryHelper::SCEPCal_GeometryHelper():
@@ -312,3 +312,42 @@ void SCEPCal_GeometryHelper::PrintGeometry()
   std::cout << "Crystal separation in theta = " << m_deltaTheta << std::endl;
   std::cout << "Slice separation in phi = " << m_phiUnit << std::endl;
 }*/
+
+
+
+
+TGraph * getTrajectory (float B, float px, float py, float pz, float charge, float maxR)
+{
+                    
+    float pT   = sqrt(px*px+py*py);
+    float pSum = sqrt(px*px+py*py+pz*pz);
+    float R;
+    if (B>0) R = pT/fabs(charge)/(0.3*B)*1000;
+    else     R = 1000000000;
+    float y0 = 0;
+    float x0 = 0;
+//     float phi0 = M_PI - atan(py/px);
+    float phi0 =  acos(px/pT)-M_PI/2 + M_PI;
+    float lambda = acos(pT/pSum);
+    float h = charge/abs(charge);
+    
+    TGraph* gTraj = new TGraph();
+    
+    for (int i = 0; i <1000; i++)
+    {
+        float to_m = 100;
+        float x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
+        float y = y0 + R*(sin(phi0+h*i*to_m*cos(lambda)/R) - sin(phi0) );
+        
+        if (fabs(x)<maxR && fabs(y) <maxR)
+        {
+            
+            gTraj->SetPoint(gTraj->GetN(), x, y);
+        }
+        else break;
+    }
+    
+    return gTraj;
+}
+
+
