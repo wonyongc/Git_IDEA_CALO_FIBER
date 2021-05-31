@@ -174,7 +174,13 @@ int main(int argc, char** argv)
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_wwlj100k_job_15.root","READ");
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_zjj_scan_90_job_0.root","READ");       
+  
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__pi-_Iso+Uniform1-100_GeV_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__mu-_Iso+Uniform1-100_GeV_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__mu+_Iso+Uniform1-100_GeV_job_0.root","READ");       
+  
 
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
@@ -200,21 +206,22 @@ int main(int argc, char** argv)
   std::vector<TLine*> photon_tracks;
   std::vector<TLine*> neutrhad_tracks;
   
-  float max_radius = 1730;
+  float max_radius = 1740;
   float max_muon_radius = maxRadius_DRT*1.2;
   
-  float MC_ene_th = 4;
-  float EC_hit_th = 0.4;
-  float HC_hit_th = 0.14;
-  float TT_hit_th = 0.004;
+  float MC_ene_th = 0.3;
+  float EC_hit_th = 0.05;
+  float HC_hit_th = 0.1;
+  float TT_hit_th = 0.002;
   
-  float Bfield = 0.1;
+  float Bfield = 2.;
   
   if (isHepMC)
   {
 //       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
-      TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_90_job_0_output_tuple.root","READ");
+//       TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_90_job_0_output_tuple.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/B2T/zjj_scan_90_job_0_output_tuple.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/wwlj100k_job_15_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
@@ -307,7 +314,7 @@ int main(int argc, char** argv)
             }            
         }
         else */
-        if (Bfield!=0)
+//         if (Bfield=0)
         {
             if (charge!=0)
             {                
@@ -345,9 +352,9 @@ int main(int argc, char** argv)
       std::cout << "processing event: " << iEvt << "\r" << std::flush;
       if (!isHepMC)
       {  
-        double px  = myTV.PrimaryParticleMomentum->at(0);
-        double py  = myTV.PrimaryParticleMomentum->at(1);
-        double pz  = myTV.PrimaryParticleMomentum->at(2);
+        double px  = myTV.PrimaryParticleMomentum->at(0)/1000.;
+        double py  = myTV.PrimaryParticleMomentum->at(1)/1000.;
+        double pz  = myTV.PrimaryParticleMomentum->at(2)/1000.;
         double P   = sqrt(px*px+py*py+pz*pz);
         px/= P;
         py/= P;
@@ -360,9 +367,11 @@ int main(int argc, char** argv)
         double eta   = -atanh(pz);      
         double theta = 2*atan(exp(-eta));
         std::cout << "Single primary particle with momentum and direction:" << std::endl;  
-        std::cout << "input P = " << P/1000. << " GeV :: phi = " << phi << " :: theta = " << theta << std::endl;
+        std::cout << "input P = " << P << " GeV :: phi = " << phi << " :: theta = " << theta << std::endl;
         
         hTruthChargedEM  ->Fill(theta, phi, P);
+        
+        muon_tracks.push_back(getTrajectory(Bfield, px*P, py*P, pz*P, -1, max_radius));
 //         std::cout << "truth theta = " << theta << " :: truth phi = " << phi << std::endl;
       }
           
@@ -779,7 +788,7 @@ int main(int argc, char** argv)
 //     gStyle->SetPalette(kViridis);
   hPolar_DRT_S->Draw("same col pol");
   gPad->SetLogz();
-  
+  gPad->SetGrid();
   
   
   cPolar->SaveAs(Form("plots/event_display/zjj_100/phi_plots/cPolar_%d.png", selEv));
