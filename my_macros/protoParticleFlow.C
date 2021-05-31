@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   
   TApplication* theApp;
@@ -167,19 +167,27 @@ int main(int argc, char** argv)
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
 
-  double ecal_S_norm = 1.;
-  double ecal_C_norm = 7286;
-  double LO  = 2000;
-  double CLO = 160;
-  double drh_S_norm  = 405;
-  double drh_C_norm  = 103.5;
+
+  float ene_EC_th  = 0.01;
+  float ene_HC_th  = 0.01;
+  double calo_rescale = 1.0; //for ene_EC_th = 0.010 GeV
   
   
-  
+  /*
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
+  double calo_rescale = 1.06;   //for ene_EC_th = 0.002 GeV
+  */
   
-  double JET_CALIB = 1.06;
+  
+  double ecal_S_norm = 1.*calo_rescale;
+  double ecal_C_norm = 7286*calo_rescale;
+  double LO  = 2000;
+  double CLO = 160;
+  double drh_S_norm  = 410*calo_rescale;
+  double drh_C_norm  = 105*calo_rescale;
+  
+  double JET_CALIB = 1.00;
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.005)  PFA_JET_CALIB = 1.05;
@@ -200,7 +208,7 @@ int main(int argc, char** argv)
     // single truth jet
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
 
-  double etaAcceptance = 1.4;  //accept only  jet within this eta
+  double etaAcceptance = 0.5;  //accept only  jet within this eta
 //   double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
 //   double deltaR_match = 1.0;
   
@@ -261,7 +269,8 @@ int main(int argc, char** argv)
   int flag_JHC = 2;
   int flag_JES = 3;
   int flag_JEC = 4;
-  int flag_GAM = 5;
+  int flag_GAM_S = 5;
+  int flag_GAM_C = 6;
   
   float ecal_stoch = 0.025;
   float ecal_const = 0.01;
@@ -331,6 +340,9 @@ int main(int argc, char** argv)
   TH1F* hHCALResidual = new TH1F ("hHCALResidual", "hHCALResidual",  800, -2, 2);
   TH1F* hNeutralResidualDRO = new TH1F ("hNeutralResidualDRO", "hNeutralResidualDRO", NBIN, -3, 3);
 
+  TH1F* hNGammaMC    = new TH1F ("hNGammaMC", "hNGammaMC", 200, -0.5, 199.5);
+  TH1F* hNNeutrHadMC = new TH1F ("hNNeutrHadMC", "hNNeutrHadMC", 200, -0.5, 199.5);
+  TH1F* hNChPionsMC  = new TH1F ("hNChPionsMC", "hNChPionsMC", 200, -0.5, 199.5);
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
   TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -361,6 +373,8 @@ int main(int argc, char** argv)
   if (NEVENTS>maxEVENTS)  NEVENTS = maxEVENTS;
   std::cout << "... running on " << NEVENTS << " events" << std::endl;
   int countGoodEvents = 0;
+  double ave_mass_dro = 0;
+  double ave_mass_pfa = 0;
   
   for (Int_t iEvt= 0; iEvt < NEVENTS; iEvt++) 
   {
@@ -374,9 +388,13 @@ int main(int argc, char** argv)
     std::vector<PseudoJet> allChargedTracks;
     std::vector<std::pair<PseudoJet, PseudoJet>> allCaloHits;
     std::vector<PseudoJet> allGammaHits;
+    std::vector<PseudoJet> allGammaHitsC;
       
     bool goodEvent = true;
     int nMuons = 0;
+    int nGamma = 0;
+    int nNeutrHad = 0;
+    int nChPions = 0;
     int nNeutrinos = 0;
     double neutrinoEne = 0;
     double muonEne = 0;
@@ -394,10 +412,10 @@ int main(int argc, char** argv)
     {
           int    pdgId = myTruthTV.mcs_pdgId->at(i);
           double ene   = myTruthTV.mcs_E->at(i);
-          if (ene<= 0) continue;
           double phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
           double pT    = myTruthTV.mcs_pt->at(i);
+          double mass  = myTruthTV.mcs_m->at(i);
           int charge   = myTruthTV.mcs_charge->at(i);
           double theta = 2*atan(exp(-eta));
           theta = M_PI- theta;
@@ -423,14 +441,20 @@ int main(int argc, char** argv)
               float smeared_ene = ene;
               if (charge!=0 && smeared_ene>ene_EC_th*10)// || fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
               {
-                  PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
+//                   PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, sqrt(px*px+py*py+pz*pz));
+                  PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, ene );
                   this_charged_track.set_user_index(flag_MCT);
                   allChargedTracks.push_back(this_charged_track);
+//                   std::cout << "P^2 = " << px*px+py*py+pz*pz << " +  M^2 = " << mass*mass <<  " =  " << sqrt(px*px+py*py+pz*pz+mass*mass) << " to compare with E_MC = " << ene << std::endl;
               }
               
 
               //EM showers
-              if (fabs(pdgId) == 22) gamma_ene+=ene;
+              if (fabs(pdgId) == 22) 
+              {
+                  gamma_ene+=ene;
+                  nGamma++;
+              }
                             
               if (fabs(pdgId) == 22  || fabs(pdgId) == 11)
                   smeared_ene = gRandom->Gaus(ene, funcEcalRes->Eval(ene)*ene);
@@ -438,11 +462,15 @@ int main(int argc, char** argv)
               else if (fabs(pdgId) == 130 || fabs(pdgId) == 2112)
               {
                   neutralhad_ene+= ene;
+                  nNeutrHad++;
                   smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
               }
               //charged hadrons
               else if (fabs(pdgId) == 211 || fabs(pdgId) == 321 || fabs(pdgId)==2212)
+              {
                   smeared_ene = gRandom->Gaus(ene, funcHcalRes->Eval(ene)*ene);
+                  nChPions++;
+              }
 //               else
 //                   std::cout << "particle not smeared (" << pdgId << "): " << ene << std::endl;                
               if ( smeared_ene > 0.01 
@@ -467,11 +495,10 @@ int main(int argc, char** argv)
 		  mc_phi_muon = phi;
 		  mc_theta_muon = theta;
 	      }
-              if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) nNeutrinos++;
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) 
               {
-                  neutrinoEne += ene;
-		  //                  std::cout << "neutrino Ene = " <<  ene << std::endl;
+                  nNeutrinos++;
+                  neutrinoEne += ene;		  
               }
           }
     }
@@ -480,6 +507,10 @@ int main(int argc, char** argv)
     hNeutrHadMC->Fill(neutralhad_ene/thismass);
     neutrals_ene = gamma_ene+neutralhad_ene;
     hNeutralsMC->Fill(neutrals_ene/thismass);
+    
+    hNGammaMC->Fill(nGamma);
+    hNNeutrHadMC->Fill(nNeutrHad);
+    hNChPionsMC->Fill(nChPions);
   
     if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 ))
     {
@@ -494,7 +525,8 @@ int main(int argc, char** argv)
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     } 
-                                        
+    
+//     if (nNeutrinos<2) std::cout << Form(" %d neutrinos ", nNeutrinos) << std::endl;      
     if (output_tag == "hznb" && (nMuons>0 || nNeutrinos >2  ))
     {
         goodEvent = false;
@@ -516,7 +548,7 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
+    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 0.5))// || myTV.leakage/1000.-muonEne))
     {
       if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
         goodEvent = false;
@@ -685,15 +717,19 @@ int main(int argc, char** argv)
             if (matchedToGamma)  
             {
                 PseudoJet this_JES_G = PseudoJet(this_vec.X()*ecal_S, this_vec.Y()*ecal_S, this_vec.Z()*ecal_S, ecal_S);
-                this_JES_G.set_user_index(flag_GAM);
+                this_JES_G.set_user_index(flag_GAM_S);                                
                 allGammaHits.push_back(this_JES_G);
+                
+                PseudoJet this_JEC_G = PseudoJet(this_vec.X()*ecal_C, this_vec.Y()*ecal_C, this_vec.Z()*ecal_C, ecal_C);
+                this_JES_G.set_user_index(flag_GAM_C);
+                allGammaHitsC.push_back(this_JEC_G);
             }
             
         }
         totEcalEne+=this_ene;
     }
 
-    if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 1))
+    if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 0.3))
     {
       if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
         goodEvent = false;
@@ -714,23 +750,7 @@ int main(int argc, char** argv)
 
     
     
-    
-    //Run the PFA algorithm
-    
-//     float showerCorr = 1.13;
-    float showerCorr = 1.;
-    if (debugMode) std::cout << " filling photons to pfa" << std::endl;
-    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                                      x_factor_ecal, x_factor_hcal,
-                                                      h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
-    
-    float gamma_ene_reco_ecal = 0;
-    for (auto gamma : allGammaHits)
-    {
-        protoPFAjets.push_back(gamma*showerCorr);
-        gamma_ene_reco_ecal += gamma.E()*showerCorr;
-    }
-        
+
     
     // run the clustering, extract the jets
     // Monte Carlo truth
@@ -741,10 +761,7 @@ int main(int argc, char** argv)
       
     //reco
     ClusterSequence cs(allHitsForJet, jet_def);
-    
-    //pfa
-    ClusterSequence csPFA(protoPFAjets, jet_def);
-      
+              
       
 //       std::vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
       std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
@@ -755,9 +772,7 @@ int main(int argc, char** argv)
       std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
       std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
       
-      std::vector<PseudoJet> pfa_jets     = sorted_by_pt(csPFA.exclusive_jets(nExpJets));
-      std::vector<PseudoJet> pfa_jets_raw;
-      std::vector<PseudoJet> pfa_jets_dro;
+      
 
       if (debugMode) std::cout << " reco jets" << std::endl;
       //reco jets
@@ -823,6 +838,63 @@ int main(int argc, char** argv)
           
       }
       
+//       mct_jets = mct_ghost_jets;
+      
+      hEtaJet->Fill(mct_jets[0].eta());
+      hEtaJet->Fill(mct_jets[1].eta());
+      hDeltaEtaJet->Fill(mct_jets[0].eta()-mct_jets[1].eta());
+      
+      hThetaJet->Fill(mct_jets[0].theta());
+      hThetaJet->Fill(mct_jets[1].theta());
+      hDeltaThetaJet->Fill(mct_jets[0].theta()-mct_jets[1].theta());
+      
+//       std::cout << "eta 0 = " <<  
+      
+      //MCT jets
+      if(mct_jets.size()==2)
+      {
+          //reject jets not fully contained in the calorimeter
+          //both jets in barrel
+          if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
+	  {
+	    goodEvent = false;
+  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
+	    continue;
+	  }
+      }
+      
+      
+      
+      
+        
+    //Run the PFA algorithm
+    
+//     float showerCorr = 1.13;
+    float showerCorr = 1.;
+    if (debugMode) std::cout << " filling photons to pfa" << std::endl;
+    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
+                                                      x_factor_ecal, x_factor_hcal,
+                                                      h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+    
+    float gamma_ene_reco_ecal = 0;
+    for (auto gamma : allGammaHits)
+    {
+        protoPFAjets.push_back(gamma*showerCorr);
+        gamma_ene_reco_ecal += gamma.E()*showerCorr;
+    }
+//     for (auto gamma : allGammaHitsC)
+//     {
+//         protoPFAjets.push_back(gamma*showerCorr);
+//     }
+
+    //pfa
+    ClusterSequence csPFA(protoPFAjets, jet_def);
+    
+    std::vector<PseudoJet> pfa_jets     = sorted_by_pt(csPFA.exclusive_jets(nExpJets));
+    std::vector<PseudoJet> pfa_jets_raw;
+    std::vector<PseudoJet> pfa_jets_dro;
+        
+        
       
       double neutralhad_ene_reco = 0;
       double neutralhad_ene_reco_ecal = 0;
@@ -845,14 +917,14 @@ int main(int argc, char** argv)
           
           for (unsigned j = 0; j < constituents.size(); j++) 
           {
-              if      (constituents[j].user_index() == flag_JES) E_JES += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
-              else if (constituents[j].user_index() == flag_MCT) E_MCT += constituents[j].E();
-              else if (constituents[j].user_index() == flag_GAM) E_GAM += constituents[j].E();
+              if      (constituents[j].user_index() == flag_JES)   E_JES += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JEC)   E_JEC += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JHS)   E_JHS += constituents[j].E();
+              else if (constituents[j].user_index() == flag_JHC)   E_JHC += constituents[j].E();
+              else if (constituents[j].user_index() == flag_MCT)   E_MCT += constituents[j].E();
+              else if (constituents[j].user_index() == flag_GAM_S) E_GAM += constituents[j].E();
           }
-          if (pfa_jets[i].E()<= 0)continue;
+          if (pfa_jets[i].E()<= 0) continue;
           
           PseudoJet this_raw_jet = pfa_jets[i]*(E_JES+E_JHS+E_MCT+E_GAM)*PFA_JET_CALIB/pfa_jets[i].E();
           pfa_jets_raw.push_back(this_raw_jet);
@@ -884,42 +956,11 @@ int main(int argc, char** argv)
       }
       if (neutrals_ene>0)
       {
-          hNeutralResidual->Fill((neutralhad_ene_reco+gamma_ene-neutrals_ene)/neutrals_ene);
-          hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene-neutrals_ene)/neutrals_ene);
+          hNeutralResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
+          hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
       }
       
 
-//       mct_jets = mct_ghost_jets;
-      
-      hEtaJet->Fill(mct_jets[0].eta());
-      hEtaJet->Fill(mct_jets[1].eta());
-      hDeltaEtaJet->Fill(mct_jets[0].eta()-mct_jets[1].eta());
-      
-      hThetaJet->Fill(mct_jets[0].theta());
-      hThetaJet->Fill(mct_jets[1].theta());
-      hDeltaThetaJet->Fill(mct_jets[0].theta()-mct_jets[1].theta());
-      
-//       std::cout << "eta 0 = " <<  
-      
-      //MCT jets
-      if(mct_jets.size()==2)
-      {
-          //reject jets not fully contained in the calorimeter
-          //both jets in barrel
-          if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance 
-//           
-          //at least one jet in the endcap
-//           if ( fabs(mct_jets[0].eta()) < etaAcceptance && fabs(mct_jets[1].eta()) < etaAcceptance 
-              
-//             || fabs(mct_jets[0].phi()) > phiAcceptance || fabs(mct_jets[1].phi()) > phiAcceptance
-        )
-              
-	  {
-	    goodEvent = false;
-  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
-	    continue;
-	  }
-      }
       
       hRAW_EneTotDiff->Fill((totEneRAW-thismass)/thismass);
       hDRO_EneTotDiff->Fill((totEneDRO-thismass)/thismass);
@@ -934,7 +975,7 @@ int main(int argc, char** argv)
           double p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
-          std::cout << "sel evt count: " << countGoodEvents << " ::  jjMassMCT = " << jjMassMCT << std::endl;
+          
           hMCT_MassJJ->Fill(jjMassMCT);
           hMCT_Jet1Ene->Fill(e1);
           hMCT_Jet2Ene->Fill(e2);
@@ -1002,6 +1043,7 @@ int main(int argc, char** argv)
       }
       //PFA Sim dro
       double jjMassMCT_PFA = 0;
+      
       if (pfa_jets_dro.size()==2 && goodEvent)
       {
           double e1 = pfa_jets_dro[0].E();
@@ -1011,7 +1053,8 @@ int main(int argc, char** argv)
           jjMassMCT_PFA = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hPFA_MassJJ  ->Fill(jjMassMCT_PFA);
           hPFA_MassDiff->Fill((jjMassMCT_PFA-jjMassMCT)/jjMassMCT);
-          
+          ave_mass_pfa+=jjMassMCT_PFA;
+          std::cout << "sel evt count: " << countGoodEvents << " ::  jjMassPFA = " << jjMassMCT_PFA << " :: ave_mass_pfa = " << ave_mass_pfa/(countGoodEvents+1) << std::endl;
           if (sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[0].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[1].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[1].theta(),2))) 
           {                             
             hPFA_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
@@ -1071,7 +1114,8 @@ int main(int argc, char** argv)
           hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
           hDRO_Jet1Ene->Fill(e1);
           hDRO_Jet2Ene->Fill(e2);
-          
+          ave_mass_dro+=jjMassDRO;
+          std::cout << "sel evt count: " << countGoodEvents << " ::  jjMassDRO = " << jjMassDRO << " :: ave_mass_dro = " << ave_mass_dro/(countGoodEvents+1) << std::endl;
           
           if (sqrt(pow(dro_jets[0].phi() - mct_jets[0].phi(),2) + pow(dro_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(dro_jets[0].phi() - mct_jets[1].phi(),2) + pow(dro_jets[0].theta() - mct_jets[1].theta(),2))) 
           {                             
@@ -1138,7 +1182,26 @@ int main(int argc, char** argv)
   leg->Draw();
   */
   
+  TCanvas * cJetCompositionNParticles = new TCanvas ("cJetCompositionNParticles", "cJetCompositionNParticles", 500, 500);  
+  cJetCompositionNParticles->cd();
+    
+  hNGammaMC->Draw();
+  hNGammaMC->SetStats(0);
+  hNGammaMC->GetXaxis()->SetTitle("E_{i}/E_{jet}");
+  hNGammaMC->GetYaxis()->SetTitle("Counts");
+  hNGammaMC->SetLineColor(kGreen+1);
   
+  hNNeutrHadMC->Draw("same");
+  hNNeutrHadMC->SetLineColor(kRed+1);
+  
+  hNChPionsMC->Draw("same");
+  hNChPionsMC->SetLineColor(kBlack);
+    
+  leg = new TLegend(0.65,0.65,0.88,0.88,NULL,"brNDC");  
+  leg->AddEntry(hNGammaMC, "#gamma", "lpf");
+  leg->AddEntry(hNNeutrHadMC, "K^{0,L}, neutrons", "lpf");
+  leg->AddEntry(hNChPionsMC, "Charged hadrons", "lpf");
+  leg->Draw();
   
 //   hNeutralResidual->SetLineColor(kBlack);
 //   hNeutralResidual->Draw();
@@ -1301,10 +1364,30 @@ int main(int argc, char** argv)
   hNeutrHadMC->Write();
   hNeutralsMC->Write();
   
+  hNGammaMC->Write();
+  hNNeutrHadMC->Write();
+  hNChPionsMC->Write();
+  
+  h1SwappedTrackFrac->Write();
+  h1ResidualTotCharged->Write();
+  
+  hNeutrHadResidual->Write();  
   hNeutralResidual->Write();
   hNeutralResidualDRO->Write();
   hECALResidual->Write();
   hHCALResidual->Write();
+  
+  hDeltaThetaJet->Write();
+  hDeltaEtaJet->Write();
+  
+  hEtaJet->Write();
+  hThetaJet->Write();
+  
+  hHcalHitsEne->Write();
+  hEcalHitsEne->Write();
+  
+  
+  
   
   outputFile->Write();
   outputFile->Close();
