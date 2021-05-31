@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = true;
+  bool local     = false;
   bool debugMode = false;
   
   TApplication* theApp;
@@ -167,17 +167,17 @@ int main(int argc, char** argv)
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
 
-
+/*
   float ene_EC_th  = 0.01;
   float ene_HC_th  = 0.01;
   double calo_rescale = 1.0; //for ene_EC_th = 0.010 GeV
+  */
   
   
-  /*
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
   double calo_rescale = 1.06;   //for ene_EC_th = 0.002 GeV
-  */
+  
   
   
   double ecal_S_norm = 1.*calo_rescale;
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
     // single truth jet
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
 
-  double etaAcceptance = 0.5;  //accept only  jet within this eta
+  double etaAcceptance = 0.7;  //accept only  jet within this eta
 //   double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
 //   double deltaR_match = 1.0;
   
@@ -741,7 +741,7 @@ int main(int argc, char** argv)
 //     std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
 
-    if ((totS+totEcalEne)/thismass<0.8)
+    if ((totS+totEcalEne)/thismass<0.7)
     {
       //      std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
       goodEvent = false;
