@@ -56,6 +56,10 @@ std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair
 }
 
 
+/*
+std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
+                                    float x_factor_ecal, float x_factor_hcal,
+                                    TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)*/
 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
@@ -197,7 +201,6 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     
     return pfaCollection;
 }
-
 
 
 
