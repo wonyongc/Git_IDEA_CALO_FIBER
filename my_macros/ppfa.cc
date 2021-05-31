@@ -105,6 +105,17 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     {
     
         float totCaloE = 0.;
+        float totCaloS_EC = 0.;
+        float totCaloC_EC = 0.;
+        float totCaloS_HC = 0.;
+        float totCaloC_HC = 0.;
+//         double phi   = track.mcs_phi;
+//         double eta   = track.mcs_eta->at(i);
+//         double px, py;
+//         px = pT*cos(phi);
+//         py = pT*sin(phi);        
+//         double pz = -pT*sinh(eta);
+        
         float trueEne = track.E();
         float targetEne = trueEne*eneResponse;
 //         float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
@@ -134,16 +145,34 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
 //             std::cout << "deltaR = " << hit.delta_R(track) << " :: deltaDD = "  << deltaDD << std:: endl;
             
             double this_E_DRO;
+            double this_S = scint_hit.E();
+            double this_C = cher_hit.E();
             if      (scint_hit.user_index()==flag_JES) this_E_DRO = (scint_hit.E()-x_factor_ecal*cher_hit.E() )/(1-x_factor_ecal);
             else if (scint_hit.user_index()==flag_JHS) this_E_DRO = (scint_hit.E()-x_factor_hcal*cher_hit.E() )/(1-x_factor_hcal);
             
+//             this_E_DRO = scint_hit.E();
+            
+            totCaloE = (totCaloS_EC-x_factor_ecal*totCaloC_EC )/(1-x_factor_ecal) + (totCaloS_HC-x_factor_hcal*totCaloC_HC )/(1-x_factor_hcal);
+//             totCaloE = totCaloS_EC+totCaloS_HC;
             if (totCaloE < targetEne &&
-                fabs(totCaloE+this_E_DRO-targetEne) < fabs(totCaloE-targetEne) &&
+            fabs(totCaloE+this_E_DRO-targetEne) < fabs(totCaloE-targetEne) &&
+//             if (current_tot_dro < targetEne &&                
+//                 fabs(current_tot_dro+this_E_DRO-targetEne) < fabs(current_tot_dro-targetEne) &&
                 ((scint_hit.user_index()==flag_JES  && deltaR < maxDeltaR_ECAL) ||
                  (scint_hit.user_index()==flag_JHS  && deltaR < maxDeltaR_HCAL) )
             )
             {
                 totCaloE += this_E_DRO;
+                if (scint_hit.user_index()==flag_JES)
+                {
+                    totCaloS_EC += this_S;
+                    totCaloC_EC += this_C;
+                }
+                if (scint_hit.user_index()==flag_JHS)
+                {
+                    totCaloS_HC += this_S;
+                    totCaloC_HC += this_C;
+                }
                 matchedCaloHits.push_back(hit);
             }
             else
@@ -152,7 +181,8 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
             }
         }
         
-        
+        totCaloE = (totCaloS_EC-x_factor_ecal*totCaloC_EC )/(1-x_factor_ecal) + (totCaloS_HC-x_factor_hcal*totCaloC_HC )/(1-x_factor_hcal);
+//         totCaloE = totCaloS_EC+totCaloS_HC;
 //         std::cout << "size sorted = " << sortedHits.size() << " :: size left =  " << leftCaloHits.size() << std::endl;
         if (totCaloE>0.005)
         {
