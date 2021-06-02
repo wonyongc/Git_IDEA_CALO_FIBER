@@ -74,7 +74,13 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     funcHcalRes->SetParameters(hcal_stoch, hcal_const);
     
     TF1 * funcTotHadRawResponse = new TF1 ("funcTotHadRawResponse", "[3] - [0]*pow(x,[1]) - [2]*x", 0, 200);
-    funcTotHadRawResponse->SetParameters(0.46923, -0.962149, -0.000170362 ,0.97);
+    //old
+//     funcTotHadRawResponse->SetParameters(0.46923, -0.962149, -0.000170362 ,0.97);
+    //raw new
+//     funcTotHadRawResponse->SetParameters(-0.35625, 0.193565, 0.00347531 ,0.367476);
+    //dro new
+    funcTotHadRawResponse->SetParameters(-0.364088, 0.0465792, 0.000651904, 0.59792);
+
 
     
     float eneResponse = 0.99;
@@ -117,8 +123,8 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
 //         double pz = -pT*sinh(eta);
         
         float trueEne = track.E();
-        float targetEne = trueEne*eneResponse;
-        //         float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
+//         float targetEne = trueEne*eneResponse;
+        float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
         
 //         std::cout << "expected response for " << trueEne << " --> " << funcTotHadRawResponse->Eval(trueEne) << std::endl;
 //         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trueEne);
@@ -215,7 +221,7 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
                  (scint_hit.user_index()==flag_JHS  && deltaR < maxDeltaR_HCAL) )
             )
             {
-                totCaloE += this_E_DRO;
+//                 totCaloE += this_E_DRO;
                 if (scint_hit.user_index()==flag_JES)
                 {
                     totCaloS_EC += this_S;
