@@ -357,13 +357,13 @@ TGraph * getTrajectory (float B, float px, float py, float pz, float charge, flo
             x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
             y = y0 + R*(sin(phi0+h*i*to_m*cos(lambda)/R) - sin(phi0) );
             z = z0 + i*to_m*sin(lambda);
-            std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
         }
         else if (B == 0.)
         {
             x = x0 + i*px/pSum*to_m;
             y = y0 + i*py/pSum*to_m;
-            std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
         }
         
         if (sqrt(x*x+y*y)<maxR)
@@ -375,5 +375,4 @@ TGraph * getTrajectory (float B, float px, float py, float pz, float charge, flo
     
     return gTraj;
 }
-
 
