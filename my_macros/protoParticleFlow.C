@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = true;
+  bool local     = false;
   bool debugMode = false;
   
   TApplication* theApp;
