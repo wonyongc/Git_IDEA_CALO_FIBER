@@ -321,10 +321,13 @@ int main(int argc, char** argv)
                 if (abs(pdgId)!= 13)
                 {
                     charged_tracks.push_back(getTrajectory(Bfield, px, py, pz, charge, max_radius));
+//                     charged_tracks.push_back(getEquivalentTrajectory(Bfield, px, py, pz, charge, max_radius));
+                    
                 }
                 if (abs(pdgId)== 13)
                 {
                     muon_tracks.push_back(getTrajectory(Bfield, px, py, pz, charge, max_radius));
+//                     muon_tracks.push_back(getEquivalentTrajectory(Bfield, px, py, pz, charge, max_radius));
 //                     muon_tracks.push_back(getTrajectory(0, px, py, pz, charge, max_radius));
                 }
             }
@@ -434,9 +437,11 @@ int main(int argc, char** argv)
           double this_theta = this_vec.Theta();
           double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
           
+          
 //           if (fabs(myTV.VecHit_CrystalID->at(i)) <1000000)
           if (this_ene>EC_hit_th)
           {
+            std::cout << "ECAL hit [ " << i << " ] : phi = " << this_phi << " :: theta = " << this_theta << std::endl;
             hGrid_EC_F ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepF->at(i)/1000);
             hGrid_EC_R ->Fill(this_theta, this_phi, myTV.VecHit_ScepEneDepR->at(i)/1000);
             hGrid_EC_T ->Fill(this_theta, this_phi, this_ene);
