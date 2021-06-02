@@ -9,6 +9,8 @@
 #include "fastjet/ClusterSequence.hh"
 #include "TRandom.h"
 #include "TF1.h"
+#include "TGraph.h"
+// #include "SCEPCal_GeometryHelper.hh"
 
 
 using namespace std;
@@ -43,8 +45,7 @@ std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair
             }
         
             hit_id++;
-        }
-        
+        }        
         if (minID >-999)
         {
             sortedHits.push_back(myHits.at(minID));        
@@ -63,7 +64,7 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
-                                    float x_factor_ecal, float x_factor_hcal,
+                                    float x_factor_ecal, float x_factor_hcal, float Bfield,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
@@ -79,9 +80,8 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     float eneResponse = 0.99;
     float maxDeltaR_ECAL = 0.05;
     float maxDeltaR_HCAL = 0.3;
+//     float Bfield = 2.0;
     
-      
-    int flag_MCT = 0;
     int flag_JHS = 1;
     int flag_JHC = 2;
     int flag_JES = 3;
@@ -118,30 +118,83 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
         
         float trueEne = track.E();
         float targetEne = trueEne*eneResponse;
-//         float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
+        //         float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
         
 //         std::cout << "expected response for " << trueEne << " --> " << funcTotHadRawResponse->Eval(trueEne) << std::endl;
 //         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trueEne);
 //         if (smearedEne>0) targetEne = smearedEne;
         
-        std::vector<std::pair<PseudoJet, PseudoJet>> sortedHits = sorted_by_dd(leftCaloHits, track);
+
+        //calculate impact point on calorimeter
+        
+        float charge = track.user_index()/100;
+        float pT = track.perp();
+    
+        if (Bfield>0 && pT/fabs(charge)/(0.3*Bfield)*1000*2<1800)
+        {
+//             std::cout << "track with pT = " << pT << "  did not reach the calorimeter" << std::endl;
+            pfaCollection.push_back(track);
+            continue;
+        }
+        
+        // if particle reached the calorimeter
+        float ecal_impact_radius = 1900;
+        float hcal_impact_radius = 1900;
+        
+        PseudoJet effectiveTrackEcal;
+        PseudoJet effectiveTrackHcal;
+        
+        // sort calo hits by distance from impact point of the track
+        std::vector<std::pair<PseudoJet, PseudoJet>> sortedHits;
+        
+        if (Bfield>0)
+        {
+            TGraph* thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, ecal_impact_radius);
+            Double_t impact_x, impact_y;
+            thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
+        
+            float impact_phi = atan(impact_y/impact_x);
+            if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
+            if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
+            double impact_theta = M_PI- 2*atan(exp(-track.eta()));                
+            float scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
+            effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
         
         
-        std::vector<PseudoJet> thisTrackHits;
-        std::vector<int> hitsForRemoval;
+            thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);        
+            thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
+            impact_phi = atan(impact_y/impact_x);
+            if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
+            if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
+            impact_theta = M_PI- 2*atan(exp(-track.eta()));        
+            scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
+            effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
+            
+             sortedHits = sorted_by_dd(leftCaloHits, effectiveTrackHcal);
+        }
+        else 
+        {
+            sortedHits = sorted_by_dd(leftCaloHits, track);
+        }
         
+//         std::cout << "n sorted hits found: " << sortedHits.size() << std::endl;
         
+        //clear collection of leftover calo hits
         leftCaloHits.clear();
         std::vector<std::pair<PseudoJet,PseudoJet>> matchedCaloHits;
-//         std::cout << i_track << " :: before:: size sorted = " << sortedHits.size() << " :: size left =  " << leftCaloHits.size() << std::endl;
         
         for (auto hit : sortedHits)
         {
-//             float deltaDD = sqrt(pow(hit.theta()-track.theta(),2) + pow(hit.phi()-track.phi(),2));
-            
             PseudoJet scint_hit = hit.first;
             PseudoJet cher_hit  = hit.second;
-            float deltaR  = scint_hit.delta_R(track);
+//             float deltaR  = scint_hit.delta_R(track);
+            float deltaR;
+            if      (Bfield > 0 && scint_hit.user_index()==flag_JES) deltaR = scint_hit.delta_R(effectiveTrackEcal);
+            else if (Bfield > 0 && scint_hit.user_index()==flag_JHS) deltaR = scint_hit.delta_R(effectiveTrackHcal);
+            else if (Bfield == 0)                                    deltaR = scint_hit.delta_R(track);
+            
+//             float hit_theta = 2*atan(exp(-scint_hit.eta()));
+//             float deltaR  = sqrt(pow(scint_hit.phi()-impact_phi,2) + pow(hit_theta-impact_theta,2));;
 //             std::cout << "deltaR = " << hit.delta_R(track) << " :: deltaDD = "  << deltaDD << std:: endl;
             
             double this_E_DRO;
@@ -168,7 +221,7 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
                     totCaloS_EC += this_S;
                     totCaloC_EC += this_C;
                 }
-                if (scint_hit.user_index()==flag_JHS)
+                else if (scint_hit.user_index()==flag_JHS)
                 {
                     totCaloS_HC += this_S;
                     totCaloC_HC += this_C;
@@ -210,6 +263,7 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
                 }
             }
         }
+//         if (sortedHits.size()==0) pfaCollection.push_back(track);
         i_track++;
     }
     
@@ -225,6 +279,8 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
         pfaCollection.push_back(neutral_hit.first);
         pfaCollection.push_back(neutral_hit.second);
     }
+    
+    
     
     
     if (trueTotCharged>0.) h1ResidualTotCharged->Fill((recoTotCharged-trueTotCharged)/trueTotCharged);
@@ -278,6 +334,75 @@ Double_t rms90(TH1F *h)
     return rms90;
 }
 
+
+TGraph * getEquivalentTrajectory (float B, float px, float py, float pz, float charge, float maxR)
+{
+                    
+    
+    float pSum = sqrt(px*px+py*py+pz*pz);
+    float pT   = sqrt(px*px+py*py);
+    float h = -charge/abs(charge);
+    float R;
+    if (B>0.) R = pT/fabs(charge)/(0.3*B)*1000;
+    else      R = 10000000000;
+    
+//     std::cout << "px = " << px << " :: py = " << py << " :: pz = " << pz <<  std::endl;
+//     std::cout << "bending radius for pT = " << pT << " : " << R/1000 <<  " m" << std::endl;
+    float y0 = 0;
+    float x0 = 0;
+    float z0 = 0;
+    float phi0 = atan(py/px)-h*M_PI/2;
+//     float phi0;
+    if (px<0. && py <0.)   {phi0 = phi0 - M_PI;}
+    if (px<0. && py >0.)   {phi0 = M_PI + phi0;}
+//     if =  acos(px/pT)-M_PI/2;// + M_PI;
+    
+    float lambda = acos(pT/pSum);
+    
+    
+    TGraph* gTraj   = new TGraph();
+    TGraph* gEqTraj = new TGraph();
+    
+    for (int i = 0; i <100; i++)
+    {
+        float to_m = 100;
+        float x;
+        float y;
+        float z;
+        
+//         std::cout << "i = " << i << std::endl;
+        
+        if (B>0.)
+        {
+            x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
+            y = y0 + R*(sin(phi0+h*i*to_m*cos(lambda)/R) - sin(phi0) );
+            z = z0 + i*to_m*sin(lambda);
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+        }
+        else if (B == 0.)
+        {
+            x = x0 + i*px/pSum*to_m;
+            y = y0 + i*py/pSum*to_m;
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+        }
+        
+        if (sqrt(x*x+y*y)<maxR)
+        {
+            gTraj->SetPoint(gTraj->GetN(), x, y);
+        }
+        else break;                    
+    }
+    
+    Double_t impact_x, impact_y;
+    gTraj->GetPoint(gTraj->GetN()-1, impact_x, impact_y);
+    
+    gEqTraj->SetPoint(0, 0, 0);
+    gEqTraj->SetPoint(1, impact_x, impact_y);
+    
+    
+    
+    return gEqTraj;
+}
 
 
 

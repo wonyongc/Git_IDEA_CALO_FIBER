@@ -14,16 +14,17 @@
 #include "TF1.h"
 #include "TH2F.h"
 #include "TH1F.h"
-
+#include "TGraph.h"
+// #include "SCEPCal_GeometryHelper.hh"
 
 using namespace fastjet; 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
-                                    float my_x_factor_ecal, float my_x_factor_hcal,
+                                    float my_x_factor_ecal, float my_x_factor_hcal, float Bfield,
                                     TH1F* check1Histo1D, TH1F *check2Histo1D, TH1F *check3Histo1D);
 
 std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair<PseudoJet,PseudoJet>> myJets, PseudoJet refJet);
 
 
-
 Double_t rms90(TH1F *h) ;
+TGraph * getEquivalentTrajectory (float B, float px, float py, float pT, float charge, float maxR);
