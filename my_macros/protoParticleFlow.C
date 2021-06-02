@@ -1,6 +1,6 @@
-// g++ -Wall -o protoParticleFlow protoParticleFlow.C ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs` `~/fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
+// g++ -Wall -o protoParticleFlow protoParticleFlow.C  SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh `root-config --cflags --glibs` `~/fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
-// g++ -Wall -o protoParticleFlow protoParticleFlow.C  ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh `root-config --cflags --glibs` `//afs/cern.ch/work/m/mlucchin//fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
+// g++ -Wall -o protoParticleFlow protoParticleFlow.C  SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh `root-config --cflags --glibs` `//afs/cern.ch/work/m/mlucchin//fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 #include "SCEPCal_GeometryHelper.hh"
 #include "myG4Tree.hh"
@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   
   TApplication* theApp;
@@ -142,6 +142,7 @@ int main(int argc, char** argv)
   
   float maxDeltaRMatchEcal = 0.013;
   float maxDeltaRMatchHcal = 0.1;
+  float Bfield = 0;
   
   
   if (argc>1) output_tag = argv[1];   
@@ -171,8 +172,8 @@ int main(int argc, char** argv)
   float ene_EC_th  = 0.01;
   float ene_HC_th  = 0.01;
   double calo_rescale = 1.0; //for ene_EC_th = 0.010 GeV
-  */
   
+  */
   
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
@@ -184,8 +185,11 @@ int main(int argc, char** argv)
   double ecal_C_norm = 7286*calo_rescale;
   double LO  = 2000;
   double CLO = 160;
-  double drh_S_norm  = 410*calo_rescale;
-  double drh_C_norm  = 105*calo_rescale;
+  double drh_S_norm  = 405*calo_rescale;
+  double drh_C_norm  = 103.5*calo_rescale;
+  
+//   double drh_S_norm  = 410*calo_rescale;
+//   double drh_C_norm  = 105*calo_rescale;
   
   double JET_CALIB = 1.00;
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
@@ -219,6 +223,8 @@ int main(int argc, char** argv)
   TChain * TreeRun = new TChain("B4", "B4");      
   TChain * TruthTree = new TChain("truth", "truth");  
   
+
+  
   for (int iFile = 0; iFile<NFILES; iFile++)
   {
     std::string fname_reco;
@@ -226,22 +232,22 @@ int main(int argc, char** argv)
 
     if (output_tag == "hznb" || output_tag == "wwlj" || output_tag == "hzjnbn")
     {
-       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_HG_%s100k_job_%d.root", output_tag.c_str(), iFile);
-       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B%dT_HG_%s100k_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B%dT/%s100k_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);
        if (local)
        {
-           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s100k_job_%d.root", output_tag.c_str(), iFile);
-           fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B%dT_HG_%s100k_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+           fname_truth = Form("../../HepMC_Files/B%dT/%s100k_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);
        }
     }
     else 
     {
-       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
-       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B%dT/%s_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);
        if (local)
        {   
-           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
-           fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);           
+           fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+           fname_truth = Form("../../HepMC_Files/B%dT/%s_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);           
        }
     }
     
@@ -264,7 +270,7 @@ int main(int argc, char** argv)
   
   
   
-  int flag_MCT = 0;
+  int flag_MCT = 100;
   int flag_JHS = 1;
   int flag_JHC = 2;
   int flag_JES = 3;
@@ -443,7 +449,7 @@ int main(int argc, char** argv)
               {
 //                   PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, sqrt(px*px+py*py+pz*pz));
                   PseudoJet this_charged_track = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, ene );
-                  this_charged_track.set_user_index(flag_MCT);
+                  this_charged_track.set_user_index(flag_MCT*charge);
                   allChargedTracks.push_back(this_charged_track);
 //                   std::cout << "P^2 = " << px*px+py*py+pz*pz << " +  M^2 = " << mass*mass <<  " =  " << sqrt(px*px+py*py+pz*pz+mass*mass) << " to compare with E_MC = " << ene << std::endl;
               }
@@ -480,12 +486,12 @@ int main(int argc, char** argv)
               {
                   PseudoJet this_MCT_FS = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
                   allMCHitsForJetFastSim.push_back(this_MCT_FS);
-              }                            
+              }
               PseudoJet this_MCT_ghost = PseudoJet(px*1.0e-20, py*1.0e-20, pz*1.0e-20, ene*1.0e-20);        
-              this_MCT_ghost.set_user_index(flag_MCT);                        
+              this_MCT_ghost.set_user_index(flag_MCT*charge);
               allHitsForJet.push_back(this_MCT_ghost);
                                           
-          }          
+          }
           else
           {
               if (fabs(pdgId)==13) 
@@ -548,7 +554,7 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 0.5))// || myTV.leakage/1000.-muonEne))
+    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
     {
       if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
         goodEvent = false;
@@ -805,7 +811,7 @@ int main(int argc, char** argv)
               else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
-              else if (constituents[j].user_index() == flag_MCT) 
+              else if (fabs(constituents[j].user_index()) == 0 || fabs(constituents[j].user_index()) > 99 ) 
               {
                   mct_constituents.push_back(PseudoJet(constituents[j].px()*1.0e20,constituents[j].py()*1.0e20,constituents[j].pz()*1.0e20,constituents[j].E()*1.0e20));
                   E_MCT += constituents[j].E()*1.0e20;              
@@ -873,7 +879,7 @@ int main(int argc, char** argv)
     float showerCorr = 1.;
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
     std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                                      x_factor_ecal, x_factor_hcal,
+                                                      x_factor_ecal, x_factor_hcal, Bfield, 
                                                       h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
     
     float gamma_ene_reco_ecal = 0;
@@ -921,7 +927,7 @@ int main(int argc, char** argv)
               else if (constituents[j].user_index() == flag_JEC)   E_JEC += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHS)   E_JHS += constituents[j].E();
               else if (constituents[j].user_index() == flag_JHC)   E_JHC += constituents[j].E();
-              else if (constituents[j].user_index() == flag_MCT)   E_MCT += constituents[j].E();
+              else if (fabs(constituents[j].user_index()) == 0 || fabs(constituents[j].user_index()) > 99 )    E_MCT += constituents[j].E();
               else if (constituents[j].user_index() == flag_GAM_S) E_GAM += constituents[j].E();
           }
           if (pfa_jets[i].E()<= 0) continue;
