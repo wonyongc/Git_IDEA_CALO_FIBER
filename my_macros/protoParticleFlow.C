@@ -177,21 +177,31 @@ int main(int argc, char** argv)
   
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
-  double calo_rescale = 1.06;   //for ene_EC_th = 0.002 GeV
   
+  //calo recalibration to account for lower hit energy threshold @ 0.002 GeV
+  double calo_rescale = 1.04;   //for ene_EC_th = 0.002 GeV
+  double JET_CALIB    = 1.00;
+ double PFA_JET_CALIB = 1.068/JET_CALIB;  
+ 
+  // jet calibration
+//   double calo_rescale  = 1.0;   //for ene_EC_th = 0.002 GeV
+//   double JET_CALIB     = 1.04;
+//   double PFA_JET_CALIB = 1.07/JET_CALIB;
+ 
   
   
   double ecal_S_norm = 1.*calo_rescale;
   double ecal_C_norm = 7286*calo_rescale;
   double LO  = 2000;
   double CLO = 160;
-  double drh_S_norm  = 405*calo_rescale;
-  double drh_C_norm  = 103.5*calo_rescale;
+  double drh_S_norm  = 407*calo_rescale;
+  double drh_C_norm  = 103.2*calo_rescale;
   
 //   double drh_S_norm  = 410*calo_rescale;
 //   double drh_C_norm  = 105*calo_rescale;
   
-  double JET_CALIB = 1.00;
+
+
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.005)  PFA_JET_CALIB = 1.05;
@@ -747,12 +757,12 @@ int main(int argc, char** argv)
 //     std::cout << "totS = " << totS << " :: totEneDRH = " << totEneDRH << " :: totS/vis = " << totS/totEneDRH << std::endl;
     //    std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  expMass = " << thismass << " :: --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
 
-    if ((totS+totEcalEne)/thismass<0.7)
-    {
-      //      std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
-      goodEvent = false;
-      continue;
-    }
+//     if ((totS+totEcalEne)/thismass<0.8)
+//     {
+//       //      std::cout << "Total S in HCAL: " << totS <<  " GeV :: totEcalEne = " << totEcalEne << " GeV ::  --> (totS+totEcalEne)/Mass =  " << (totS+totEcalEne)/thismass << std::endl;
+//       goodEvent = false;
+//       continue;
+//     }
 
     
     
@@ -908,7 +918,7 @@ int main(int argc, char** argv)
       double neutralhad_ene_reco_dro = 0;
       
       //pfa jets
-      float PFA_JET_CALIB = 1.08/JET_CALIB;
+
       if (debugMode) std::cout << " pfa jets" << std::endl;
       float totEnePFA = 0;
       for (unsigned i = 0; i < pfa_jets.size(); i++) 
