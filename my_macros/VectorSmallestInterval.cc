@@ -43,15 +43,22 @@ double FindSmallestInterval(std::vector<double>* vals, const double fraction, co
   unsigned int nPoints = vals->size();
   unsigned int maxPoints = (unsigned int)(fraction * nPoints);
 
+  if( verbosity )
+      std::cout << "nPoints = " << nPoints << " :: maxPoints = " << maxPoints << std::endl;
+  
   double delta = 9999999.;
-  for(unsigned int point = 0; point < nPoints-maxPoints; ++point)
+  
+  if (maxPoints!=0)
   {
-    double tmpMin = vals->at(point);
-    double tmpMax = vals->at(point+maxPoints-1);
-    if( tmpMax-tmpMin < delta )
-    {
-      delta = tmpMax - tmpMin;
-    }
+      for(unsigned int point = 0; point < nPoints-maxPoints; ++point)
+      {
+        double tmpMin = vals->at(point);
+        double tmpMax = vals->at(point+maxPoints-1);
+        if( tmpMax-tmpMin < delta )
+        {
+            delta = tmpMax - tmpMin;
+        }
+      }
   }
 
   
