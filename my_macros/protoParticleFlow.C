@@ -599,7 +599,7 @@ int main(int argc, char** argv)
 	double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
-        if (deltaR <0.1)  
+        if (deltaR <0.02)  
         {
             edepMuonCalo+=S;
             continue;
@@ -636,7 +636,7 @@ int main(int argc, char** argv)
 	double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
-        if (deltaR <0.1)  
+        if (deltaR <0.02)  
         {            
             edepMuonCalo+=S;
             continue;
@@ -680,7 +680,7 @@ int main(int argc, char** argv)
 	double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
 	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
-        if (deltaR<0.01)  
+        if (deltaR<0.005)  
         {
             edepMuonCalo+=this_ene;
             continue;
