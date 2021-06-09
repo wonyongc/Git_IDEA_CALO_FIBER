@@ -172,10 +172,10 @@ int main(int argc, char** argv)
   
   
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_wwlj100k_job_15.root","READ");
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_wwlj100k_job_15.root","READ");
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_zjj_scan_90_job_0.root","READ");       
+// //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_zjj_scan_90_job_0.root","READ");       
   
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__pi-_Iso+Uniform1-100_GeV_job_0.root","READ");       
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__mu-_Iso+Uniform1-100_GeV_job_0.root","READ");       
@@ -221,8 +221,8 @@ int main(int argc, char** argv)
 //       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_90_job_0_output_tuple.root","READ");
-      TFile * TruthFile = new TFile("../../HepMC_Files/B2T/zjj_scan_90_job_0_output_tuple.root","READ");
-//       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/wwlj100k_job_15_output_tuple.root","READ");
+//       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/zjj_scan_90_job_0_output_tuple.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/B2T/wwlj100k_job_15_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
       InitTruthTree (TruthTree, myTruthTV);
