@@ -144,13 +144,42 @@ int main(int argc, char** argv)
   float maxDeltaRMatchHcal = 0.1;
   float Bfield = 0;
   
+  float ene_EC_th  = 0.002;
+  float ene_HC_th  = 0.002;
+  
+/*
+  float ene_EC_th  = 0.01;
+  float ene_HC_th  = 0.01;
+  double calo_rescale = 1.0; //for ene_EC_th = 0.010 GeV
+  
+  */
+  
+  
+  
+  //calo recalibration to account for lower hit energy threshold @ 0.002 GeV
+  double calo_rescale = 1.04;   //for ene_EC_th = 0.002 GeV
+  double JET_CALIB    = 1.00;
+  double PFA_JET_CALIB = 1.068/JET_CALIB;  
+ 
+  // jet calibration
+//   double calo_rescale  = 1.0;   //for ene_EC_th = 0.002 GeV
+//   double JET_CALIB     = 1.04;
+//   double PFA_JET_CALIB = 1.07/JET_CALIB;
+ 
+  float matchPFACut = 0.75;
+  
   
   if (argc>1) output_tag = argv[1];   
   if (argc>2) NFILES = atoi(argv[2]);
   if (argc>3) x_factor_hcal = atof(argv[3]);   
   if (argc>4) x_factor_ecal = atof(argv[4]);   
-  if (argc>5) maxDeltaRMatchEcal = atof(argv[5]);   
-  if (argc>6) maxDeltaRMatchHcal = atof(argv[6]);   
+  if (argc>5) 
+  {
+      ene_EC_th = atof(argv[5]);   
+      ene_HC_th = atof(argv[5]);   
+  }
+  if (argc>6) Bfield = atof(argv[6]);   
+  if (argc>7) matchPFACut = atof(argv[7]);   
   
   double thismass = 100;
   if (output_tag == "wwlj")         thismass = 80.4;
@@ -168,26 +197,6 @@ int main(int argc, char** argv)
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
 
-/*
-  float ene_EC_th  = 0.01;
-  float ene_HC_th  = 0.01;
-  double calo_rescale = 1.0; //for ene_EC_th = 0.010 GeV
-  
-  */
-  
-  float ene_EC_th  = 0.002;
-  float ene_HC_th  = 0.002;
-  
-  //calo recalibration to account for lower hit energy threshold @ 0.002 GeV
-  double calo_rescale = 1.04;   //for ene_EC_th = 0.002 GeV
-  double JET_CALIB    = 1.00;
- double PFA_JET_CALIB = 1.068/JET_CALIB;  
- 
-  // jet calibration
-//   double calo_rescale  = 1.0;   //for ene_EC_th = 0.002 GeV
-//   double JET_CALIB     = 1.04;
-//   double PFA_JET_CALIB = 1.07/JET_CALIB;
- 
   
   
   double ecal_S_norm = 1.*calo_rescale;
@@ -889,7 +898,7 @@ int main(int argc, char** argv)
     float showerCorr = 1.;
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
     std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                                      x_factor_ecal, x_factor_hcal, Bfield, 
+                                                      x_factor_ecal, x_factor_hcal, Bfield, matchPFACut,
                                                       h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
     
     float gamma_ene_reco_ecal = 0;
@@ -1328,7 +1337,8 @@ int main(int argc, char** argv)
   gPad->SetLogy();
   
   
-  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
+//   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hMCTFastSim_MassJJ->Write();
