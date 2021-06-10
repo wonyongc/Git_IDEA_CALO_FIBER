@@ -64,7 +64,7 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
-                                    float x_factor_ecal, float x_factor_hcal, float Bfield,
+                                    float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
@@ -247,7 +247,7 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
         {
             //matching was good enough
 //             if (fabs(totCaloE-trueEne)/trueEne <funcHcalRes->Eval(trueEne)) 
-            if (fabs(totCaloE-targetEne)/targetEne <funcHcalRes->Eval(targetEne)*0.75) 
+            if (fabs(totCaloE-targetEne)/targetEne <funcHcalRes->Eval(targetEne)*matchPFAcut) 
             {
                 pfaCollection.push_back(track);
                 
