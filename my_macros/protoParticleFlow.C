@@ -1338,7 +1338,7 @@ int main(int argc, char** argv)
   
   
 //   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
-  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hMCTFastSim_MassJJ->Write();
