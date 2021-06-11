@@ -1395,6 +1395,7 @@ int main(int argc, char** argv)
   hNChPionsMC->Write();
   
   h1SwappedTrackFrac->Write();
+  h1ResidualCharged->Write();
   h1ResidualTotCharged->Write();
   
   hNeutrHadResidual->Write();  
