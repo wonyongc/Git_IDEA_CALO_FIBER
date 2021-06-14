@@ -111,6 +111,7 @@ int main(int argc, char** argv)
   bool SAVEPLOTS = false;  
   bool local     = false;
   bool debugMode = false;
+  bool DRO_ON    = true;
   
   TApplication* theApp;
   
@@ -160,6 +161,7 @@ int main(int argc, char** argv)
   double calo_rescale = 1.04;   //for ene_EC_th = 0.002 GeV
   double JET_CALIB    = 1.00;
   double PFA_JET_CALIB = 1.068/JET_CALIB;  
+  if (!DRO_ON) PFA_JET_CALIB = 1.0/JET_CALIB;
  
   // jet calibration
 //   double calo_rescale  = 1.0;   //for ene_EC_th = 0.002 GeV
@@ -167,6 +169,7 @@ int main(int argc, char** argv)
 //   double PFA_JET_CALIB = 1.07/JET_CALIB;
  
   float matchPFACut = 0.75;
+  
   
   
   if (argc>1) output_tag = argv[1];   
@@ -896,9 +899,10 @@ int main(int argc, char** argv)
     
 //     float showerCorr = 1.13;
     float showerCorr = 1.;
+    
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
     std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                                      x_factor_ecal, x_factor_hcal, Bfield, matchPFACut,
+                                                      x_factor_ecal, x_factor_hcal, Bfield, matchPFACut, DRO_ON,
                                                       h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
     
     float gamma_ene_reco_ecal = 0;
@@ -958,6 +962,7 @@ int main(int argc, char** argv)
           double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
           
           double E_JTot = E_JE + E_JH + E_MCT + E_GAM;
+//           if (!DRO_ON) E_JTot = E_JES + E_JHS + E_MCT + E_GAM; 
           PseudoJet dro_corr_jet = pfa_jets[i]*E_JTot*PFA_JET_CALIB/pfa_jets[i].E();
           pfa_jets_dro.push_back(dro_corr_jet);
           
