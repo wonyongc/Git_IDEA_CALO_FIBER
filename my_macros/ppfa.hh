@@ -20,7 +20,7 @@
 using namespace fastjet; 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
-                                    float my_x_factor_ecal, float my_x_factor_hcal, float Bfield, float matchPFAcut,
+                                    float my_x_factor_ecal, float my_x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
                                     TH1F* check1Histo1D, TH1F *check2Histo1D, TH1F *check3Histo1D);
 
 std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair<PseudoJet,PseudoJet>> myJets, PseudoJet refJet);

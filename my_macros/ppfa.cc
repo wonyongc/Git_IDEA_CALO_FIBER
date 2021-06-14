@@ -64,7 +64,7 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
 
 
 std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
-                                    float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut,
+                                    float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
@@ -76,10 +76,11 @@ std::vector<PseudoJet> RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::v
     TF1 * funcTotHadRawResponse = new TF1 ("funcTotHadRawResponse", "[3] - [0]*pow(x,[1]) - [2]*x", 0, 200);
     //old
 //     funcTotHadRawResponse->SetParameters(0.46923, -0.962149, -0.000170362 ,0.97);
+    
     //raw new
-//     funcTotHadRawResponse->SetParameters(-0.35625, 0.193565, 0.00347531 ,0.367476);
+    if (!DRO_ON) funcTotHadRawResponse->SetParameters(-0.35625, 0.193565, 0.00347531 ,0.367476);
     //dro new
-    funcTotHadRawResponse->SetParameters(-0.364088, 0.0465792, 0.000651904, 0.59792);
+    if (DRO_ON)  funcTotHadRawResponse->SetParameters(-0.364088, 0.0465792, 0.000651904, 0.59792);
 
 
     
