@@ -32,6 +32,7 @@
 #include "TLatex.h"
 #include "TLegend.h"
 #include "TLine.h"
+#include "TEllipse.h"
 #include "TApplication.h"
 #include "TFormula.h"
 #include "TRandom.h"
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
   gStyle->SetTitleXOffset (1.00) ;                                                                                        
   gStyle->SetTitleYOffset (1.2) ;                                                                                                                                                                                                                 
   gStyle->SetPadLeftMargin (0.12) ;
-  gStyle->SetPadRightMargin (0.16) ;
+  gStyle->SetPadRightMargin (0.12) ;
   gStyle->SetPadBottomMargin (0.13) ;                                                                                                                                                                                                              
   gStyle->SetTitleSize (0.05, "xyz") ;                                                                                    
   gStyle->SetLabelSize (0.035,"xyz") ;  
@@ -149,8 +150,8 @@ int main(int argc, char** argv)
   float maxRadius_DRT = 4500;
 //   float maxRadius_DRT = 2700;
   
-  TH2D * hPolar_T1 = new TH2D ("hPolar_T1", "hPolar_T1", NPHI_TL1, minPhi-bin_width_phi_TL1/2, maxPhi-bin_width_phi_TL1/2, NRADIUS, minRadiusT1, maxRadiusT1);
-  TH2D * hPolar_T2 = new TH2D ("hPolar_T2", "hPolar_T2", NPHI_TL2, minPhi-bin_width_phi_TL2/2, maxPhi-bin_width_phi_TL2/2, NRADIUS, minRadiusT2, maxRadiusT2);
+  TH2D * hPolar_T1 = new TH2D ("hPolar_T1", "hPolar_T1", NPHI_TL1, minPhi-bin_width_phi_TL1/2, maxPhi-bin_width_phi_TL1/2, NRADIUS, minRadiusT1+12, maxRadiusT1-1);
+  TH2D * hPolar_T2 = new TH2D ("hPolar_T2", "hPolar_T2", NPHI_TL2, minPhi-bin_width_phi_TL2/2, maxPhi-bin_width_phi_TL2/2, NRADIUS, minRadiusT2+1, maxRadiusT2-12);
   
   TH2D * hPolar_EC_F = new TH2D ("hPolar_EC_F", "hPolar_EC_F", NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2, NRADIUS, minRadiusF, maxRadiusF);
   TH2D * hPolar_EC_R = new TH2D ("hPolar_EC_R", "hPolar_EC_R", NPHI_EC, minPhi-bin_width_phi_EC/2, maxPhi-bin_width_phi_EC/2, NRADIUS, minRadiusR, maxRadiusR);
@@ -161,6 +162,11 @@ int main(int argc, char** argv)
   
   SCEPCal_GeometryHelper myGeometry;
 
+  std::string label_plot = "zjj_90";
+//   std::string label_plot = "tau_id/dec5";
+//   std::string label_plot = "paper/pi-";
+//   std::string label_plot = "paper/gamma";
+//   std::string label_plot = "paper/K0L";
   
   //run over energy scan
 //   TFile * RunFile = new TFile("../root_files/iso_gun/iso_gun_mu_100GeV_T+E.root","READ"); 
@@ -172,16 +178,21 @@ int main(int argc, char** argv)
   
   
 //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_hep_test.root","READ");       
-  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_wwlj100k_job_15.root","READ");
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");       
-// //   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
-//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_zjj_scan_90_job_0.root","READ");       
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_wwlj100k_job_15.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_ztautau_dec5_seed0_job_0.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_fibersOnly_B2T_HG_ztautau_dec5_seed0_job_0.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_zjj_scan_100_job_0.root","READ");
+  
+//   TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B0T_HG_zjj_scan_90_job_0.root","READ");       
+  TFile * RecoFile = new TFile("../root_files/hep_outputs/output_SCEPCal_B2T_HG_zjj_scan_90_job_0.root","READ");       
   
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__pi-_Iso+Uniform1-100_GeV_job_0.root","READ");       
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__mu-_Iso+Uniform1-100_GeV_job_0.root","READ");       
 //   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_B2T__mu+_Iso+Uniform1-100_GeV_job_0.root","READ");       
   
-
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_pi-_10GeV_job_test.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_gamma_10GeV_job_test.root","READ");
+//   TFile * RecoFile = new TFile("../root_files/prod/output_SCEPCal_Iso+Uniform_kaon0L_10GeV_job_test.root","READ");
   
   TTree* TreeRun = (TTree*) RecoFile->Get("B4");
   myG4TreeVars myTV;
@@ -207,6 +218,7 @@ int main(int argc, char** argv)
   std::vector<TLine*> neutrhad_tracks;
   
   float max_radius = 1740;
+//   float max_radius = 2400; //for fiber HCAL only
   float max_muon_radius = maxRadius_DRT*1.2;
   
   float MC_ene_th = 0.3;
@@ -221,8 +233,9 @@ int main(int argc, char** argv)
 //       TFile * TruthFile = new TFile("../root_files/hep_outputs/hep_truth.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/wwlj100k_job_12_output_tuple.root","READ");
 //       TFile * TruthFile = new TFile("../../HepMC_Files/B0T/zjj_scan_90_job_0_output_tuple.root","READ");
-//       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/zjj_scan_90_job_0_output_tuple.root","READ");
-      TFile * TruthFile = new TFile("../../HepMC_Files/B2T/wwlj100k_job_15_output_tuple.root","READ");
+      TFile * TruthFile = new TFile("../../HepMC_Files/B2T/zjj_scan_90_job_0_output_tuple.root","READ");
+//       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/wwlj100k_job_15_output_tuple.root","READ");
+//       TFile * TruthFile = new TFile("../../HepMC_Files/B2T/ztautau_dec5_seed0_job_0_output_tuple.root","READ");
       TTree* TruthTree = (TTree*) TruthFile->Get("truth");
       myTruthTreeVars myTruthTV;
       InitTruthTree (TruthTree, myTruthTV);
@@ -331,16 +344,11 @@ int main(int argc, char** argv)
 //                     muon_tracks.push_back(getTrajectory(0, px, py, pz, charge, max_radius));
                 }
             }
-            
         }
         
         std::cout << "******************************************************* " << std::endl;
         
       }
-      
-            
-
-      
   }
   
 
@@ -477,7 +485,7 @@ int main(int argc, char** argv)
           if (this_ene<TT_hit_th) continue;
           hGrid_T1 ->Fill(this_theta, this_phi,this_ene);                                             
           totTimingEne+= this_ene;
-          hPolar_T1 ->Fill(this_phi, minRadiusT1, this_ene);
+          hPolar_T1 ->Fill(this_phi, (minRadiusT1+maxRadiusT1)/2, this_ene*10);
         
       }
       
@@ -490,7 +498,7 @@ int main(int argc, char** argv)
           if (this_ene<TT_hit_th) continue;
           hGrid_T2 ->Fill(this_theta, this_phi,this_ene);                                             
           totTimingEne+= this_ene;
-          hPolar_T2 ->Fill(this_phi, minRadiusT2, this_ene);
+          hPolar_T2 ->Fill(this_phi, (minRadiusT2+maxRadiusT2)/2, this_ene*10);
       }
       
       std::cout << "Total energy in TIMING: " << totTimingEne << std::endl;
@@ -744,13 +752,28 @@ int main(int argc, char** argv)
   
 //   gPad->SetLogz();
 //   cOverview->SaveAs(Form("plots/event_display/wwln/cOverview_%d.png", selEv));
-  cOverview->SaveAs(Form("plots/event_display/zjj_100/cOverview_%d.png", selEv));
+  cOverview->SaveAs(Form("plots/event_display/%s/cOverview_%d.png", label_plot.c_str(), selEv));
+//   cOverview->SaveAs(Form("plots/event_display/%s/cOverview_%d_fibOnly.png", label_plot.c_str(), selEv));
   
   
   
-  TCanvas * cPolar = new TCanvas ("cPolar", "cPolar", 5000, 5000);
+  TCanvas * cPolar = new TCanvas ("cPolar", "cPolar", 10000, 10000);
   cPolar->cd();
   gPad->DrawFrame(-maxRadius_DRT*1.2, -maxRadius_DRT*1.2, maxRadius_DRT*1.2, maxRadius_DRT*1.2);
+  
+  TEllipse *el_hcal_out = new TEllipse(0., 0., maxRadius_DRT+20, maxRadius_DRT+20);
+  el_hcal_out->Draw("same");
+  TEllipse *el_hcal = new TEllipse(0., 0., minRadius_DRT-20, minRadius_DRT-20);
+  el_hcal->Draw("same");
+  TEllipse *el_ecal_out = new TEllipse(0., 0., maxRadiusR+20, maxRadiusR+20);
+  el_ecal_out->Draw("same");
+  TEllipse *el_ecal = new TEllipse(0., 0., minRadiusF-10, minRadiusF-10);
+  el_ecal->Draw("same");
+  TEllipse *el_timing_out = new TEllipse(0., 0., maxRadiusT2, maxRadiusT2);
+  el_timing_out->Draw("same");
+  TEllipse *el_timing = new TEllipse(0., 0., minRadiusT1, minRadiusT1);
+  el_timing->Draw("same");
+  
 //   gPad->SetLogz();
   for (long unsigned int iline = 0; iline< charged_tracks.size(); iline++)
   {
@@ -762,6 +785,14 @@ int main(int argc, char** argv)
   {
       muon_tracks[iline]->SetLineColor(kBlue);
       muon_tracks[iline]->SetLineWidth(3);
+      
+//       muon_tracks[iline]->SetLineColor(kRed);
+      
+//       muon_tracks[iline]->SetLineColor(kGreen+1);
+      
+//       muon_tracks[iline]->SetLineColor(kBlack);
+//       muon_tracks[iline]->SetLineStyle(7);
+      
       muon_tracks[iline]->Draw("same");
   }
   for (long unsigned int iline = 0; iline< photon_tracks.size(); iline++)
@@ -782,22 +813,26 @@ int main(int argc, char** argv)
   
   gStyle->SetPalette(kRainBow);
   hPolar_EC_F->SetTitle(Form("event: %d", selEv));
-  hPolar_EC_F->Draw("same colz pol");
-  hPolar_EC_R->Draw("same col pol");
   
+  hPolar_DRT_S->Draw("same colz pol");
+  
+  hPolar_EC_F->Draw("same col pol");
+  hPolar_EC_R->Draw("same col pol");
+//   
   hPolar_T1->Draw("same col pol");
   hPolar_T2->Draw("same col pol");
-  
 //   gStyle->SetPalette(kSolar);
     gStyle->SetPalette(kBlueRedYellow);
 //     gStyle->SetPalette(kViridis);
-  hPolar_DRT_S->Draw("same col pol");
+  
   gPad->SetLogz();
-  gPad->SetGrid();
+//   gPad->SetGrid();
   
+//   cPolar->SaveAs(Form("plots/event_display/%s/phi_plots/cPolar_%d_fibOnly.png", label_plot.c_str(), selEv));
+//   cPolar->SaveAs(Form("plots/event_display/%s/phi_plots/cPolar_%d_fibOnly.pdf", label_plot.c_str(), selEv));
   
-  cPolar->SaveAs(Form("plots/event_display/zjj_100/phi_plots/cPolar_%d.png", selEv));
-  cPolar->SaveAs(Form("plots/event_display/zjj_100/phi_plots/cPolar_%d.pdf", selEv));
+  cPolar->SaveAs(Form("plots/event_display/%s/phi_plots/cPolar_%d.png", label_plot.c_str(), selEv));
+  cPolar->SaveAs(Form("plots/event_display/%s/phi_plots/cPolar_%d.pdf", label_plot.c_str(), selEv));
   
   
 //   theApp->Run();
