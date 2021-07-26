@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   bool DRO_ON    = true;
   
@@ -145,8 +145,8 @@ int main(int argc, char** argv)
   float maxDeltaRMatchHcal = 0.1;
   float Bfield = 0;
   
-  float ene_EC_th  = 0.002;
-  float ene_HC_th  = 0.002;
+  float ene_EC_th  = 0.010;
+  float ene_HC_th  = 0.010;
   
 /*
   float ene_EC_th  = 0.01;
@@ -169,6 +169,7 @@ int main(int argc, char** argv)
 //   double PFA_JET_CALIB = 1.07/JET_CALIB;
  
   float matchPFACut = 0.75;
+//   float matchPFACut = 4;
   
   
   
@@ -415,6 +416,8 @@ int main(int argc, char** argv)
     std::vector<PseudoJet> allHitsForJetPFA;
     std::vector<PseudoJet> allChargedTracks;
     std::vector<std::pair<PseudoJet, PseudoJet>> allCaloHits;
+    std::vector<std::pair<PseudoJet, PseudoJet>> allEcalHits;
+//     std::vector<std::pair<PseudoJet, PseudoJet>> allAlgoGammaHits;
     std::vector<PseudoJet> allGammaHits;
     std::vector<PseudoJet> allGammaHitsC;
       
@@ -624,12 +627,10 @@ int main(int argc, char** argv)
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
             allHitsForJet.push_back(this_JHS);
-//             allCaloSHits.push_back(this_JHS);
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);
-//             allCaloCHits.push_back(this_JHC);
             
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
         }
@@ -660,12 +661,10 @@ int main(int argc, char** argv)
             PseudoJet this_JHS = PseudoJet(this_vec.X()*S, this_vec.Y()*S, this_vec.Z()*S, S);
             this_JHS.set_user_index(flag_JHS);
             allHitsForJet.push_back(this_JHS);
-//             allCaloSHits.push_back(this_JHS);
             
             PseudoJet this_JHC = PseudoJet(this_vec.X()*C, this_vec.Y()*C, this_vec.Z()*C, C);
             this_JHC.set_user_index(flag_JHC);
-            allHitsForJet.push_back(this_JHC);   
-//             allCaloCHits.push_back(this_JHC);
+            allHitsForJet.push_back(this_JHC);
             
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
 
@@ -679,9 +678,7 @@ int main(int argc, char** argv)
     //**************************************************************//    
     //                             ECAL
     //**************************************************************//
-
-      
-//     double ene_EC_th = 0.01;    
+    
     double totEcalEne = 0;
     if (debugMode) std::cout << " filling ECAL calo hits" << std::endl;
     for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
@@ -713,6 +710,8 @@ int main(int argc, char** argv)
             PseudoJet this_JEC = PseudoJet(this_vec.X()*ecal_C, this_vec.Y()*ecal_C, this_vec.Z()*ecal_C, ecal_C);
             this_JEC.set_user_index(flag_JEC);
             allHitsForJet.push_back(this_JEC);        
+            
+            allEcalHits.push_back(std::make_pair(this_JES, this_JEC));
                                     
             bool matchedToNeutrHad = false;
             bool matchedToGamma = false;
@@ -738,6 +737,7 @@ int main(int argc, char** argv)
                     }
                 }
             }
+            
             if (!matchedToGamma) 
             {
                 allCaloHits.push_back(std::make_pair(this_JES, this_JEC));
@@ -752,10 +752,12 @@ int main(int argc, char** argv)
                 this_JES_G.set_user_index(flag_GAM_C);
                 allGammaHitsC.push_back(this_JEC_G);
             }
-            
         }
         totEcalEne+=this_ene;
     }
+    
+    
+    
 
     if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 0.3))
     {
@@ -901,15 +903,33 @@ int main(int argc, char** argv)
     float showerCorr = 1.;
     
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
-    std::vector<PseudoJet> protoPFAjets = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                                      x_factor_ecal, x_factor_hcal, Bfield, matchPFACut, DRO_ON,
-                                                      h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+//     std::vector<PseudoJet> 
+    
+//     std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+//               cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits);
+    
+    
+    std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+              myPfaCollection = RunProtoPFA(allChargedTracks, allCaloHits, 
+                                         x_factor_ecal, x_factor_hcal, Bfield, matchPFACut, DRO_ON,
+                                         h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+    
+              
+    //neutral hits cleanup --> remove calo hits that are considered not matched to a neutral
+    
+    
+//     myPfaCollection = RunNeutralHitsCleanUp(myPfaCollection, allChargedTracks);
+    
+    
+    std::vector<PseudoJet> protoPFAjets = myPfaCollection.first;
+    
     
     float gamma_ene_reco_ecal = 0;
     for (auto gamma : allGammaHits)
     {
         protoPFAjets.push_back(gamma*showerCorr);
         gamma_ene_reco_ecal += gamma.E()*showerCorr;
+//         std::cout << "adding photon to proto PFA ..." << std::
     }
 //     for (auto gamma : allGammaHitsC)
 //     {
