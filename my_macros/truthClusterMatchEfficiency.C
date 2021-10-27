@@ -810,11 +810,10 @@ int main(int argc, char** argv)
                   }
                   matchedToCaloCluster ++;
               }
-          }                    
+          }
           hNCaloClustersMatchedToGen[abs(pdgId)]->Fill(matchedToCaloCluster);
           pNCaloClustersMatchedToGen_vsEne[abs(pdgId)]->Fill(ene, matchedToCaloCluster);
           if (matchedToCaloCluster>0) nCaloClusterMatchedToGen[abs(pdgId)]++;
-          
       }
                   
       for (auto it : myPdgId)
@@ -831,7 +830,7 @@ int main(int argc, char** argv)
               eff = float(nCaloClusterMatchedToGen[it.first])/float(nTotGen[it.first]);
               hEffGenMatchedToCaloCluster[it.first]->Fill(eff);
           }
-      }                  
+      }
   }
   
         
