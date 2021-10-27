@@ -143,7 +143,7 @@ int main(int argc, char** argv)
   
   float maxDeltaRMatchEcal = 0.013;
   float maxDeltaRMatchHcal = 0.1;
-  float Bfield = 0;
+  float Bfield = 2;
   
   float ene_EC_th  = 0.002;
   float ene_HC_th  = 0.002;
@@ -331,6 +331,31 @@ int main(int argc, char** argv)
   TH1F * hMCTFastSim_MassDiff = new TH1F ("hMCTFastSim_MassDiff", "hMCTFastSim_MassDiff", NBIN, -1, 1);
   TH1F * hPFA_MassDiff        = new TH1F ("hPFA_MassDiff", "hPFA_MassDiff", NBIN, -1, 1);
   TH1F * hPFA_RAW_MassDiff    = new TH1F ("hPFA_RAW_MassDiff", "hPFA_RAW_MassDiff", NBIN, -1, 1);
+
+  float maxAngle=0.5;
+  TH1F * hRAW_Theta1Diff        = new TH1F ("hRAW_Theta1Diff", "hRAW_Theta1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hDRO_Theta1Diff        = new TH1F ("hDRO_Theta1Diff", "hDRO_Theta1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hMCTFastSim_Theta1Diff = new TH1F ("hMCTFastSim_Theta1Diff", "hMCTFastSim_Theta1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_Theta1Diff        = new TH1F ("hPFA_Theta1Diff", "hPFA_Theta1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_RAW_Theta1Diff    = new TH1F ("hPFA_RAW_Theta1Diff", "hPFA_RAW_Theta1Diff", NBIN, -maxAngle, maxAngle);
+
+  TH1F * hRAW_Theta2Diff        = new TH1F ("hRAW_Theta2Diff", "hRAW_Theta2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hDRO_Theta2Diff        = new TH1F ("hDRO_Theta2Diff", "hDRO_Theta2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hMCTFastSim_Theta2Diff = new TH1F ("hMCTFastSim_Theta2Diff", "hMCTFastSim_Theta2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_Theta2Diff        = new TH1F ("hPFA_Theta2Diff", "hPFA_Theta2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_RAW_Theta2Diff    = new TH1F ("hPFA_RAW_Theta2Diff", "hPFA_RAW_Theta2Diff", NBIN, -maxAngle, maxAngle);
+
+  TH1F * hRAW_Phi1Diff        = new TH1F ("hRAW_Phi1Diff", "hRAW_Phi1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hDRO_Phi1Diff        = new TH1F ("hDRO_Phi1Diff", "hDRO_Phi1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hMCTFastSim_Phi1Diff = new TH1F ("hMCTFastSim_Phi1Diff", "hMCTFastSim_Phi1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_Phi1Diff        = new TH1F ("hPFA_Phi1Diff", "hPFA_Phi1Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_RAW_Phi1Diff    = new TH1F ("hPFA_RAW_Phi1Diff", "hPFA_RAW_Phi1Diff", NBIN, -maxAngle, maxAngle);
+
+  TH1F * hRAW_Phi2Diff        = new TH1F ("hRAW_Phi2Diff", "hRAW_Phi2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hDRO_Phi2Diff        = new TH1F ("hDRO_Phi2Diff", "hDRO_Phi2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hMCTFastSim_Phi2Diff = new TH1F ("hMCTFastSim_Phi2Diff", "hMCTFastSim_Phi2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_Phi2Diff        = new TH1F ("hPFA_Phi2Diff", "hPFA_Phi2Diff", NBIN, -maxAngle, maxAngle);
+  TH1F * hPFA_RAW_Phi2Diff    = new TH1F ("hPFA_RAW_Phi2Diff", "hPFA_RAW_Phi2Diff", NBIN, -maxAngle, maxAngle);
   
   TH1F * hDRO_Jet1EneDiff = new TH1F ("hDRO_Jet1EneDiff", "hDRO_Jet1EneDiff", NBIN, -1, 1);
   TH1F * hDRO_Jet2EneDiff = new TH1F ("hDRO_Jet2EneDiff", "hDRO_Jet2EneDiff", NBIN, -1, 1);      
@@ -998,6 +1023,11 @@ int main(int argc, char** argv)
       
       //Monte Carlo truth
       double jjMassMCT = 0;
+      double jetTheta1_MCT = -9999;
+      double jetTheta2_MCT = -9999;
+      double jetPhi1_MCT   = -9999;
+      double jetPhi2_MCT   = -9999;
+
       if (mct_jets.size()==2 && goodEvent)
       {
           double e1 = mct_jets[0].E();
@@ -1005,6 +1035,10 @@ int main(int argc, char** argv)
           double p1p2Sum = sqrt(pow(mct_jets[0].px()+mct_jets[1].px(),2) + pow(mct_jets[0].py()+mct_jets[1].py(),2) + pow(mct_jets[0].pz()+mct_jets[1].pz(),2) );
           
           jjMassMCT = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
+          jetTheta1_MCT = mct_jets[0].theta() ;
+          jetTheta2_MCT = mct_jets[1].theta() ;
+          jetPhi1_MCT = mct_jets[0].phi() ;
+          jetPhi2_MCT = mct_jets[1].phi() ;
           
           hMCT_MassJJ->Fill(jjMassMCT);
           hMCT_Jet1Ene->Fill(e1);
@@ -1023,6 +1057,10 @@ int main(int argc, char** argv)
           jjMassMCT_FS = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hMCTFastSim_MassJJ  ->Fill(jjMassMCT_FS);
           hMCTFastSim_MassDiff->Fill((jjMassMCT_FS-jjMassMCT)/jjMassMCT);
+          hMCTFastSim_Theta1Diff->Fill(fastSim_jets[0].theta()-jetTheta1_MCT);
+          hMCTFastSim_Theta2Diff->Fill(fastSim_jets[1].theta()-jetTheta2_MCT);
+          hMCTFastSim_Phi1Diff->Fill(fastSim_jets[0].phi()-jetPhi1_MCT);
+          hMCTFastSim_Phi2Diff->Fill(fastSim_jets[1].phi()-jetPhi2_MCT);
           
           if (sqrt(pow(fastSim_jets[0].phi() - mct_jets[0].phi(),2) + pow(fastSim_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(fastSim_jets[0].phi() - mct_jets[1].phi(),2) + pow(fastSim_jets[0].theta() - mct_jets[1].theta(),2))) 
           {                             
@@ -1053,6 +1091,10 @@ int main(int argc, char** argv)
           jjMassMCT_PFA_RAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hPFA_RAW_MassJJ  ->Fill(jjMassMCT_PFA_RAW);
           hPFA_RAW_MassDiff->Fill((jjMassMCT_PFA_RAW-jjMassMCT)/jjMassMCT);
+          hPFA_RAW_Theta1Diff->Fill(pfa_jets_raw[0].theta()-jetTheta1_MCT);
+          hPFA_RAW_Theta2Diff->Fill(pfa_jets_raw[1].theta()-jetTheta2_MCT);
+          hPFA_RAW_Phi1Diff->Fill(pfa_jets_raw[0].phi()-jetPhi1_MCT);
+          hPFA_RAW_Phi2Diff->Fill(pfa_jets_raw[1].phi()-jetPhi2_MCT);
           
           if (sqrt(pow(pfa_jets_raw[0].phi() - mct_jets[0].phi(),2) + pow(pfa_jets_raw[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(pfa_jets_raw[0].phi() - mct_jets[1].phi(),2) + pow(pfa_jets_raw[0].theta() - mct_jets[1].theta(),2))) 
           {                             
@@ -1083,6 +1125,11 @@ int main(int argc, char** argv)
           jjMassMCT_PFA = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hPFA_MassJJ  ->Fill(jjMassMCT_PFA);
           hPFA_MassDiff->Fill((jjMassMCT_PFA-jjMassMCT)/jjMassMCT);
+          hPFA_Theta1Diff->Fill(pfa_jets_dro[0].theta()-jetTheta1_MCT);
+          hPFA_Theta2Diff->Fill(pfa_jets_dro[1].theta()-jetTheta2_MCT);
+          hPFA_Phi1Diff->Fill(pfa_jets_dro[0].phi()-jetPhi1_MCT);
+          hPFA_Phi2Diff->Fill(pfa_jets_dro[1].phi()-jetPhi2_MCT);
+
           ave_mass_pfa+=jjMassMCT_PFA;
           std::cout << "sel evt count: " << countGoodEvents << " ::  jjMassPFA = " << jjMassMCT_PFA << " :: ave_mass_pfa = " << ave_mass_pfa/(countGoodEvents+1) << std::endl;
           if (sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[0].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(pfa_jets_dro[0].phi() - mct_jets[1].phi(),2) + pow(pfa_jets_dro[0].theta() - mct_jets[1].theta(),2))) 
@@ -1115,6 +1162,10 @@ int main(int argc, char** argv)
           jjMassRAW = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hRAW_MassJJ->Fill(jjMassRAW);
           hRAW_MassDiff->Fill((jjMassRAW-jjMassMCT)/jjMassMCT);
+          hRAW_Theta1Diff->Fill(raw_jets[0].theta()-jetTheta1_MCT);
+          hRAW_Theta2Diff->Fill(raw_jets[2].theta()-jetTheta2_MCT);
+          hRAW_Phi1Diff->Fill(raw_jets[0].phi()-jetPhi1_MCT);
+          hRAW_Phi2Diff->Fill(raw_jets[1].phi()-jetPhi2_MCT);
           hRAW_Jet1Ene->Fill(e1);
           hRAW_Jet2Ene->Fill(e2);
           
@@ -1142,6 +1193,10 @@ int main(int argc, char** argv)
           jjMassDRO = sqrt(pow(e1+e2,2) - pow(p1p2Sum,2) );
           hDRO_MassJJ->Fill(jjMassDRO);
           hDRO_MassDiff->Fill((jjMassDRO-jjMassMCT)/jjMassMCT);
+          hDRO_Theta1Diff->Fill(dro_jets[0].theta()-jetTheta1_MCT);
+          hDRO_Theta2Diff->Fill(dro_jets[1].theta()-jetTheta2_MCT);
+          hDRO_Phi1Diff->Fill(dro_jets[0].phi()-jetPhi1_MCT);
+          hDRO_Phi2Diff->Fill(dro_jets[1].phi()-jetPhi2_MCT);
           hDRO_Jet1Ene->Fill(e1);
           hDRO_Jet2Ene->Fill(e2);
           ave_mass_dro+=jjMassDRO;
@@ -1357,6 +1412,31 @@ int main(int argc, char** argv)
   hMCTFastSim_MassDiff->Write();
   hRAW_MassDiff->Write();
   hDRO_MassDiff->Write();
+
+  hPFA_Theta1Diff->Write();
+  hPFA_RAW_Theta1Diff->Write();
+  hMCTFastSim_Theta1Diff->Write();
+  hRAW_Theta1Diff->Write();
+  hDRO_Theta1Diff->Write();
+
+  hPFA_Theta2Diff->Write();
+  hPFA_RAW_Theta2Diff->Write();
+  hMCTFastSim_Theta2Diff->Write();
+  hRAW_Theta2Diff->Write();
+  hDRO_Theta2Diff->Write();
+
+  hPFA_Phi1Diff->Write();
+  hPFA_RAW_Phi1Diff->Write();
+  hMCTFastSim_Phi1Diff->Write();
+  hRAW_Phi1Diff->Write();
+  hDRO_Phi1Diff->Write();
+
+  hPFA_Phi2Diff->Write();
+  hPFA_RAW_Phi2Diff->Write();
+  hMCTFastSim_Phi2Diff->Write();
+  hRAW_Phi2Diff->Write();
+  hDRO_Phi2Diff->Write();
+
   
   hRAW_ScatterEne->Write();
   hDRO_ScatterEne->Write();
