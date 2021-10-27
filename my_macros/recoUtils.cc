@@ -2,6 +2,7 @@
 #include "TMath.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+#include "TGraph.h"
 
 #include <unistd.h>
 // unsigned int microseconds;
@@ -329,3 +330,74 @@ std::vector<CalSeed> MakeSuperSeeds (std::vector<CalSeed> allSeeds, std::vector<
         
     return SuperSeeds;
 }
+
+
+TGraph * getEquivalentTrajectory (float B, float px, float py, float pz, float charge, float maxR)
+{
+
+
+    float pSum = sqrt(px*px+py*py+pz*pz);
+    float pT   = sqrt(px*px+py*py);
+    float h = -charge/abs(charge);
+    float R;
+    if (B>0.) R = pT/fabs(charge)/(0.3*B)*1000;
+    else      R = 10000000000;
+
+//     std::cout << "px = " << px << " :: py = " << py << " :: pz = " << pz <<  std::endl;
+//     std::cout << "bending radius for pT = " << pT << " : " << R/1000 <<  " m" << std::endl;
+    float y0 = 0;
+    float x0 = 0;
+    float z0 = 0;
+    float phi0 = atan(py/px)-h*M_PI/2;
+//     float phi0;
+    if (px<0. && py <0.)   {phi0 = phi0 - M_PI;}
+    if (px<0. && py >0.)   {phi0 = M_PI + phi0;}
+//     if =  acos(px/pT)-M_PI/2;// + M_PI;
+
+    float lambda = acos(pT/pSum);
+
+
+    TGraph* gTraj   = new TGraph();
+    TGraph* gEqTraj = new TGraph();
+
+    for (int i = 0; i <100; i++)
+    {
+        float to_m = 100;
+        float x;
+        float y;
+        float z;
+
+//         std::cout << "i = " << i << std::endl;
+
+        if (B>0.)
+        {
+            x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
+            y = y0 + R*(sin(phi0+h*i*to_m*cos(lambda)/R) - sin(phi0) );
+            z = z0 + i*to_m*sin(lambda);
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+        }
+        else if (B == 0.)
+        {
+            x = x0 + i*px/pSum*to_m;
+            y = y0 + i*py/pSum*to_m;
+//             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
+        }
+
+        if (sqrt(x*x+y*y)<maxR)
+        {
+            gTraj->SetPoint(gTraj->GetN(), x, y);
+        }
+        else break;
+    }
+
+    Double_t impact_x, impact_y;
+    gTraj->GetPoint(gTraj->GetN()-1, impact_x, impact_y);
+
+    gEqTraj->SetPoint(0, 0, 0);
+    gEqTraj->SetPoint(1, impact_x, impact_y);
+
+
+
+    return gEqTraj;
+}
+

@@ -9,8 +9,7 @@
 #include <utility>
 #include <algorithm>
 #include "TMath.h"
-
-
+#include "TGraph.h"
 
 class CalHit
 {
@@ -161,3 +160,5 @@ class CalCluster
 
 
 std::vector<CalSeed> CleanSeeds (std::vector<CalSeed> allSeeds, float deltaR);
+
+TGraph * getEquivalentTrajectory (float B, float px, float py, float pT, float charge, float maxR);
