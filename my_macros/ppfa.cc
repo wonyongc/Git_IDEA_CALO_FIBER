@@ -10,6 +10,8 @@
 #include "TRandom.h"
 #include "TF1.h"
 #include "TGraph.h"
+#include "recoUtils.hh"
+
 // #include "SCEPCal_GeometryHelper.hh"
 
 
@@ -911,7 +913,7 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
 }
 
 
-
+/*
 std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunNeutralHitEcalCleaning (std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > ecalHitCollection, std::vector<PseudoJet> chargedTracks)
 {
     
@@ -1038,7 +1040,7 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
     
 }
 
-
+*/
 
 
 
@@ -1119,17 +1121,18 @@ Double_t rms90(TH1F *h)
 }
 
 
+/*
 TGraph * getEquivalentTrajectory (float B, float px, float py, float pz, float charge, float maxR)
 {
-                    
-    
+
+
     float pSum = sqrt(px*px+py*py+pz*pz);
     float pT   = sqrt(px*px+py*py);
     float h = -charge/abs(charge);
     float R;
     if (B>0.) R = pT/fabs(charge)/(0.3*B)*1000;
     else      R = 10000000000;
-    
+
 //     std::cout << "px = " << px << " :: py = " << py << " :: pz = " << pz <<  std::endl;
 //     std::cout << "bending radius for pT = " << pT << " : " << R/1000 <<  " m" << std::endl;
     float y0 = 0;
@@ -1140,22 +1143,22 @@ TGraph * getEquivalentTrajectory (float B, float px, float py, float pz, float c
     if (px<0. && py <0.)   {phi0 = phi0 - M_PI;}
     if (px<0. && py >0.)   {phi0 = M_PI + phi0;}
 //     if =  acos(px/pT)-M_PI/2;// + M_PI;
-    
+
     float lambda = acos(pT/pSum);
-    
-    
+
+
     TGraph* gTraj   = new TGraph();
     TGraph* gEqTraj = new TGraph();
-    
+
     for (int i = 0; i <100; i++)
     {
         float to_m = 100;
         float x;
         float y;
         float z;
-        
+
 //         std::cout << "i = " << i << std::endl;
-        
+
         if (B>0.)
         {
             x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
@@ -1169,24 +1172,25 @@ TGraph * getEquivalentTrajectory (float B, float px, float py, float pz, float c
             y = y0 + i*py/pSum*to_m;
 //             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
         }
-        
+
         if (sqrt(x*x+y*y)<maxR)
         {
             gTraj->SetPoint(gTraj->GetN(), x, y);
         }
-        else break;                    
+        else break;
     }
-    
+
     Double_t impact_x, impact_y;
     gTraj->GetPoint(gTraj->GetN()-1, impact_x, impact_y);
-    
+
     gEqTraj->SetPoint(0, 0, 0);
     gEqTraj->SetPoint(1, impact_x, impact_y);
-    
-    
-    
+
+
+
     return gEqTraj;
 }
 
 
+*/
 
