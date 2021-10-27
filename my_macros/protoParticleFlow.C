@@ -1,4 +1,4 @@
-// g++ -Wall -o protoParticleFlow protoParticleFlow.C  SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh `root-config --cflags --glibs` `~/fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
+// g++ -Wall -o protoParticleFlow protoParticleFlow.C  SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh `root-config --cflags --glibs` `~/Software/fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 // g++ -Wall -o protoParticleFlow protoParticleFlow.C  SCEPCal_GeometryHelper.cc SCEPCal_GeometryHelper.hh ppfa.cc ppfa.hh myG4Tree.cc myG4Tree.hh myTruthTree.cc myTruthTree.hh recoUtils.cc recoUtils.hh `root-config --cflags --glibs` `//afs/cern.ch/work/m/mlucchin//fastjet-3.3.2-install/bin/fastjet-config --cxxflags --libs --plugins`
 
@@ -47,7 +47,7 @@
 #include "TObject.h"
 #include "TVector3.h"
 
-#include "fastjet/ClusterSequence.hh"                                                                                                                                                                                   
+#include "fastjet/ClusterSequence.hh"
 #include <iostream>                                                                                                                                                                                                     
 
 using namespace std;
