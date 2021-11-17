@@ -36,7 +36,7 @@
 
 B4MagneticField::B4MagneticField()
 : G4MagneticField(), 
-  fMessenger(nullptr), fBy(0.0*tesla)  //change here B value, defaults should be 2T for IDEA
+  fMessenger(nullptr), fBy(2.0*tesla)  //change here B value, defaults should be 2T for IDEA
 {
   // define commands for this class
   DefineCommands();
