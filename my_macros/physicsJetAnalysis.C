@@ -88,7 +88,7 @@ bool RootFileExists(const char *filename)
 int main(int argc, char** argv)
 {
 
-  TApplication* theApp = new TApplication("App", &argc, argv);
+  //  TApplication* theApp = new TApplication("App", &argc, argv);
           
   //set Root style
   gStyle->SetTitleXOffset (1.00) ;                                                                                       
@@ -193,8 +193,8 @@ int main(int argc, char** argv)
 //     fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_%s100k_job_%d.root", output_tag.c_str(), iFile);
 //     fname_truth = Form("../../HepMC_Files/B0T/%s100k_job_%d_output_tuple.root", output_tag.c_str(), iFile);
     
-    fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
-    fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+//    fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B0T_HG_%s_job_%d.root", output_tag.c_str(), iFile);
+//    fname_truth = Form("../../HepMC_Files/B0T/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
 
     if (RootFileExists(fname_reco.c_str())  && RootFileExists(fname_truth.c_str()) )
     {
@@ -1268,7 +1268,7 @@ int main(int argc, char** argv)
   leg->Draw();
     
   
-  TFile * outputFile = new TFile (Form("output_jjMass_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
   outputFile->cd();
   hMCT_MassJJ->Write();
   hMCTFastSim_MassJJ->Write();
@@ -1417,7 +1417,7 @@ std::cout << "************************************************" << std::endl;
   gPad->SetLogy();
     
   
-  theApp->Run();
+  //  theApp->Run();
   
   
   
