@@ -142,7 +142,7 @@ int main(int argc, char** argv)
   double x_factor_ecal = 0.370;
   
   float maxDeltaRMatchEcal = 0.013;
-  float maxDeltaRMatchHcal = 0.1;
+//   float maxDeltaRMatchHcal = 0.1;
   float Bfield = 2;
   
   float ene_EC_th  = 0.010;
@@ -184,6 +184,12 @@ int main(int argc, char** argv)
   }
   if (argc>6) Bfield = atof(argv[6]);   
   if (argc>7) matchPFACut = atof(argv[7]);   
+
+  if (Bfield == 2)
+  {
+    calo_rescale = 1.043;
+    PFA_JET_CALIB = 1.043/JET_CALIB;
+  }
   
   double thismass = 100;
   if (output_tag == "wwlj")         thismass = 80.4;
@@ -473,7 +479,7 @@ int main(int argc, char** argv)
           double phi   = myTruthTV.mcs_phi->at(i);
           double eta   = myTruthTV.mcs_eta->at(i);
           double pT    = myTruthTV.mcs_pt->at(i);
-          double mass  = myTruthTV.mcs_m->at(i);
+//           double mass  = myTruthTV.mcs_m->at(i);
           int charge   = myTruthTV.mcs_charge->at(i);
           double theta = 2*atan(exp(-eta));
           theta = M_PI- theta;
@@ -547,12 +553,12 @@ int main(int argc, char** argv)
           else
           {
               if (fabs(pdgId)==13) 
-	      {
-                  nMuons++;
-		  muonEne+= ene;
-		  mc_phi_muon = phi;
-		  mc_theta_muon = theta;
-	      }
+              {
+                nMuons++;
+                muonEne+= ene;
+                mc_phi_muon = phi;
+                mc_theta_muon = theta;
+              }
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) 
               {
                   nNeutrinos++;
@@ -608,13 +614,13 @@ int main(int argc, char** argv)
     
     if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
     {
-      if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
+        if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
         goodEvent = false;
         continue;
     }
     if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3)) 
     {
-      if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
+        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
         goodEvent = false;
         continue;
     }
@@ -638,9 +644,9 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherL->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
-	double tower_phi_seed = this_vec.Phi();
+        double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR <0.02)  
         {
             edepMuonCalo+=S;
@@ -662,7 +668,7 @@ int main(int argc, char** argv)
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
         }
         totS+=S;        
-	totEneDRH+=this_ene;
+        totEneDRH+=this_ene;
     }
     if (debugMode) std::cout << " filling HCAL right calo hits" << std::endl;
     for (unsigned int i = 0; i<myTV.VectorR->size(); i++)
@@ -673,9 +679,9 @@ int main(int argc, char** argv)
         double this_cher  = myTV.VectorSignalsCherR->at(i);
         double S = this_scint/drh_S_norm;
         double C = this_cher/drh_C_norm;
-	double tower_phi_seed = this_vec.Phi();
+        double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR <0.02)  
         {            
             edepMuonCalo+=S;
@@ -697,7 +703,7 @@ int main(int argc, char** argv)
 
         }
         totS+=S;        
-	totEneDRH+=this_ene;
+        totEneDRH+=this_ene;
         
     }
       
@@ -713,9 +719,9 @@ int main(int argc, char** argv)
      
         TVector3 this_vec =  myGeometry.GetCrystalVec(myTV.VecHit_CrystalID->at(i));
         double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
-	double tower_phi_seed = this_vec.Phi();
+        double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-	double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
         if (deltaR<0.005)  
         {
             edepMuonCalo+=this_ene;
@@ -744,7 +750,7 @@ int main(int argc, char** argv)
             bool matchedToGamma = false;
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
-                int i_charge   = myTruthTV.mcs_charge->at(i);
+//                 int i_charge   = myTruthTV.mcs_charge->at(i);
                 int    pdgId = myTruthTV.mcs_pdgId->at(i);
                 double i_phi   = myTruthTV.mcs_phi->at(i);
                 double i_eta   = myTruthTV.mcs_eta->at(i);                
@@ -756,7 +762,7 @@ int main(int argc, char** argv)
                 {
                     if (fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
                     {
-                        matchedToNeutrHad = true;
+//                         matchedToNeutrHad = true;
                     }
                     else if (fabs(pdgId) == 22)
                     {
@@ -911,11 +917,11 @@ int main(int argc, char** argv)
           //reject jets not fully contained in the calorimeter
           //both jets in barrel
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
-	  {
-	    goodEvent = false;
-  	    if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
-	    continue;
-	  }
+          {
+            goodEvent = false;
+            if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
+            continue;
+          }
       }
       
       
@@ -930,14 +936,15 @@ int main(int argc, char** argv)
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
 //     std::vector<PseudoJet> 
     
-//     std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
-//               cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits);
+    std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+              cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits, Bfield);
     
     
     std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
               myPfaCollection = RunProtoPFA(allChargedTracks, allCaloHits, 
-                                         x_factor_ecal, x_factor_hcal, Bfield, matchPFACut, DRO_ON,
-                                         h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+                                            x_factor_ecal, x_factor_hcal,
+                                            Bfield, matchPFACut, DRO_ON,
+                                            h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
     
               
     //neutral hits cleanup --> remove calo hits that are considered not matched to a neutral
