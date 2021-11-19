@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   bool DRO_ON    = true;
   
@@ -145,8 +145,8 @@ int main(int argc, char** argv)
 //   float maxDeltaRMatchHcal = 0.1;
   float Bfield = 2;
   
-  float ene_EC_th  = 0.010;
-  float ene_HC_th  = 0.010;
+  float ene_EC_th  = 0.003;
+  float ene_HC_th  = 0.003;
   
 /*
   float ene_EC_th  = 0.01;
@@ -187,8 +187,8 @@ int main(int argc, char** argv)
 
   if (Bfield == 2)
   {
-    calo_rescale = 1.043;
-    PFA_JET_CALIB = 1.043/JET_CALIB;
+    calo_rescale  = 1.039;
+    PFA_JET_CALIB = 1.053/JET_CALIB;
   }
   
   double thismass = 100;
@@ -424,6 +424,15 @@ int main(int argc, char** argv)
   TH1F * hDeltaEtaJet = new TH1F ("hDeltaEtaJet", "hDeltaEtaJet", 100, -10, 10);
   TH1F * hThetaJet = new TH1F ("hThetaJet", "hThetaJet", 100, 0, 3.15);
   TH1F * hDeltaThetaJet = new TH1F ("hDeltaThetaJet", "hDeltaThetaJet", 100, -7, 7);
+
+  TH1F* hCompareEneNHitsPhotonSeedAlgo_wMCReco = new TH1F ("hCompareEneNHitsPhotonSeedAlgo_wMCReco", "hCompareEneNHitsPhotonSeedAlgo_wMCReco",  800, -2, 2);
+  TH1F* hCompareEneNHitsPhotonSeedAlgo_wMCTruth = new TH1F ("hCompareEneNHitsPhotonSeedAlgo_wMCTruth", "hCompareEneNHitsPhotonSeedAlgo_wMCTruth",  800, -2, 2);
+  TH1F* hNHitsMCRecoAlgo = new TH1F ("hNHitsMCRecoAlgo", "hNHitsMCRecoAlgo",  1000, 0, 3000);
+  TH1F* hNHitsPhotonSeedAlgo = new TH1F ("hNHitsPhotonSeedAlgo", "hNHitsPhotonSeedAlgo",  1000, 0, 3000);
+  TH1F* hRatioNHitsPhotonSeedAlgo = new TH1F ("hRatioNHitsPhotonSeedAlgo", "hRatioNHitsPhotonSeedAlgo",  100, 0, 10);
+
+  TH1F* hNECNeutralSeeds = new TH1F ("hNECNeutralSeeds", "hNECNeutralSeeds", 200, -0.5, 199.5);
+
     
   ///*******************************************///
   ///		 Run over events	        ///
@@ -449,6 +458,7 @@ int main(int argc, char** argv)
     std::vector<PseudoJet> allHitsForJetPFA;
     std::vector<PseudoJet> allChargedTracks;
     std::vector<std::pair<PseudoJet, PseudoJet>> allCaloHits;
+    std::vector<std::pair<PseudoJet, PseudoJet>> allHcalHits;
     std::vector<std::pair<PseudoJet, PseudoJet>> allEcalHits;
 //     std::vector<std::pair<PseudoJet, PseudoJet>> allAlgoGammaHits;
     std::vector<PseudoJet> allGammaHits;
@@ -540,7 +550,7 @@ int main(int argc, char** argv)
               if ( smeared_ene > 0.01 
 //                   && fabs(pdgId) != 130 
 //                   && fabs(pdgId) != 2112
-            )
+                )
               {
                   PseudoJet this_MCT_FS = PseudoJet(px*smeared_ene/ene, py*smeared_ene/ene, pz*smeared_ene/ene, smeared_ene);
                   allMCHitsForJetFastSim.push_back(this_MCT_FS);
@@ -575,6 +585,7 @@ int main(int argc, char** argv)
     hNGammaMC->Fill(nGamma);
     hNNeutrHadMC->Fill(nNeutrHad);
     hNChPionsMC->Fill(nChPions);
+
   
     if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 ))
     {
@@ -665,6 +676,7 @@ int main(int argc, char** argv)
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);
             
+            allHcalHits.push_back(std::make_pair(this_JHS, this_JHC));
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
         }
         totS+=S;        
@@ -699,6 +711,7 @@ int main(int argc, char** argv)
             this_JHC.set_user_index(flag_JHC);
             allHitsForJet.push_back(this_JHC);
             
+            allHcalHits.push_back(std::make_pair(this_JHS, this_JHC));
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
 
         }
@@ -935,13 +948,20 @@ int main(int argc, char** argv)
     
     if (debugMode) std::cout << " filling photons to pfa" << std::endl;
 //     std::vector<PseudoJet> 
+    std::cout << "MC truth photons in event: " << nGamma << std::endl;
+    std::pair<std::vector<std::pair<PseudoJet, PseudoJet>>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+              cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits, Bfield, maxDeltaRMatchEcal, hNECNeutralSeeds);
     
+    
+    std::vector<std::pair<PseudoJet, PseudoJet>> allNonPhotonCaloHits = allHcalHits;
+    for (auto ecalHit : cleanedInputEcalHits.first)
+    {
+        allNonPhotonCaloHits.push_back(ecalHit);
+    }
+
     std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
-              cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits, Bfield);
-    
-    
-    std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
-              myPfaCollection = RunProtoPFA(allChargedTracks, allCaloHits, 
+//               myPfaCollection = RunProtoPFA(allChargedTracks, allCaloHits,
+              myPfaCollection = RunProtoPFA(allChargedTracks, allNonPhotonCaloHits,
                                             x_factor_ecal, x_factor_hcal,
                                             Bfield, matchPFACut, DRO_ON,
                                             h1SwappedTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
@@ -954,15 +974,49 @@ int main(int argc, char** argv)
     
     
     std::vector<PseudoJet> protoPFAjets = myPfaCollection.first;
-    
+    std::cout << "photon hits selected from MC photon track: " << allGammaHits.size() << " / " << allEcalHits.size() << " = " << float(allGammaHits.size())/float(allEcalHits.size()) << std::endl;
+//     std::cout << "photon hits removed from seed algo: " << cleanedInputEcalHits.second.size() << " / " << allEcalHits.size() << " = " << float(cleanedInputEcalHits.second.size())/float(allEcalHits.size()) << std::endl;
     
     float gamma_ene_reco_ecal = 0;
     for (auto gamma : allGammaHits)
     {
-        protoPFAjets.push_back(gamma*showerCorr);
+//         protoPFAjets.push_back(gamma*showerCorr);
         gamma_ene_reco_ecal += gamma.E()*showerCorr;
 //         std::cout << "adding photon to proto PFA ..." << std::
     }
+
+    float gamma_ene_seed_algo = 0;
+    for (auto gamma : cleanedInputEcalHits.second)
+    {
+        gamma.first.set_user_index(flag_GAM_S);
+        protoPFAjets.push_back(gamma.first);
+        gamma_ene_seed_algo += gamma.first.E();
+//         std::cout << "adding photon to proto PFA ..." << std::
+    }
+
+    //compare photon hits between the two algos
+    int matchedPhotonHitAlgo = 0;
+    for (auto gamma_MC : allGammaHits)
+    {
+        for (auto gamma_Seed : cleanedInputEcalHits.second)
+        {
+            if (gamma_MC.delta_R(gamma_Seed.first) == 0)
+            {
+                matchedPhotonHitAlgo++;
+                break;
+            }
+        }
+    }
+    std::cout << "matchedPhotonHitAlgo fraction = " << matchedPhotonHitAlgo << " / " << allGammaHits.size() << " = " << float(matchedPhotonHitAlgo)/float(allGammaHits.size()) << std::endl;
+
+
+    hNHitsPhotonSeedAlgo->Fill(cleanedInputEcalHits.second.size());
+    hNHitsMCRecoAlgo->Fill(allGammaHits.size());
+    if (allGammaHits.size()!=0) hRatioNHitsPhotonSeedAlgo->Fill(float(cleanedInputEcalHits.second.size())/float(allGammaHits.size()));
+    hCompareEneNHitsPhotonSeedAlgo_wMCReco->Fill((gamma_ene_seed_algo-gamma_ene_reco_ecal)/gamma_ene_reco_ecal);
+    hCompareEneNHitsPhotonSeedAlgo_wMCTruth->Fill((gamma_ene_seed_algo-gamma_ene)/gamma_ene);
+
+
 //     for (auto gamma : allGammaHitsC)
 //     {
 //         protoPFAjets.push_back(gamma*showerCorr);
@@ -1036,9 +1090,9 @@ int main(int argc, char** argv)
       if (neutralhad_ene>0)  
       {
           hHCALResidual->Fill((neutralhad_ene_reco_hcal-neutralhad_ene)/neutralhad_ene);
-	  hHCALResidualDRO->Fill((neutralhad_ene_reco_hcal_dro-neutralhad_ene)/neutralhad_ene);
+          hHCALResidualDRO->Fill((neutralhad_ene_reco_hcal_dro-neutralhad_ene)/neutralhad_ene);
           hNeutrHadResidual->Fill((neutralhad_ene_reco-neutralhad_ene)/neutralhad_ene);
-	  hNeutrHadResidualDRO->Fill((neutralhad_ene_reco_dro-neutralhad_ene)/neutralhad_ene);
+          hNeutrHadResidualDRO->Fill((neutralhad_ene_reco_dro-neutralhad_ene)/neutralhad_ene);
       }
       if (neutrals_ene>0)
       {
@@ -1093,10 +1147,10 @@ int main(int argc, char** argv)
           {                             
             hFastSim_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hFastSim_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
-	    hMCTFastSim_Theta1Diff->Fill(fastSim_jets[0].theta()-jetTheta1_MCT);
-	    hMCTFastSim_Theta2Diff->Fill(fastSim_jets[1].theta()-jetTheta2_MCT);
-	    hMCTFastSim_Phi1Diff->Fill(fastSim_jets[0].phi()-jetPhi1_MCT);
-	    hMCTFastSim_Phi2Diff->Fill(fastSim_jets[1].phi()-jetPhi2_MCT);
+            hMCTFastSim_Theta1Diff->Fill(fastSim_jets[0].theta()-jetTheta1_MCT);
+            hMCTFastSim_Theta2Diff->Fill(fastSim_jets[1].theta()-jetTheta2_MCT);
+            hMCTFastSim_Phi1Diff->Fill(fastSim_jets[0].phi()-jetPhi1_MCT);
+            hMCTFastSim_Phi2Diff->Fill(fastSim_jets[1].phi()-jetPhi2_MCT);
             
             hFastSim_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hFastSim_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
@@ -1105,10 +1159,10 @@ int main(int argc, char** argv)
           {
             hFastSim_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hFastSim_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
-	    hMCTFastSim_Theta1Diff->Fill(fastSim_jets[1].theta()-jetTheta1_MCT);
-	    hMCTFastSim_Theta2Diff->Fill(fastSim_jets[0].theta()-jetTheta2_MCT);
-	    hMCTFastSim_Phi1Diff->Fill(fastSim_jets[1].phi()-jetPhi1_MCT);
-	    hMCTFastSim_Phi2Diff->Fill(fastSim_jets[0].phi()-jetPhi2_MCT);
+            hMCTFastSim_Theta1Diff->Fill(fastSim_jets[1].theta()-jetTheta1_MCT);
+            hMCTFastSim_Theta2Diff->Fill(fastSim_jets[0].theta()-jetTheta2_MCT);
+            hMCTFastSim_Phi1Diff->Fill(fastSim_jets[1].phi()-jetPhi1_MCT);
+            hMCTFastSim_Phi2Diff->Fill(fastSim_jets[0].phi()-jetPhi2_MCT);
 
             hFastSim_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hFastSim_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
@@ -1131,10 +1185,10 @@ int main(int argc, char** argv)
           {                             
             hPFA_RAW_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hPFA_RAW_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
-	    hPFA_RAW_Theta1Diff->Fill(pfa_jets_raw[0].theta()-jetTheta1_MCT);
-	    hPFA_RAW_Theta2Diff->Fill(pfa_jets_raw[1].theta()-jetTheta2_MCT);
-	    hPFA_RAW_Phi1Diff->Fill(pfa_jets_raw[0].phi()-jetPhi1_MCT);
-	    hPFA_RAW_Phi2Diff->Fill(pfa_jets_raw[1].phi()-jetPhi2_MCT);
+            hPFA_RAW_Theta1Diff->Fill(pfa_jets_raw[0].theta()-jetTheta1_MCT);
+            hPFA_RAW_Theta2Diff->Fill(pfa_jets_raw[1].theta()-jetTheta2_MCT);
+            hPFA_RAW_Phi1Diff->Fill(pfa_jets_raw[0].phi()-jetPhi1_MCT);
+            hPFA_RAW_Phi2Diff->Fill(pfa_jets_raw[1].phi()-jetPhi2_MCT);
             
             hPFA_RAW_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hPFA_RAW_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
@@ -1143,10 +1197,10 @@ int main(int argc, char** argv)
           {
             hPFA_RAW_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hPFA_RAW_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
-	    hPFA_RAW_Theta1Diff->Fill(pfa_jets_raw[1].theta()-jetTheta1_MCT);
-	    hPFA_RAW_Theta2Diff->Fill(pfa_jets_raw[0].theta()-jetTheta2_MCT);
-	    hPFA_RAW_Phi1Diff->Fill(pfa_jets_raw[1].phi()-jetPhi1_MCT);
-	    hPFA_RAW_Phi2Diff->Fill(pfa_jets_raw[0].phi()-jetPhi2_MCT);
+            hPFA_RAW_Theta1Diff->Fill(pfa_jets_raw[1].theta()-jetTheta1_MCT);
+            hPFA_RAW_Theta2Diff->Fill(pfa_jets_raw[0].theta()-jetTheta2_MCT);
+            hPFA_RAW_Phi1Diff->Fill(pfa_jets_raw[1].phi()-jetPhi1_MCT);
+            hPFA_RAW_Phi2Diff->Fill(pfa_jets_raw[0].phi()-jetPhi2_MCT);
 
             hPFA_RAW_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hPFA_RAW_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
@@ -1170,10 +1224,10 @@ int main(int argc, char** argv)
           {                             
             hPFA_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hPFA_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
-	    hPFA_Theta1Diff->Fill(pfa_jets_dro[0].theta()-jetTheta1_MCT);
-	    hPFA_Theta2Diff->Fill(pfa_jets_dro[1].theta()-jetTheta2_MCT);
-	    hPFA_Phi1Diff->Fill(pfa_jets_dro[0].phi()-jetPhi1_MCT);
-	    hPFA_Phi2Diff->Fill(pfa_jets_dro[1].phi()-jetPhi2_MCT);
+            hPFA_Theta1Diff->Fill(pfa_jets_dro[0].theta()-jetTheta1_MCT);
+            hPFA_Theta2Diff->Fill(pfa_jets_dro[1].theta()-jetTheta2_MCT);
+            hPFA_Phi1Diff->Fill(pfa_jets_dro[0].phi()-jetPhi1_MCT);
+            hPFA_Phi2Diff->Fill(pfa_jets_dro[1].phi()-jetPhi2_MCT);
             
             hPFA_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hPFA_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
@@ -1183,9 +1237,9 @@ int main(int argc, char** argv)
             hPFA_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hPFA_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
             hPFA_Theta1Diff  -> Fill(pfa_jets_dro[1].theta()-jetTheta1_MCT);
-	    hPFA_Theta2Diff  -> Fill(pfa_jets_dro[0].theta()-jetTheta2_MCT);
-	    hPFA_Phi1Diff    -> Fill(pfa_jets_dro[1].phi()-jetPhi1_MCT);
-	    hPFA_Phi2Diff    -> Fill(pfa_jets_dro[0].phi()-jetPhi2_MCT);
+            hPFA_Theta2Diff  -> Fill(pfa_jets_dro[0].theta()-jetTheta2_MCT);
+            hPFA_Phi1Diff    -> Fill(pfa_jets_dro[1].phi()-jetPhi1_MCT);
+            hPFA_Phi2Diff    -> Fill(pfa_jets_dro[0].phi()-jetPhi2_MCT);
             
             hPFA_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hPFA_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
@@ -1211,18 +1265,18 @@ int main(int argc, char** argv)
           if (sqrt(pow(raw_jets[0].phi() - mct_jets[0].phi(),2) + pow(raw_jets[0].theta() - mct_jets[0].theta(),2)) < sqrt(pow(raw_jets[0].phi() - mct_jets[1].phi(),2) + pow(raw_jets[0].theta() - mct_jets[1].theta(),2))) 
           {                 
             hRAW_ScatterEne -> Fill(e1 - mct_jets[0].E(), e2-mct_jets[1].E() );
-	    hRAW_Theta1Diff -> Fill(raw_jets[0].theta()-jetTheta1_MCT);
-	    hRAW_Theta2Diff -> Fill(raw_jets[1].theta()-jetTheta2_MCT);
-	    hRAW_Phi1Diff   -> Fill(raw_jets[0].phi()-jetPhi1_MCT);
-	    hRAW_Phi2Diff   -> Fill(raw_jets[1].phi()-jetPhi2_MCT);          
+            hRAW_Theta1Diff -> Fill(raw_jets[0].theta()-jetTheta1_MCT);
+            hRAW_Theta2Diff -> Fill(raw_jets[1].theta()-jetTheta2_MCT);
+            hRAW_Phi1Diff   -> Fill(raw_jets[0].phi()-jetPhi1_MCT);
+            hRAW_Phi2Diff   -> Fill(raw_jets[1].phi()-jetPhi2_MCT);
           }
           else
           {
             hRAW_ScatterEne->Fill(e1 - mct_jets[1].E(), e2-mct_jets[0].E() );
-	    hRAW_Theta1Diff -> Fill(raw_jets[1].theta()-jetTheta1_MCT);
-	    hRAW_Theta2Diff -> Fill(raw_jets[0].theta()-jetTheta2_MCT);
-	    hRAW_Phi1Diff   -> Fill(raw_jets[1].phi()-jetPhi1_MCT);
-	    hRAW_Phi2Diff   -> Fill(raw_jets[0].phi()-jetPhi2_MCT);
+            hRAW_Theta1Diff -> Fill(raw_jets[1].theta()-jetTheta1_MCT);
+            hRAW_Theta2Diff -> Fill(raw_jets[0].theta()-jetTheta2_MCT);
+            hRAW_Phi1Diff   -> Fill(raw_jets[1].phi()-jetPhi1_MCT);
+            hRAW_Phi2Diff   -> Fill(raw_jets[0].phi()-jetPhi2_MCT);
 
           }
 	  //	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
@@ -1249,10 +1303,10 @@ int main(int argc, char** argv)
             hDRO_ScatterEne  -> Fill(e1 - mct_jets[0].E(), e2 - mct_jets[1].E() );
             hDRO_Jet1EneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hDRO_Jet2EneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
-	    hDRO_Theta1Diff  -> Fill(dro_jets[0].theta()-jetTheta1_MCT);
-	    hDRO_Theta2Diff  -> Fill(dro_jets[1].theta()-jetTheta2_MCT);
-	    hDRO_Phi1Diff    -> Fill(dro_jets[0].phi()-jetPhi1_MCT);
-	    hDRO_Phi2Diff    -> Fill(dro_jets[1].phi()-jetPhi2_MCT);
+            hDRO_Theta1Diff  -> Fill(dro_jets[0].theta()-jetTheta1_MCT);
+            hDRO_Theta2Diff  -> Fill(dro_jets[1].theta()-jetTheta2_MCT);
+            hDRO_Phi1Diff    -> Fill(dro_jets[0].phi()-jetPhi1_MCT);
+            hDRO_Phi2Diff    -> Fill(dro_jets[1].phi()-jetPhi2_MCT);
             
             hDRO_JetEneDiff -> Fill((e1-mct_jets[0].E())/mct_jets[0].E());
             hDRO_JetEneDiff -> Fill((e2-mct_jets[1].E())/mct_jets[1].E());
@@ -1262,10 +1316,10 @@ int main(int argc, char** argv)
             hDRO_ScatterEne->Fill(e1 - mct_jets[1].E(), e2 - mct_jets[0].E() );
             hDRO_Jet1EneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hDRO_Jet2EneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
-	    hDRO_Theta1Diff  -> Fill(dro_jets[1].theta()-jetTheta1_MCT);
-	    hDRO_Theta2Diff  -> Fill(dro_jets[0].theta()-jetTheta2_MCT);
-	    hDRO_Phi1Diff    -> Fill(dro_jets[1].phi()-jetPhi1_MCT);
-	    hDRO_Phi2Diff    -> Fill(dro_jets[0].phi()-jetPhi2_MCT);
+            hDRO_Theta1Diff  -> Fill(dro_jets[1].theta()-jetTheta1_MCT);
+            hDRO_Theta2Diff  -> Fill(dro_jets[0].theta()-jetTheta2_MCT);
+            hDRO_Phi1Diff    -> Fill(dro_jets[1].phi()-jetPhi1_MCT);
+            hDRO_Phi2Diff    -> Fill(dro_jets[0].phi()-jetPhi2_MCT);
            
             hDRO_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hDRO_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
@@ -1280,7 +1334,7 @@ int main(int argc, char** argv)
 //           float MC_phi_jet1, DRO_phi_jet1;  
 //           std::cout  << "MC_phi_jet1 =  " << MC_phi_jet1 << ":: DRO_phi_jet1 =  " << DRO_phi_jet1 << std::endl;
 	  //	  if (debugMode) std::cout << "DRO: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassDRO << " GeV" << std::endl;
-	  hScatterEneVisEH->Fill(jjMassDRO, totEcalEne/totEneDRH);
+        hScatterEneVisEH->Fill(jjMassDRO, totEcalEne/totEneDRH);
       }
                      
       countGoodEvents++;
@@ -1549,8 +1603,13 @@ int main(int argc, char** argv)
   
   hHcalHitsEne->Write();
   hEcalHitsEne->Write();
-  
-  
+
+  hCompareEneNHitsPhotonSeedAlgo_wMCReco->Write();
+  hCompareEneNHitsPhotonSeedAlgo_wMCTruth->Write();
+  hNHitsMCRecoAlgo->Write();
+  hNHitsPhotonSeedAlgo->Write();
+  hRatioNHitsPhotonSeedAlgo->Write();
+  hNECNeutralSeeds->Write();
   
   
   outputFile->Write();
