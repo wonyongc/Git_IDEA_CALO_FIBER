@@ -35,7 +35,8 @@ std::vector<std::pair<PseudoJet, PseudoJet>> sorted_by_dd (std::vector<std::pair
 
 std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >  RunNeutralHitsCleanUp (std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > pfaCollection, std::vector<PseudoJet> chargedTracks);
 
-std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >  RunNeutralHitEcalCleaning (std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > pfaCollection, std::vector<PseudoJet> chargedTracks);
+std::pair<std::vector<std::pair<PseudoJet, PseudoJet>>,std::vector<std::pair<PseudoJet, PseudoJet>> >  RunNeutralHitEcalCleaning
+(std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> allEcalHits, float Bfield, float maxDeltaRSeedEcal, TH1F *hNECNeutralSeeds);
 
 
 std::vector<std::pair<PseudoJet, PseudoJet>> pfaFindIsolatedSeeds(std::vector<std::pair<PseudoJet, PseudoJet>>allSeeds, float maxDeltaRSeed);

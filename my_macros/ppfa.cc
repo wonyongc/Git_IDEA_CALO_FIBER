@@ -913,44 +913,44 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
 }
 
 
-/*
-std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunNeutralHitEcalCleaning (std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > ecalHitCollection, std::vector<PseudoJet> chargedTracks)
+
+//***************************************************************************************************************//
+//Parse the collection of ECAL hits to find photon clusters and remove corresponding "photon" hits from collection,
+//It returns:
+    // a collection with residual calorimeter hits after photons have been removed,
+    // and a collection with all the photon hits
+//***************************************************************************************************************//
+
+std::pair<std::vector<std::pair<PseudoJet, PseudoJet>>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunNeutralHitEcalCleaning (
+std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> ecalHitCollection, float Bfield, float maxDeltaRSeedEcal, TH1F *hNECNeutralSeeds)
 {
     
-    std::vector<PseudoJet> cleanedPfaCollection;
-    std::vector<std::pair<PseudoJet, PseudoJet>> cleanedNeutralHits;
-    std::vector<std::pair<PseudoJet, PseudoJet>> neutralHCSeedCandidates;
+    std::vector<std::pair<PseudoJet, PseudoJet>> cleanedEcalHitCollection;
+    std::vector<std::pair<PseudoJet, PseudoJet>> photonHits;
     std::vector<std::pair<PseudoJet, PseudoJet>> neutralECSeedCandidates;
     std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeeds;
-    std::vector<std::pair<PseudoJet, PseudoJet>> myHcSeeds;
     
     float ec_seed_th = 0.1; //mip
-    float maxDeltaRSeedEcal = 0.01;    
-    float ec_mc_R_match = 0.005;    
-    float ec_cluster_R = 0.2;
+    float maxDeltaRIsolatedSeed = 0.015;
+    float ec_mc_R_match = 0.015; //radius to consider a photon not matched to a charged track
+    float ec_cluster_R = 0.013; //maxDeltaRSeedEcal
     
     std::cout << "total calo hits in ecal collection: " << ecalHitCollection.size() << std::endl;
     
+    //find ECAL seeds
     for (auto hit : ecalHitCollection)
     {
         PseudoJet scint_hit = hit.first;
         PseudoJet cher_hit  = hit.second;
-        
-//             float deltaR  = scint_hit.delta_R(track);
-//             float deltaR;
-//             if      (Bfield > 0 && scint_hit.user_index()==flag_JES) deltaR = scint_hit.delta_R(effectiveTrackEcal);
-//             else if (Bfield > 0 && scint_hit.user_index()==flag_JHS) deltaR = scint_hit.delta_R(effectiveTrackHcal);
-        // find seeds
-//         if (scint_hit.E()>seed_th)
         {
             if (scint_hit.user_index() == flag_JES && scint_hit.E()>ec_seed_th ) myEcSeeds.push_back(std::make_pair(scint_hit, cher_hit));
         }
     }
-    
     std::cout << "ec seeds before cleanup: " << myEcSeeds.size() << std::endl;
     
+
     //cleanup to find isolated seeds
-    std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeedsCleaned = pfaFindIsolatedSeeds(myEcSeeds, maxDeltaRSeedEcal);
+    std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeedsCleaned = pfaFindIsolatedSeeds(myEcSeeds, maxDeltaRIsolatedSeed);
     std::cout << "ec seeds after cleanup: " << myEcSeedsCleaned.size() << std::endl;
     
     
@@ -963,7 +963,26 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
         
         for (auto track : chargedTracks)
         {
-            float dd_track = ec_seed.first.delta_R(track);
+            //impact point of track on ECAL
+            PseudoJet effectiveTrackEcal = track;
+
+            if (Bfield>0)
+            {
+                float charge = track.user_index()/100;
+                TGraph* thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, ecal_impact_radius);
+                Double_t impact_x, impact_y;
+                thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
+
+                float impact_phi = atan(impact_y/impact_x);
+                if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
+                if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}
+                double impact_theta = M_PI- 2*atan(exp(-track.eta()));
+                float scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
+                effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), track.E());
+            }
+
+
+            float dd_track = ec_seed.first.delta_R(effectiveTrackEcal);
             if (dd_track < ec_mc_R_match) //ecal hit not matched to any charged track then the hcal hit is from a neutral
             {
                 unMatchedToTrack = false;
@@ -974,73 +993,56 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
     }
     
     
-    std::cout << "neutral ec seeds not matched to charged track: " << neutralECSeedCandidates.size() << std::endl;
+    std::cout << "potential neutral seeds (ec seeds not matched to any charged track): " << neutralECSeedCandidates.size() << std::endl;
+    hNECNeutralSeeds->Fill(neutralECSeedCandidates.size());
     
-    
-    //cluster hits around seeds to find if trasverse shower shape compatible with photon
-    int hits_removed  = 0;
-    int hits_remained = 0;
+    //cluster hits around seeds to find if transverse shower shape is compatible with a photon
+    int hits_remained  = 0;
+    int photon_hits = 0;
     
     for (auto hit : ecalHitCollection)
     {
         PseudoJet scint_hit = hit.first;
         PseudoJet cher_hit  = hit.second;
         
-        //assume hit is not matched to neutral
-        bool hitMatchedToNeutral = false;
+        //assume hit is not matched to any neutral seed candidate
+        bool hitMatchedPhotonSeed = false;
         
         if (scint_hit.user_index() == flag_JES)
         {
             for (auto ec_seed : neutralECSeedCandidates)
             {
-                float dd_track = ec_seed.first.delta_R(scint_hit);
-                if (dd_track < ec_cluster_R) //ecal hit not matched to any charged track then the hcal hit is from a neutral
+                float dd_seed = ec_seed.first.delta_R(scint_hit);
+                if (dd_seed < ec_cluster_R) //ecal hit not matched to any charged track then the hcal hit is from a neutral
                 {
-                    hitMatchedToNeutral = true;
+                    hitMatchedPhotonSeed = true;
                     break;
                 }
             }
         }
         
-        else if (scint_hit.user_index() == flag_JHS)
-        {
-            for (auto hc_seed : neutralHCSeedCandidates)
-            {
-                float dd_track = hc_seed.first.delta_R(scint_hit);
-                if (dd_track < hc_cluster_R) //hcal hit not matched to any charged track then the hcal hit is from a neutral
-                {
-                    hitMatchedToNeutral = true;
-                    break;
-                }
-            }
-        }
         
         //if hit was not clustered into any seed it was probably a charged component than ignore it, otherwise add hit to the pfa and neutral collection 
-        if (hitMatchedToNeutral)
+        if (hitMatchedPhotonSeed)
         {
-
-            cleanedNeutralHits.push_back(std::make_pair(scint_hit, cher_hit));                        
-            
-            cleanedPfaCollection.push_back(scint_hit);
-            cleanedPfaCollection.push_back(cher_hit);
-            
-            hits_remained++;                                    
+            photonHits.push_back(std::make_pair(scint_hit, cher_hit));
+            photon_hits++;
         }
         else
         {
-            //             std::cout << " unclusteredHit, not added to pfa collection " << std::endl;
-            hits_removed++;
+            cleanedEcalHitCollection.push_back(std::make_pair(scint_hit, cher_hit));
+            hits_remained++;
         }
     }
     
-    std::cout << "fraction of hits removed from collection: " << float(hits_removed) << " / " << pfaCollection.second.size() << " = " << float(hits_removed)/pfaCollection.second.size() << std::endl;
-    std::cout << "fraction of hits remaining in collection: " << float(hits_remained) << " / " << pfaCollection.second.size() << " = " << float(hits_remained)/pfaCollection.second.size() << std::endl;
+    std::cout << "fraction of photon hits removed from collection: " << photon_hits << " / " << ecalHitCollection.size() << " = " << float(photon_hits)/ecalHitCollection.size() << std::endl;
+    std::cout << "fraction of hits remained in pfa collection: " << hits_remained << " / " << ecalHitCollection.size() << " = " << float(hits_remained)/ecalHitCollection.size() << std::endl;
     
-    return std::make_pair(cleanedPfaCollection, cleanedNeutralHits);
+    return std::make_pair(cleanedEcalHitCollection, photonHits);
     
 }
 
-*/
+
 
 
 
