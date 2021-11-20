@@ -76,8 +76,8 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
                                     float x_factor_ecal, float x_factor_hcal,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)*/
 
-
-std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
+// std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
+std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
                                     float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
@@ -117,6 +117,7 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
     
 //     std::vector<PseudoJet> sortedTracks = sorted_by_pt(chargedTracks);
     std::vector<PseudoJet> sortedTracks = chargedTracks;
+    std::vector<PseudoJet> leftOverTracks;
     
 //     std::cout << "pfa algorithm initialized" << std::endl;
     
@@ -282,6 +283,8 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
                 {
                     leftCaloHits.push_back(non_accepted_hit);
                 }
+
+                leftOverTracks.push_back(track);
             }
         }
 //         if (sortedHits.size()==0) pfaCollection.push_back(track);
@@ -307,7 +310,8 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
     if (trueTotCharged>0.) h1ResidualTotCharged->Fill((recoTotCharged-trueTotCharged)/trueTotCharged);
     
 //     return pfaCollection;
-    return std::make_pair(pfaCollection, leftCaloHits);
+//     return std::make_pair(pfaCollection, leftCaloHits);
+    return std::make_pair(pfaCollection, leftOverTracks);
     
 }
 
@@ -922,7 +926,8 @@ std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > 
 //***************************************************************************************************************//
 
 std::pair<std::vector<std::pair<PseudoJet, PseudoJet>>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunNeutralHitEcalCleaning (
-std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> ecalHitCollection, float Bfield, float maxDeltaRSeedEcal, TH1F *hNECNeutralSeeds)
+std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> ecalHitCollection, float Bfield, float maxDeltaRSeedEcal,
+TH1F *hNECNeutralSeeds, TH2F *hNeutralSeedShowerShapeScint, TH2F *hNeutralSeedShowerShapeCher, TH2F *hNeutralSeedCSratio)
 {
     
     std::vector<std::pair<PseudoJet, PseudoJet>> cleanedEcalHitCollection;
@@ -930,7 +935,7 @@ std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet
     std::vector<std::pair<PseudoJet, PseudoJet>> neutralECSeedCandidates;
     std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeeds;
     
-    float ec_seed_th = 0.1; //mip
+    float ec_seed_th = 0.08; //mip
     float maxDeltaRIsolatedSeed = 0.015;
     float ec_mc_R_match = 0.015; //radius to consider a photon not matched to a charged track
     float ec_cluster_R = 0.013; //maxDeltaRSeedEcal
@@ -995,6 +1000,43 @@ std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet
     
     std::cout << "potential neutral seeds (ec seeds not matched to any charged track): " << neutralECSeedCandidates.size() << std::endl;
     hNECNeutralSeeds->Fill(neutralECSeedCandidates.size());
+
+    //calculate shower shape for seeds
+    std::vector<std::pair<PseudoJet, PseudoJet>> photonSeedCandidates;
+    for (auto ec_seed : neutralECSeedCandidates)
+    {
+
+        float seed_cluster_ene_S = 0;
+        float seed_cluster_ene_C = 0;
+
+        for (auto hit : ecalHitCollection)
+        {
+            PseudoJet scint_hit = hit.first;
+            PseudoJet cher_hit = hit.second;
+
+            float dd_seed = ec_seed.first.delta_R(scint_hit);
+            if (dd_seed < ec_cluster_R) //hit within seed integration cone
+            {
+                seed_cluster_ene_S+=scint_hit.E();
+                seed_cluster_ene_C+=cher_hit.E();
+            }
+        }
+
+        float seed_shower_shape_S = ec_seed.first.E()/seed_cluster_ene_S;
+        float seed_shower_shape_C = ec_seed.second.E()/seed_cluster_ene_C;
+        hNeutralSeedShowerShapeScint->Fill(ec_seed.first.E(),seed_shower_shape_S);
+        hNeutralSeedShowerShapeCher ->Fill(ec_seed.second.E(),seed_shower_shape_C);
+        hNeutralSeedCSratio->Fill(ec_seed.first.E(),ec_seed.first.E()/ec_seed.second.E());
+
+//         std::cout << "S = " << ec_seed.first.E() << " :: S/C = " << ec_seed.first.E()/ec_seed.second.E() << ":: S_tot/C_tot " << seed_cluster_ene_S/seed_cluster_ene_C<< " :: seed_shower_shape_S = " << seed_shower_shape_S << " :: seed_shower_shape_C = " << seed_shower_shape_C << std::endl;
+
+        if ( (seed_shower_shape_S < 0.95 && seed_cluster_ene_S/seed_cluster_ene_C < 10 )
+            || ec_seed.first.E() > 0.3 //include all non mips seeds
+        ) photonSeedCandidates.push_back(std::make_pair(ec_seed.first, ec_seed.second));
+    }
+
+    std::cout << "potential photon seeds (passing photon shower shape cuts): " << photonSeedCandidates.size() << std::endl;
+
     
     //cluster hits around seeds to find if transverse shower shape is compatible with a photon
     int hits_remained  = 0;
@@ -1010,7 +1052,8 @@ std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet
         
         if (scint_hit.user_index() == flag_JES)
         {
-            for (auto ec_seed : neutralECSeedCandidates)
+//             for (auto ec_seed : neutralECSeedCandidates)
+            for (auto ec_seed : photonSeedCandidates)
             {
                 float dd_seed = ec_seed.first.delta_R(scint_hit);
                 if (dd_seed < ec_cluster_R) //ecal hit not matched to any charged track then the hcal hit is from a neutral
