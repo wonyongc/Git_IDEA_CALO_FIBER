@@ -402,9 +402,14 @@ int main(int argc, char** argv)
   TH1F* hHCALResidualDRO = new TH1F ("hHCALResidualDRO", "hHCALResidualDRO",  800, -2, 2);
   TH1F* hNeutralResidualDRO = new TH1F ("hNeutralResidualDRO", "hNeutralResidualDRO", NBIN, -3, 3);
 
+  TH1F* hTotCaloResidual = new TH1F ("hTotCaloResidual", "hTotCaloResidual", NBIN, -3, 3);
+  TH1F* hTotCaloResidualDRO = new TH1F ("hTotCaloResidualDRO", "hTotCaloResidualDRO", NBIN, -3, 3);
+
   TH1F* hNGammaMC    = new TH1F ("hNGammaMC", "hNGammaMC", 200, -0.5, 199.5);
   TH1F* hNNeutrHadMC = new TH1F ("hNNeutrHadMC", "hNNeutrHadMC", 200, -0.5, 199.5);
   TH1F* hNChPionsMC  = new TH1F ("hNChPionsMC", "hNChPionsMC", 200, -0.5, 199.5);
+
+  TH1F* hNGammaMC_Sel    = new TH1F ("hNGammaMC_Sel", "hNGammaMC_Sel", 200, -0.5, 199.5);
 
   TH2F * hRAW_ScatterEne = new TH2F ("hRAW_ScatterEne", "hRAW_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
   TH2F * hDRO_ScatterEne = new TH2F ("hDRO_ScatterEne", "hDRO_ScatterEne", NBIN, -75, 75, NBIN, -75, 75);
@@ -432,6 +437,12 @@ int main(int argc, char** argv)
   TH1F* hRatioNHitsPhotonSeedAlgo = new TH1F ("hRatioNHitsPhotonSeedAlgo", "hRatioNHitsPhotonSeedAlgo",  100, 0, 10);
 
   TH1F* hNECNeutralSeeds = new TH1F ("hNECNeutralSeeds", "hNECNeutralSeeds", 200, -0.5, 199.5);
+  TH1F* hFracMatchSeedMCAlgos = new TH1F("hFracMatchSeedMCAlgos", "hFracMatchSeedMCAlgos", 40, 0, 1);
+
+  TH2F* hNeutralSeedShowerShapeScint = new TH2F("hNeutralSeedShowerShapeScint", "hNeutralSeedShowerShapeScint", 1000, 0, 10, 100, 0, 1);
+  TH2F* hNeutralSeedShowerShapeCher = new TH2F("hNeutralSeedShowerShapeCher", "hNeutralSeedShowerShapeCher", 1000, 0, 10, 100, 0, 1);
+  TH2F* hNeutralSeedCSratio = new TH2F("hNeutralSeedCSratio", "hNeutralSeedCSratio", 1000, 0, 10, 100, 0, 10);
+
 
     
   ///*******************************************///
@@ -950,7 +961,8 @@ int main(int argc, char** argv)
 //     std::vector<PseudoJet> 
     std::cout << "MC truth photons in event: " << nGamma << std::endl;
     std::pair<std::vector<std::pair<PseudoJet, PseudoJet>>,std::vector<std::pair<PseudoJet, PseudoJet>> >
-              cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits, Bfield, maxDeltaRMatchEcal, hNECNeutralSeeds);
+              cleanedInputEcalHits = RunNeutralHitEcalCleaning(allChargedTracks, allEcalHits, Bfield, maxDeltaRMatchEcal,
+                                                               hNECNeutralSeeds, hNeutralSeedShowerShapeScint, hNeutralSeedShowerShapeCher, hNeutralSeedCSratio);
     
     
     std::vector<std::pair<PseudoJet, PseudoJet>> allNonPhotonCaloHits = allHcalHits;
@@ -959,7 +971,8 @@ int main(int argc, char** argv)
         allNonPhotonCaloHits.push_back(ecalHit);
     }
 
-    std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+//     std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> >
+    std::pair<std::vector<PseudoJet>,std::vector<PseudoJet > >
 //               myPfaCollection = RunProtoPFA(allChargedTracks, allCaloHits,
               myPfaCollection = RunProtoPFA(allChargedTracks, allNonPhotonCaloHits,
                                             x_factor_ecal, x_factor_hcal,
@@ -969,20 +982,26 @@ int main(int argc, char** argv)
               
     //neutral hits cleanup --> remove calo hits that are considered not matched to a neutral
     
-    
+    hNGammaMC_Sel->Fill(nGamma);
 //     myPfaCollection = RunNeutralHitsCleanUp(myPfaCollection, allChargedTracks);
     
     
-    std::vector<PseudoJet> protoPFAjets = myPfaCollection.first;
+    std::vector<PseudoJet> protoPFAjets   = myPfaCollection.first;
+    std::vector<PseudoJet> leftOverTracks = myPfaCollection.second;
     std::cout << "photon hits selected from MC photon track: " << allGammaHits.size() << " / " << allEcalHits.size() << " = " << float(allGammaHits.size())/float(allEcalHits.size()) << std::endl;
 //     std::cout << "photon hits removed from seed algo: " << cleanedInputEcalHits.second.size() << " / " << allEcalHits.size() << " = " << float(cleanedInputEcalHits.second.size())/float(allEcalHits.size()) << std::endl;
     
+    float left_track_ene = 0;
+    for (auto track : leftOverTracks)
+    {
+        left_track_ene += track.E();
+    }
+
     float gamma_ene_reco_ecal = 0;
     for (auto gamma : allGammaHits)
     {
 //         protoPFAjets.push_back(gamma*showerCorr);
         gamma_ene_reco_ecal += gamma.E()*showerCorr;
-//         std::cout << "adding photon to proto PFA ..." << std::
     }
 
     float gamma_ene_seed_algo = 0;
@@ -1009,7 +1028,7 @@ int main(int argc, char** argv)
     }
     std::cout << "matchedPhotonHitAlgo fraction = " << matchedPhotonHitAlgo << " / " << allGammaHits.size() << " = " << float(matchedPhotonHitAlgo)/float(allGammaHits.size()) << std::endl;
 
-
+    hFracMatchSeedMCAlgos->Fill(float(matchedPhotonHitAlgo)/float(allGammaHits.size()));
     hNHitsPhotonSeedAlgo->Fill(cleanedInputEcalHits.second.size());
     hNHitsMCRecoAlgo->Fill(allGammaHits.size());
     if (allGammaHits.size()!=0) hRatioNHitsPhotonSeedAlgo->Fill(float(cleanedInputEcalHits.second.size())/float(allGammaHits.size()));
@@ -1098,6 +1117,9 @@ int main(int argc, char** argv)
       {
           hNeutralResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
           hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
+
+          hTotCaloResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-left_track_ene)/(neutrals_ene+left_track_ene));
+          hTotCaloResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene_reco_ecal-neutrals_ene-left_track_ene)/(neutrals_ene+left_track_ene));
       }
       
 
@@ -1582,6 +1604,8 @@ int main(int argc, char** argv)
   hNGammaMC->Write();
   hNNeutrHadMC->Write();
   hNChPionsMC->Write();
+
+  hNGammaMC_Sel->Write();
   
   h1SwappedTrackFrac->Write();
   h1ResidualCharged->Write();
@@ -1594,6 +1618,8 @@ int main(int argc, char** argv)
   hECALResidual->Write();
   hHCALResidual->Write();
   hHCALResidualDRO->Write();
+  hTotCaloResidual->Write();
+  hTotCaloResidualDRO->Write();
   
   hDeltaThetaJet->Write();
   hDeltaEtaJet->Write();
@@ -1610,7 +1636,12 @@ int main(int argc, char** argv)
   hNHitsPhotonSeedAlgo->Write();
   hRatioNHitsPhotonSeedAlgo->Write();
   hNECNeutralSeeds->Write();
-  
+
+  hFracMatchSeedMCAlgos->Write();
+  hNeutralSeedShowerShapeScint->Write();
+  hNeutralSeedShowerShapeCher->Write();
+  hNeutralSeedCSratio->Write();
+
   
   outputFile->Write();
   outputFile->Close();
