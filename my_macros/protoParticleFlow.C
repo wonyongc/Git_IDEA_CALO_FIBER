@@ -1393,26 +1393,28 @@ int main(int argc, char** argv)
   leg->Draw();
   */
   
-  TCanvas * cJetCompositionNParticles = new TCanvas ("cJetCompositionNParticles", "cJetCompositionNParticles", 500, 500);  
-  cJetCompositionNParticles->cd();
+  if (local)
+  {
+      TCanvas * cJetCompositionNParticles = new TCanvas ("cJetCompositionNParticles", "cJetCompositionNParticles", 500, 500);  
+      cJetCompositionNParticles->cd();
     
-  hNGammaMC->Draw();
-  hNGammaMC->SetStats(0);
-  hNGammaMC->GetXaxis()->SetTitle("E_{i}/E_{jet}");
-  hNGammaMC->GetYaxis()->SetTitle("Counts");
-  hNGammaMC->SetLineColor(kGreen+1);
+      hNGammaMC->Draw();
+      hNGammaMC->SetStats(0);
+      hNGammaMC->GetXaxis()->SetTitle("E_{i}/E_{jet}");
+      hNGammaMC->GetYaxis()->SetTitle("Counts");
+      hNGammaMC->SetLineColor(kGreen+1);
   
-  hNNeutrHadMC->Draw("same");
-  hNNeutrHadMC->SetLineColor(kRed+1);
+      hNNeutrHadMC->Draw("same");
+      hNNeutrHadMC->SetLineColor(kRed+1);
   
-  hNChPionsMC->Draw("same");
-  hNChPionsMC->SetLineColor(kBlack);
+      hNChPionsMC->Draw("same");
+      hNChPionsMC->SetLineColor(kBlack);
     
-  leg = new TLegend(0.65,0.65,0.88,0.88,NULL,"brNDC");  
-  leg->AddEntry(hNGammaMC, "#gamma", "lpf");
-  leg->AddEntry(hNNeutrHadMC, "K^{0,L}, neutrons", "lpf");
-  leg->AddEntry(hNChPionsMC, "Charged hadrons", "lpf");
-  leg->Draw();
+      leg = new TLegend(0.65,0.65,0.88,0.88,NULL,"brNDC");  
+      leg->AddEntry(hNGammaMC, "#gamma", "lpf");
+      leg->AddEntry(hNNeutrHadMC, "K^{0,L}, neutrons", "lpf");
+      leg->AddEntry(hNChPionsMC, "Charged hadrons", "lpf");
+      leg->Draw();
   
 //   hNeutralResidual->SetLineColor(kBlack);
 //   hNeutralResidual->Draw();
@@ -1442,87 +1444,90 @@ int main(int argc, char** argv)
   leg->Draw();
     */
   
+      TCanvas * cCaloHitsEne = new TCanvas ("cCaloHitsEne", "cCaloHitsEne", 1000, 500);
+      cCaloHitsEne->Divide(2);
+      cCaloHitsEne->cd(1);
+      hEcalHitsEne->SetStats(0);
+      hEcalHitsEne->Draw();
+      hEcalHitsEne->SetTitle("ECAL hits ene");
+      hEcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
+      hEcalHitsEne->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
-  TCanvas * cCaloHitsEne = new TCanvas ("cCaloHitsEne", "cCaloHitsEne", 1000, 500);
-  cCaloHitsEne->Divide(2);
-  cCaloHitsEne->cd(1);
-  hEcalHitsEne->SetStats(0);
-  hEcalHitsEne->Draw();
-  hEcalHitsEne->SetTitle("ECAL hits ene");
-  hEcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
-  hEcalHitsEne->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
-  
-  cCaloHitsEne->cd(2);
-  hHcalHitsEne->Draw();
-  hHcalHitsEne->SetStats(0);
-  hHcalHitsEne->SetTitle("HCAL hits ene");
-  hHcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
-  hHcalHitsEne->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
+      cCaloHitsEne->cd(2);
+      hHcalHitsEne->Draw();
+      hHcalHitsEne->SetStats(0);
+      hHcalHitsEne->SetTitle("HCAL hits ene");
+      hHcalHitsEne->GetXaxis()->SetTitle("Hit energy [GeV]");
+      hHcalHitsEne->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
     
-  TCanvas * cScatter2DPFA = new TCanvas ("cScatter2DPFA", "cScatter2DPFA", 1000, 500);
-  cScatter2DPFA->Divide(2);
-  cScatter2DPFA->cd(1);
+      TCanvas * cScatter2DPFA = new TCanvas ("cScatter2DPFA", "cScatter2DPFA", 1000, 500);
+      cScatter2DPFA->Divide(2);
+      cScatter2DPFA->cd(1);
 //   h1SwappedTrackFrac->SetStats(0);
-  h1SwappedTrackFrac->Draw();
-  h1SwappedTrackFrac->SetTitle("Charged tracks");
-  h1SwappedTrackFrac->GetYaxis()->SetTitle("Counts");
-  h1SwappedTrackFrac->GetXaxis()->SetTitle("Fraction of charged tracks swapped");
-  gPad->SetLogy();
+      h1SwappedTrackFrac->Draw();
+      h1SwappedTrackFrac->SetTitle("Charged tracks");
+      h1SwappedTrackFrac->GetYaxis()->SetTitle("Counts");
+      h1SwappedTrackFrac->GetXaxis()->SetTitle("Fraction of charged tracks swapped");
+      gPad->SetLogy();
     
 //   TCanvas * cResidualChargedPFA = new TCanvas ("cResidualChargedPFA", "cResidualChargedPFA");
 //   cResidualChargedPFA->cd();
-  cScatter2DPFA->cd(2);
-  h1ResidualCharged->Draw();
+      cScatter2DPFA->cd(2);
+      h1ResidualCharged->Draw();
 //   h1ResidualCharged->SetStats(0);
-  h1ResidualCharged->SetTitle("Charged tracks");
-  h1ResidualCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  h1ResidualCharged->GetYaxis()->SetTitle("Counts");
+      h1ResidualCharged->SetTitle("Charged tracks");
+      h1ResidualCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+      h1ResidualCharged->GetYaxis()->SetTitle("Counts");
 //   h1ResidualTotCharged->SetLineColor(kGreen+1);
 //   h1ResidualTotCharged->Draw("same");
-  gPad->SetLogy();
+      gPad->SetLogy();
   
    
-  TCanvas * cJetEta = new TCanvas ("cJetEta", "cJetEta", 1000, 500);
-  cJetEta->Divide(2);
-  cJetEta->cd(1);
-  hEtaJet->SetStats(0);
-  hEtaJet->Draw();
+      TCanvas * cJetEta = new TCanvas ("cJetEta", "cJetEta", 1000, 500);
+      cJetEta->Divide(2);
+      cJetEta->cd(1);
+      hEtaJet->SetStats(0);
+      hEtaJet->Draw();
 //   hEtaJet->SetTitle("ECAL hits ene");
-  hEtaJet->GetXaxis()->SetTitle("|#eta|");
-  hEtaJet->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
+      hEtaJet->GetXaxis()->SetTitle("|#eta|");
+      hEtaJet->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
-  cJetEta->cd(2);
-  hDeltaEtaJet->Draw();
-  hDeltaEtaJet->SetStats(0);
+      cJetEta->cd(2);
+      hDeltaEtaJet->Draw();
+      hDeltaEtaJet->SetStats(0);
 //   hDeltaEtaJet->SetTitle("HCAL hits ene");
-  hDeltaEtaJet->GetXaxis()->SetTitle("|#Delta #eta|");
-  hDeltaEtaJet->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
+      hDeltaEtaJet->GetXaxis()->SetTitle("|#Delta #eta|");
+      hDeltaEtaJet->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
   
-    TCanvas * cJetTheta = new TCanvas ("cJetTheta", "cJetTheta", 1000, 500);
-  cJetTheta->Divide(2);
-  cJetTheta->cd(1);
-  hThetaJet->SetStats(0);
-  hThetaJet->Draw();
+      TCanvas * cJetTheta = new TCanvas ("cJetTheta", "cJetTheta", 1000, 500);
+      cJetTheta->Divide(2);
+      cJetTheta->cd(1);
+      hThetaJet->SetStats(0);
+      hThetaJet->Draw();
 //   hThetaJet->SetTitle("ECAL hits ene");
-  hThetaJet->GetXaxis()->SetTitle("|#theta|");
-  hThetaJet->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
+      hThetaJet->GetXaxis()->SetTitle("|#theta|");
+      hThetaJet->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
-  cJetTheta->cd(2);
-  hDeltaThetaJet->Draw();
-  hDeltaThetaJet->SetStats(0);
+      cJetTheta->cd(2);
+      hDeltaThetaJet->Draw();
+      hDeltaThetaJet->SetStats(0);
 //   hDeltaThetaJet->SetTitle("HCAL hits ene");
-  hDeltaThetaJet->GetXaxis()->SetTitle("|#Delta #theta|");
-  hDeltaThetaJet->GetYaxis()->SetTitle("Counts");
-  gPad->SetLogy();
+      hDeltaThetaJet->GetXaxis()->SetTitle("|#Delta #theta|");
+      hDeltaThetaJet->GetYaxis()->SetTitle("Counts");
+      gPad->SetLogy();
   
-  
+  }
+
+  if (local) std::cout << "Finished plotting" << std::endl;
+
+  std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) << std::endl;
 //   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) , "RECREATE");
   outputFile->cd();
@@ -1662,287 +1667,228 @@ int main(int argc, char** argv)
   
   std::cout << "************************************************" << std::endl;
   
-  TF1 * fitGausResidual;  
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  /*
-  TCanvas * cPFA_Checks = new TCanvas ("cPFA_Checks", "cPFA_Checks", 2000, 500);
-  cPFA_Checks->Divide(4,1);
+
+
+  std::cout << "additional fitting and plotting " << std::endl;
+  if (local)
+  {
+      TF1 * fitGausResidual;  
+      fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+
+      TLatex latex;
   
+      TCanvas * cECAL_Hits_Check = new TCanvas ("cECAL_Hits_Check", "cECAL_Hits_Check", 600, 600);  
+      cECAL_Hits_Check->cd();
+      hECALResidual->SetTitle("Gamma (in ECAL only)");
+      hECALResidual->SetLineColor(kGreen+1);
+      hECALResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+      hECALResidual->GetYaxis()->SetTitle("Counts");
+      hECALResidual->Draw();
+      hECALResidual->GetXaxis()->SetRangeUser(-0.5,0.5);
+      hECALResidual->Fit(fitGausResidual, "SQR");  
+      std::cout << " gamma ecal_reco - mc_gamma --> " << fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
+      fitGausResidual->Draw("same");  
+      gPad->SetLogy();
+      latex.SetTextSize(0.035);
+      latex.SetTextAlign(12);  //align at top
+      latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
+      if (SAVEPLOTS) cECAL_Hits_Check->SaveAs("plots_pfa/cECAL_Hits_Check.png");
   
-  cPFA_Checks->cd(1);
-  
-  hECALResidual->SetTitle("Gamma (in ECAL only)");
-  hECALResidual->SetLineColor(kGreen+1);
-  hECALResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hECALResidual->GetYaxis()->SetTitle("Counts");
-  hECALResidual->Draw();
-  hECALResidual->GetXaxis()->SetRangeUser(-1,1);
-  hECALResidual->Fit(fitGausResidual, "SQR");  
-  std::cout << " gamma ecal_reco - mc_gamma --> " << fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");  
-  gPad->SetLogy();
-    
-  
-  cPFA_Checks->cd(2);  
-  hNeutrHadResidual->SetTitle("Neutral Hadrons");
-  hNeutrHadResidual->SetLineColor(kBlue+1);
-  hNeutrHadResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hNeutrHadResidual->GetYaxis()->SetTitle("Counts");  
-  hNeutrHadResidual->Draw();
-  hNeutrHadResidual->GetXaxis()->SetRangeUser(-3,3);
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  hNeutrHadResidual->Fit(fitGausResidual, "SQR");  
-  fitGausResidual->Draw("same");
-  std::cout << " n.hadr tot_reco - mc_n.hadr --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
-  gPad->SetLogy();
-  
-  cPFA_Checks->cd(3);  
-  h1ResidualTotCharged->SetTitle("Charged tracks");
-  h1ResidualTotCharged->SetLineColor(kBlack);
-  h1ResidualTotCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  h1ResidualTotCharged->GetYaxis()->SetTitle("Counts");  
-  h1ResidualTotCharged->Draw();
-  h1ResidualTotCharged->GetXaxis()->SetRangeUser(-0.4,0.4);
-    fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  h1ResidualTotCharged->Fit(fitGausResidual, "SQR");  
-  std::cout << "swapped charged tot_reco - mc_charged --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");  
-  gPad->SetLogy();
-  
-  
-  cPFA_Checks->cd(4);  
-  hNeutralResidual->SetTitle("Total neutrals");
-  hNeutralResidual->SetLineColor(kBlack);
-  hNeutralResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hNeutralResidual->GetYaxis()->SetTitle("Counts");  
-  hNeutralResidual->Draw();
-  hNeutralResidual->GetXaxis()->SetRangeUser(-2,2);
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  hNeutralResidual->Fit(fitGausResidual, "SQR");  
-  std::cout << " neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");  
-  
-  hNeutralResidualDRO->Draw("same");
-  hNeutralResidualDRO->SetLineColor(kYellow+2);
-  fitGausResidual->SetLineColor(kOrange);
-  hNeutralResidualDRO->Fit(fitGausResidual, "SQR");  
-  std::cout << "DRO_neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");    
-  gPad->SetLogy();
-  */
-  TLatex latex;
-  
-  TCanvas * cECAL_Hits_Check = new TCanvas ("cECAL_Hits_Check", "cECAL_Hits_Check", 600, 600);  
-  cECAL_Hits_Check->cd();
-  hECALResidual->SetTitle("Gamma (in ECAL only)");
-  hECALResidual->SetLineColor(kGreen+1);
-  hECALResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hECALResidual->GetYaxis()->SetTitle("Counts");
-  hECALResidual->Draw();
-  hECALResidual->GetXaxis()->SetRangeUser(-0.5,0.5);
-  hECALResidual->Fit(fitGausResidual, "SQR");  
-  std::cout << " gamma ecal_reco - mc_gamma --> " << fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
-  fitGausResidual->Draw("same");  
-  gPad->SetLogy();
-  latex.SetTextSize(0.035);
-  latex.SetTextAlign(12);  //align at top
-  latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  if (SAVEPLOTS) cECAL_Hits_Check->SaveAs("plots_pfa/cECAL_Hits_Check.png");
-  
-    TCanvas * cCharged_Check = new TCanvas ("cCharged_Check", "cCharged_Check", 600, 600);  
-  cCharged_Check->cd();
-  h1ResidualTotCharged->SetTitle("Charged tracks");
-  h1ResidualTotCharged->SetLineColor(kBlack);
-  h1ResidualTotCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  h1ResidualTotCharged->GetYaxis()->SetTitle("Counts");  
-  h1ResidualTotCharged->Draw();
-  h1ResidualTotCharged->GetXaxis()->SetRangeUser(-0.4,0.4);
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  h1ResidualTotCharged->Fit(fitGausResidual, "SQR");  
-  std::cout << "swapped charged tot_reco - mc_charged --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same"); 
-  gPad->SetLogy();
-  
-  latex.SetTextSize(0.035);
-  latex.SetTextAlign(12);  //align at top
-  latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  if (SAVEPLOTS) cCharged_Check->SaveAs("plots_pfa/cCharged_Check.png");
+      TCanvas * cCharged_Check = new TCanvas ("cCharged_Check", "cCharged_Check", 600, 600);  
+      cCharged_Check->cd();
+      h1ResidualTotCharged->SetTitle("Charged tracks");
+      h1ResidualTotCharged->SetLineColor(kBlack);
+      h1ResidualTotCharged->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+      h1ResidualTotCharged->GetYaxis()->SetTitle("Counts");  
+      h1ResidualTotCharged->Draw();
+      h1ResidualTotCharged->GetXaxis()->SetRangeUser(-0.4,0.4);
+      fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+      h1ResidualTotCharged->Fit(fitGausResidual, "SQR");  
+      std::cout << "swapped charged tot_reco - mc_charged --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+      fitGausResidual->Draw("same"); 
+      gPad->SetLogy();
+      
+      latex.SetTextSize(0.035);
+      latex.SetTextAlign(12);  //align at top
+      latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
+      if (SAVEPLOTS) cCharged_Check->SaveAs("plots_pfa/cCharged_Check.png");
   
   
 
-  TCanvas * cNeutralHad_Check = new TCanvas ("cNeutralHad_Check", "cNeutralHad_Check", 600, 600);  
-  cNeutralHad_Check->cd();
-  hNeutrHadResidual->SetTitle("Neutral Hadrons");
-  hNeutrHadResidual->SetLineColor(kBlue+1);
-  hNeutrHadResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hNeutrHadResidual->GetYaxis()->SetTitle("Counts");  
-  hNeutrHadResidual->Draw();
-  hNeutrHadResidual->GetXaxis()->SetRangeUser(-3,3);
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  hNeutrHadResidual->Fit(fitGausResidual, "SQR");  
-  fitGausResidual->Draw("same");
-  std::cout << " n.hadr tot_reco - mc_n.hadr --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
-  gPad->SetLogy();
-  latex.SetTextSize(0.035);
-  latex.SetTextAlign(12);  //align at top
-  latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  if (SAVEPLOTS) cNeutralHad_Check->SaveAs("plots_pfa/cNeutralHad_Check.png");
+      TCanvas * cNeutralHad_Check = new TCanvas ("cNeutralHad_Check", "cNeutralHad_Check", 600, 600);  
+      cNeutralHad_Check->cd();
+      hNeutrHadResidual->SetTitle("Neutral Hadrons");
+      hNeutrHadResidual->SetLineColor(kBlue+1);
+      hNeutrHadResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+      hNeutrHadResidual->GetYaxis()->SetTitle("Counts");  
+      hNeutrHadResidual->Draw();
+      hNeutrHadResidual->GetXaxis()->SetRangeUser(-3,3);
+      fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+      hNeutrHadResidual->Fit(fitGausResidual, "SQR");  
+      fitGausResidual->Draw("same");
+      std::cout << " n.hadr tot_reco - mc_n.hadr --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;  
+      gPad->SetLogy();
+      latex.SetTextSize(0.035);
+      latex.SetTextAlign(12);  //align at top
+      latex.DrawLatexNDC(.15,.85, Form("mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
+      if (SAVEPLOTS) cNeutralHad_Check->SaveAs("plots_pfa/cNeutralHad_Check.png");
+      
   
   
-  
-    TCanvas * cNeutralsTot_Check = new TCanvas ("cNeutralsTot_Check", "cNeutralsTot_Check", 600, 600);  
-  cNeutralsTot_Check->cd();
-  hNeutralResidual->SetTitle("Total neutrals");
-  hNeutralResidual->SetLineColor(kBlack);
-  hNeutralResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
-  hNeutralResidual->GetYaxis()->SetTitle("Counts");  
-  hNeutralResidual->Draw();
-  hNeutralResidual->GetXaxis()->SetRangeUser(-2,2);
-  fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
-  hNeutralResidual->Fit(fitGausResidual, "SQR");  
-  std::cout << " neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");  
-  latex.SetTextSize(0.035);
-  latex.SetTextAlign(12);  //align at top
-  latex.DrawLatexNDC(.15,.85, Form("RAW --> mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  
-  hNeutralResidualDRO->Draw("same");
-  hNeutralResidualDRO->SetLineColor(kYellow+2);
-  fitGausResidual->SetLineColor(kOrange);
-  hNeutralResidualDRO->Fit(fitGausResidual, "SQR");  
-  std::cout << "DRO_neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
-  fitGausResidual->Draw("same");    
-  gPad->SetLogy();
-  
-  latex.SetTextSize(0.035);
-  latex.SetTextAlign(12);  //align at top
-  latex.DrawLatexNDC(.15,.75, Form("DRO --> mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
-  if (SAVEPLOTS) cNeutralsTot_Check->SaveAs("plots_pfa/cNeutralsTot_Check.png");
-  
-  
-  
-  std::cout << "************************************************" << std::endl;
-  TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
-  cMassJJ->cd();
-  hMCT_MassJJ->Draw();
-  //  hMCT_MassJJ->SetStats(0);
-  hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
-  hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
-  hMCT_MassJJ->GetXaxis()->SetRangeUser(thismass-30, thismass+30);
-  hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
-  hMCT_MassJJ->SetLineColor(kBlack);
-  hMCT_MassJJ->SetStats(0);
-  
-  hRAW_MassJJ->Draw("same");
-  hRAW_MassJJ->SetLineColor(kRed+1);
-  
-  TF1 * fitGaus = new TF1 ("fitGaus", "gaus", thismass-30, thismass+30);
-
-  hMCTFastSim_MassJJ->Draw("same");
-  hMCTFastSim_MassJJ->SetLineColor(kBlue);
-  fitGaus->SetLineColor(kBlue);
-  hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-//   std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetRMS() << " / " << hMCTFastSim_MassJJ->GetMean() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
-  
-  
-  fitGaus->SetLineColor(kRed);
-  hRAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+      TCanvas * cNeutralsTot_Check = new TCanvas ("cNeutralsTot_Check", "cNeutralsTot_Check", 600, 600);  
+      cNeutralsTot_Check->cd();
+      hNeutralResidual->SetTitle("Total neutrals");
+      hNeutralResidual->SetLineColor(kBlack);
+      hNeutralResidual->GetXaxis()->SetTitle("(E_{reco} - E_{MC}) / E_{MC}");
+      hNeutralResidual->GetYaxis()->SetTitle("Counts");  
+      hNeutralResidual->Draw();
+      hNeutralResidual->GetXaxis()->SetRangeUser(-2,2);
+      fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
+      hNeutralResidual->Fit(fitGausResidual, "SQR");  
+      std::cout << " neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+      fitGausResidual->Draw("same");  
+      latex.SetTextSize(0.035);
+      latex.SetTextAlign(12);  //align at top
+      latex.DrawLatexNDC(.15,.85, Form("RAW --> mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
+      
+      hNeutralResidualDRO->Draw("same");
+      hNeutralResidualDRO->SetLineColor(kYellow+2);
+      fitGausResidual->SetLineColor(kOrange);
+      hNeutralResidualDRO->Fit(fitGausResidual, "SQR");  
+      std::cout << "DRO_neutrals tot_reco - mc_neutrals --> "<< fitGausResidual->GetParameter(1) << " +/- " << fitGausResidual->GetParameter(2) << std::endl;
+      fitGausResidual->Draw("same");    
+      gPad->SetLogy();
+      
+      latex.SetTextSize(0.035);
+      latex.SetTextAlign(12);  //align at top
+      latex.DrawLatexNDC(.15,.75, Form("DRO --> mean:%.3f, #sigma = %.3f", fitGausResidual->GetParameter(1), fitGausResidual->GetParameter(2) ));  
+      if (SAVEPLOTS) cNeutralsTot_Check->SaveAs("plots_pfa/cNeutralsTot_Check.png");
+      
+      
+      
+      std::cout << "************************************************" << std::endl;
+      TCanvas * cMassJJ = new TCanvas ("cMassJJ", "cMassJJ", 600, 500);
+      cMassJJ->cd();
+      hMCT_MassJJ->Draw();
+      //  hMCT_MassJJ->SetStats(0);
+      hMCT_MassJJ->GetXaxis()->SetTitle("M_{jj} [GeV]");
+      hMCT_MassJJ->GetYaxis()->SetTitle("Counts");
+      hMCT_MassJJ->GetXaxis()->SetRangeUser(thismass-30, thismass+30);
+      hMCT_MassJJ->GetYaxis()->SetRangeUser(1, 1000);
+      hMCT_MassJJ->SetLineColor(kBlack);
+      hMCT_MassJJ->SetStats(0);
+      
+      hRAW_MassJJ->Draw("same");
+      hRAW_MassJJ->SetLineColor(kRed+1);
+      
+      TF1 * fitGaus = new TF1 ("fitGaus", "gaus", thismass-30, thismass+30);
+      
+      hMCTFastSim_MassJJ->Draw("same");
+      hMCTFastSim_MassJJ->SetLineColor(kBlue);
+      fitGaus->SetLineColor(kBlue);
+      hMCTFastSim_MassJJ->Fit(fitGaus, "QR");
+      std::cout << "fast sim mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+      //   std::cout << "fast sim mjj RMS/mean = " << hMCTFastSim_MassJJ->GetRMS() << " / " << hMCTFastSim_MassJJ->GetMean() << " = " << hMCTFastSim_MassJJ->GetRMS()/hMCTFastSim_MassJJ->GetMean() <<std::endl;
+      
+      
+      fitGaus->SetLineColor(kRed);
+      hRAW_MassJJ->Fit(fitGaus, "QR");
+      std::cout << "raw mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
 //   std::cout << "raw mjj RMS/mean = " << hRAW_MassJJ->GetRMS() << " / " << hRAW_MassJJ->GetMean() << " = " << hRAW_MassJJ->GetRMS()/hRAW_MassJJ->GetMean() <<std::endl;
   
   
-  hDRO_MassJJ->Draw("same");
-  hDRO_MassJJ->SetLineColor(kGreen+1);
-  hDRO_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kGreen);
-  hDRO_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-//   std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetRMS() << " / " << hDRO_MassJJ->GetMean() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
+      hDRO_MassJJ->Draw("same");
+      hDRO_MassJJ->SetLineColor(kGreen+1);
+      hDRO_MassJJ->SetLineWidth(2);
+      fitGaus->SetLineColor(kGreen);
+      hDRO_MassJJ->Fit(fitGaus, "QR");
+      std::cout << "dro mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+      //   std::cout << "dro mjj RMS/mean = " << hDRO_MassJJ->GetRMS() << " / " << hDRO_MassJJ->GetMean() << " = " << hDRO_MassJJ->GetRMS()/hDRO_MassJJ->GetMean() <<std::endl;
+      
+      
+      hPFA_RAW_MassJJ->Draw("same");
+      hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
+      hPFA_RAW_MassJJ->SetLineWidth(2);
+      //   hPFA_RAW_MassJJ->SetFillColor(kCyan);
+      fitGaus->SetLineColor(kYellow+1);
+      hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
+      std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+      //   std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetRMS() << " / " << hPFA_RAW_MassJJ->GetMean() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
+      
+      
+      hPFA_MassJJ->Draw("same");
+      hPFA_MassJJ->SetLineColor(kViolet);
+      //   hPFA_MassJJ->SetFillColor(kViolet);
+      hPFA_MassJJ->SetLineWidth(2);
+      fitGaus->SetLineColor(kViolet);
+      hPFA_MassJJ->Fit(fitGaus, "QR");
+      
+      std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
+      //   std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetRMS() << " / " << hPFA_MassJJ->GetMean() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
+      
+      
+      leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
+      leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
+      leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
+      leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
+      leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
+      leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
+      leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
+      
+      leg->Draw();
+      gPad->SetLogy();
+      
+      
+      
+      std::cout << "************************************************" << std::endl;
+      
+      TF1 * fitGausJet = new TF1 ("fitGausJet", "gaus", -0.5, 0.5);
+      TCanvas * cJetEneDiff = new TCanvas ("cJetEneDiff", "cJetEneDiff", 1000, 500);
+      cJetEneDiff->Divide(2,1);
+      cJetEneDiff->cd(1);    
+      hPFA_Jet1EneDiff->Rebin(4);
+      hPFA_Jet1EneDiff->Draw();  
+      hPFA_Jet1EneDiff->SetTitle("Jet 1");
+      hPFA_Jet1EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
+      hPFA_Jet1EneDiff->GetYaxis()->SetTitle("Counts");
+      hPFA_Jet1EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
+      gPad->SetLogy();
+      hPFA_Jet1EneDiff->SetLineColor(kBlack);
+      hPFA_Jet1EneDiff->Fit(fitGausJet, "QR");
+      std::cout << "E j1 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
+      
+      cJetEneDiff->cd(2);    
+      hPFA_Jet2EneDiff->Rebin(4);
+      hPFA_Jet2EneDiff->Draw();  
+      hPFA_Jet2EneDiff->SetTitle("Jet 2");
+      hPFA_Jet2EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
+      hPFA_Jet2EneDiff->GetYaxis()->SetTitle("Counts");
+      hPFA_Jet2EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
+      hPFA_Jet2EneDiff->SetLineColor(kBlack);
+      gPad->SetLogy();
+      hPFA_Jet2EneDiff->Fit(fitGausJet, "QR");  
+      std::cout << "E j2 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
+      
+      
+      TCanvas * cTotEneDiff = new TCanvas ("cTotEneDiff", "cTotEneDiff", 600,600);
+      cTotEneDiff->cd();
+      hRAW_EneTotDiff->Draw();
+      hRAW_EneTotDiff->SetLineColor(kRed+1);
+      hRAW_EneTotDiff->Fit(fitGausJet, "QR");
+      std::cout << "RAW E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hRAW_EneTotDiff)*sqrt(2) << std::endl;
+      
+      hDRO_EneTotDiff->Draw("same");
+      hDRO_EneTotDiff->SetLineColor(kGreen+1);
+      hDRO_EneTotDiff->Fit(fitGausJet, "QR");
+      std::cout << "DRO E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hDRO_EneTotDiff)*sqrt(2) << std::endl;
+      
+      hPFA_EneTotDiff->Draw("same");
+      hPFA_EneTotDiff->SetLineColor(kBlue+1);
+      hPFA_EneTotDiff->Fit(fitGausJet, "QR");
+      std::cout << "PFA E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hPFA_EneTotDiff)*sqrt(2) << std::endl;
   
-  
-  hPFA_RAW_MassJJ->Draw("same");
-  hPFA_RAW_MassJJ->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->SetLineWidth(2);
-//   hPFA_RAW_MassJJ->SetFillColor(kCyan);
-  fitGaus->SetLineColor(kYellow+1);
-  hPFA_RAW_MassJJ->Fit(fitGaus, "QR");
-  std::cout << "PFA RAW mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-//   std::cout << "PFA RAW mjj RMS/mean = " << hPFA_RAW_MassJJ->GetRMS() << " / " << hPFA_RAW_MassJJ->GetMean() << " = " << hPFA_RAW_MassJJ->GetRMS()/hPFA_RAW_MassJJ->GetMean() <<std::endl;
-  
-  
-  hPFA_MassJJ->Draw("same");
-  hPFA_MassJJ->SetLineColor(kViolet);
-//   hPFA_MassJJ->SetFillColor(kViolet);
-  hPFA_MassJJ->SetLineWidth(2);
-  fitGaus->SetLineColor(kViolet);
-  hPFA_MassJJ->Fit(fitGaus, "QR");
-  
-  std::cout << "PFA DRO mjj resolution = " << fitGaus->GetParameter(2) << " / " << fitGaus->GetParameter(1) << " = " << fitGaus->GetParameter(2)/fitGaus->GetParameter(1) <<std::endl;
-//   std::cout << "PFA DRO mjj RMS/mean = " << hPFA_MassJJ->GetRMS() << " / " << hPFA_MassJJ->GetMean() << " = " << hPFA_MassJJ->GetRMS()/hPFA_MassJJ->GetMean() <<std::endl;
-  
-  
-  leg = new TLegend(0.75,0.75,0.95,0.95,NULL,"brNDC");
-  leg->AddEntry(hMCT_MassJJ, "MC truth", "lpf");
-  leg->AddEntry(hMCTFastSim_MassJJ, "Fast Sim", "lpf");
-  leg->AddEntry(hRAW_MassJJ, "Raw calo jet", "lpf");
-  leg->AddEntry(hDRO_MassJJ, "DRO calo jet", "lpf");
-  leg->AddEntry(hPFA_MassJJ, "Proto PFA", "lpf");
-  leg->AddEntry(hPFA_RAW_MassJJ, "Proto PFA raw", "lpf");
-
-  leg->Draw();
-  gPad->SetLogy();
-  
-  
-  
-  std::cout << "************************************************" << std::endl;
-  
-  TF1 * fitGausJet = new TF1 ("fitGausJet", "gaus", -0.5, 0.5);
-  TCanvas * cJetEneDiff = new TCanvas ("cJetEneDiff", "cJetEneDiff", 1000, 500);
-  cJetEneDiff->Divide(2,1);
-  cJetEneDiff->cd(1);    
-  hPFA_Jet1EneDiff->Rebin(4);
-  hPFA_Jet1EneDiff->Draw();  
-  hPFA_Jet1EneDiff->SetTitle("Jet 1");
-  hPFA_Jet1EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
-  hPFA_Jet1EneDiff->GetYaxis()->SetTitle("Counts");
-  hPFA_Jet1EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
-  gPad->SetLogy();
-  hPFA_Jet1EneDiff->SetLineColor(kBlack);
-  hPFA_Jet1EneDiff->Fit(fitGausJet, "QR");
-  std::cout << "E j1 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
-  
-  cJetEneDiff->cd(2);    
-  hPFA_Jet2EneDiff->Rebin(4);
-  hPFA_Jet2EneDiff->Draw();  
-  hPFA_Jet2EneDiff->SetTitle("Jet 2");
-  hPFA_Jet2EneDiff->GetXaxis()->SetTitle("(E_{j,reco} - E_{j,MC})/E_{j,MC}");
-  hPFA_Jet2EneDiff->GetYaxis()->SetTitle("Counts");
-  hPFA_Jet2EneDiff->GetXaxis()->SetRangeUser(-0.5, 0.5);
-  hPFA_Jet2EneDiff->SetLineColor(kBlack);
-  gPad->SetLogy();
-  hPFA_Jet2EneDiff->Fit(fitGausJet, "QR");  
-  std::cout << "E j2 mean = " << fitGausJet->GetParameter(1) << " :: resolution = " << fitGausJet->GetParameter(2) <<std::endl;
-  
-  
-  TCanvas * cTotEneDiff = new TCanvas ("cTotEneDiff", "cTotEneDiff", 600,600);
-  cTotEneDiff->cd();
-  hRAW_EneTotDiff->Draw();
-  hRAW_EneTotDiff->SetLineColor(kRed+1);
-  hRAW_EneTotDiff->Fit(fitGausJet, "QR");
-  std::cout << "RAW E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hRAW_EneTotDiff)*sqrt(2) << std::endl;
-  
-  hDRO_EneTotDiff->Draw("same");
-  hDRO_EneTotDiff->SetLineColor(kGreen+1);
-  hDRO_EneTotDiff->Fit(fitGausJet, "QR");
-  std::cout << "DRO E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hDRO_EneTotDiff)*sqrt(2) << std::endl;
-  
-  hPFA_EneTotDiff->Draw("same");
-  hPFA_EneTotDiff->SetLineColor(kBlue+1);
-  hPFA_EneTotDiff->Fit(fitGausJet, "QR");
-  std::cout << "PFA E tot mean = " << fitGausJet->GetParameter(1) << " :: resolution*sqrt(2) = " << fitGausJet->GetParameter(2)*sqrt(2) << " :: rms90  = " << rms90(hPFA_EneTotDiff)*sqrt(2) << std::endl;
-  
-  gPad->SetLogy();
+      gPad->SetLogy();
+  }
   
   
   if (local) theApp->Run();
