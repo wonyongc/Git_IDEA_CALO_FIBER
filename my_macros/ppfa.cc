@@ -935,7 +935,7 @@ TH1F *hNECNeutralSeeds, TH2F *hNeutralSeedShowerShapeScint, TH2F *hNeutralSeedSh
     std::vector<std::pair<PseudoJet, PseudoJet>> neutralECSeedCandidates;
     std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeeds;
     
-    float ec_seed_th = 0.08; //mip
+    float ec_seed_th = 0.1; //mip
     float maxDeltaRIsolatedSeed = 0.015;
     float ec_mc_R_match = 0.015; //radius to consider a photon not matched to a charged track
     float ec_cluster_R = 0.013; //maxDeltaRSeedEcal
