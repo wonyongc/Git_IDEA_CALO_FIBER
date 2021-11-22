@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   bool DRO_ON    = true;
   
@@ -1118,7 +1118,7 @@ int main(int argc, char** argv)
           hNeutralResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
           hNeutralResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene_reco_ecal-neutrals_ene)/neutrals_ene);
 
-          hTotCaloResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-left_track_ene)/(neutrals_ene+left_track_ene));
+          hTotCaloResidual->Fill((neutralhad_ene_reco+gamma_ene_reco_ecal-neutrals_ene-left_track_ene)/(neutrals_ene+left_track_ene));
           hTotCaloResidualDRO->Fill((neutralhad_ene_reco_dro+gamma_ene_reco_ecal-neutrals_ene-left_track_ene)/(neutrals_ene+left_track_ene));
       }
       
