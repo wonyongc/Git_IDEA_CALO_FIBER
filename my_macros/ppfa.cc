@@ -1030,7 +1030,7 @@ TH1F *hNECNeutralSeeds, TH2F *hNeutralSeedShowerShapeScint, TH2F *hNeutralSeedSh
 
 //         std::cout << "S = " << ec_seed.first.E() << " :: S/C = " << ec_seed.first.E()/ec_seed.second.E() << ":: S_tot/C_tot " << seed_cluster_ene_S/seed_cluster_ene_C<< " :: seed_shower_shape_S = " << seed_shower_shape_S << " :: seed_shower_shape_C = " << seed_shower_shape_C << std::endl;
 
-        if ( (seed_shower_shape_S < 0.95 && seed_cluster_ene_S/seed_cluster_ene_C < 10 )
+        if ( (seed_shower_shape_S < 0.9 && seed_cluster_ene_S/seed_cluster_ene_C < 10 )
             || ec_seed.first.E() > 0.3 //include all non mips seeds
         ) photonSeedCandidates.push_back(std::make_pair(ec_seed.first, ec_seed.second));
     }
