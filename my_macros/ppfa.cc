@@ -79,7 +79,7 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
 // std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
 std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
                                     float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
-                                    TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
+                                    TH1F* h1SwappedTrackFrac, TH1F* hLowPtTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
     float hcal_stoch = 0.30;
@@ -123,6 +123,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
     
     int i_track = 0;
     int swappedTrack = 0;
+    int lowPtTrack = 0;
     for (auto track : sortedTracks)
     {
     
@@ -156,6 +157,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         {
 //             std::cout << "track with pT = " << pT << "  did not reach the calorimeter" << std::endl;
             pfaCollection.push_back(track);
+            lowPtTrack++;
             continue;
         }
         
@@ -192,7 +194,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
             scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
             effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
             
-             sortedHits = sorted_by_dd(leftCaloHits, effectiveTrackHcal);
+            sortedHits = sorted_by_dd(leftCaloHits, effectiveTrackHcal);
         }
         else 
         {
@@ -293,8 +295,10 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
     
     if (sortedTracks.size()>0) 
     {
-//         std::cout << "swapped tracks = " << swappedTrack << " / " << sortedTracks.size() << " = " << float (swappedTrack)/sortedTracks.size() << std::endl;
+        std::cout << "swapped tracks = " << swappedTrack << " / " << sortedTracks.size() << " = " << float (swappedTrack)/sortedTracks.size() << std::endl;
+        std::cout << "lowPt tracks = " << lowPtTrack << " / " << sortedTracks.size() << " = " << float (lowPtTrack)/sortedTracks.size() << std::endl;
         h1SwappedTrackFrac->Fill(float (swappedTrack)/sortedTracks.size() );
+        hLowPtTrackFrac->Fill(float (lowPtTrack)/sortedTracks.size() );
     }
     
     //add neutral hits - left over calo hits not matched to any charged track
@@ -936,9 +940,9 @@ TH1F *hNECNeutralSeeds, TH2F *hNeutralSeedShowerShapeScint, TH2F *hNeutralSeedSh
     std::vector<std::pair<PseudoJet, PseudoJet>> myEcSeeds;
     
     float ec_seed_th = 0.1; //mip
-    float maxDeltaRIsolatedSeed = 0.015;
-    float ec_mc_R_match = 0.015; //radius to consider a photon not matched to a charged track
-    float ec_cluster_R = 0.013; //maxDeltaRSeedEcal
+    float maxDeltaRIsolatedSeed = 0.014;
+    float ec_mc_R_match = 0.014; //radius to consider a photon not matched to a charged track
+    float ec_cluster_R = 0.014; //maxDeltaRSeedEcal
     
     std::cout << "total calo hits in ecal collection: " << ecalHitCollection.size() << std::endl;
     

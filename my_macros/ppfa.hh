@@ -23,7 +23,7 @@ using namespace fastjet;
 // std::vector<PseudoJet> RunProtoPFA
 std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA(std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
                                     float my_x_factor_ecal, float my_x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
-                                    TH1F* check1Histo1D, TH1F *check2Histo1D, TH1F *check3Histo1D);
+                                    TH1F* check1Histo1D, TH1F* check2Histo1D, TH1F *check3Histo1D, TH1F *check4Histo1D);
 
 std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
                                     float my_x_factor_ecal, float my_x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
