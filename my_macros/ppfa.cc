@@ -79,7 +79,7 @@ std::vector<PseudoJet> photonFinder (std::vector<PseudoJet> chargedTracks, std::
 // std::pair<std::vector<PseudoJet>,std::vector<std::pair<PseudoJet, PseudoJet>> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
 std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
                                     float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
-                                    TH1F* h1SwappedTrackFrac, TH1F* hLowPtTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
+                                    TH1F* h1SwappedTrackFrac, TH1F* hLowPtTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged, TH1F *hTotMCTracks, TH1F *hSwappedOverTot)
 {
 
     float hcal_stoch = 0.30;
@@ -299,6 +299,9 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         std::cout << "lowPt tracks = " << lowPtTrack << " / " << sortedTracks.size() << " = " << float (lowPtTrack)/sortedTracks.size() << std::endl;
         h1SwappedTrackFrac->Fill(float (swappedTrack)/sortedTracks.size() );
         hLowPtTrackFrac->Fill(float (lowPtTrack)/sortedTracks.size() );
+
+        hTotMCTracks->Fill(float (lowPtTrack + swappedTrack)/sortedTracks.size() );
+        hSwappedOverTot->Fill(float (swappedTrack)/(sortedTracks.size() + lowPtTrack) );
     }
     
     //add neutral hits - left over calo hits not matched to any charged track
@@ -323,42 +326,42 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
 
 
 
-std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet, 
+std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTracks, std::vector<std::pair<PseudoJet, PseudoJet>> hitsForJet,
                                     float x_factor_ecal, float x_factor_hcal, float Bfield, float matchPFAcut, bool DRO_ON,
                                     TH1F* h1SwappedTrackFrac, TH1F *h1ResidualCharged, TH1F *h1ResidualTotCharged)
 {
 
     std::cout << "ready to run DR-pPFA..." << std::endl;
-    
+
     float hcal_stoch = 0.30;
     float hcal_const = 0.023;
     TF1 * funcHcalRes = new TF1 ("funcHcalRes", "sqrt(pow([0]/sqrt(x),2) + pow([1],2))", 0, 300);
     funcHcalRes->SetParameters(hcal_stoch, hcal_const);
-    
+
     TF1 * funcTotHadRawResponse = new TF1 ("funcTotHadRawResponse", "[3] - [0]*pow(x,[1]) - [2]*x", 0, 200);
-    
+
     //raw new
     if (!DRO_ON) funcTotHadRawResponse->SetParameters(-0.35625, 0.193565, 0.00347531 ,0.367476);
     //dro new
     if (DRO_ON)  funcTotHadRawResponse->SetParameters(-0.364088, 0.0465792, 0.000651904, 0.59792);
-    
+
 //     float eneResponse = 0.99;
 //     float maxDeltaR_ECAL = 0.05;
 //     float maxDeltaR_HCAL = 0.3;
-    
-    
-    
+
+
+
     float trueTotCharged = 0;
     float recoTotCharged = 0;
-    
-    
+
+
     std::vector<std::pair<PseudoJet, PseudoJet>> leftCaloHits = hitsForJet;
     std::vector<PseudoJet> pfaCollection;
-    
+
 //     std::vector<PseudoJet> allSortedTracks = sorted_by_E(chargedTracks);
     std::vector<PseudoJet> allSortedTracks = sorted_by_pt(chargedTracks);
-    
-    
+
+
 //     std::vector<PseudoJet> inverse_pt;
 //     for (unsigned int it = allSortedTracks.size()-1; it>0; it--)
 //     {
@@ -366,9 +369,9 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
 //     }
 //     allSortedTracks = inverse_pt;
 //     std::vector<PseudoJet> allSortedTracks = chargedTracks;
-    
+
 //     std::cout << "pfa algorithm initialized" << std::endl;
-    
+
     // take out tracks not reaching the calorimeter and put them directly in the pfa collection
     std::vector<PseudoJet> sortedTracks;    //tracks reaching the calorimeter
     std::vector<float> totCaloE;
@@ -377,13 +380,13 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
     std::vector<float> totCaloS_HC;
     std::vector<float> totCaloC_HC;
     std::map<int, std::vector<std::pair<PseudoJet,PseudoJet>>> matchedCaloHits;
-    
-    
+
+
     for (auto track : allSortedTracks)
     {
         float charge = track.user_index()/100;
         float pT = track.perp();
-    
+
         if (Bfield>0 && pT/fabs(charge)/(0.3*Bfield)*1000*2<1800)
         {
 //             std::cout << "track with pT = " << pT << "  did not reach the calorimeter" << std::endl;
@@ -399,103 +402,103 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
             totCaloC_HC.push_back(0);
         }
     }
-    
+
     std::cout << "track and calo hit lists initialized..." << std::endl;
-    
+
 
     int swappedTrack = 0;
     std::vector<int> swappedTrackList;
-    
+
     for (int iR = 0; iR < 5; iR++)
     {
-        
+
 //         float maxDeltaR_ECAL = R_ECAL_cut[iR];
 //         float maxDeltaR_HCAL = R_HCAL_cut[iR];
         std::cout << "**************************************************************************" << std::endl;
         std::cout << iR << " :: matching hits with R_ECAL = " << R_ECAL_cut[iR] << " and R_HCAL = " << R_HCAL_cut[iR] << std::endl;
-        
+
         int i_track = 0;
-        
+
         for (auto track : sortedTracks)
         {
-            
-           if(std::find(swappedTrackList.begin(), swappedTrackList.end(), i_track) != swappedTrackList.end()) 
-           {            
+
+           if(std::find(swappedTrackList.begin(), swappedTrackList.end(), i_track) != swappedTrackList.end())
+           {
                 continue;
            }
 //         double phi   = track.mcs_phi;
 //         double eta   = track.mcs_eta->at(i);
 //         double px, py;
 //         px = pT*cos(phi);
-//         py = pT*sin(phi);        
+//         py = pT*sin(phi);
 //         double pz = -pT*sinh(eta);
-        
+
             float trueEne = track.E();
 //         float targetEne = trueEne*eneResponse;
             float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
-        
+
 //         std::cout << "expected response for " << trueEne << " --> " << funcTotHadRawResponse->Eval(trueEne) << std::endl;
 //         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trueEne);
 //         if (smearedEne>0) targetEne = smearedEne;
-        
+
 
         //calculate impact point on calorimeter
-        
-            float charge = track.user_index()/100;        
-    
+
+            float charge = track.user_index()/100;
+
 //         if (Bfield>0 && pT/fabs(charge)/(0.3*Bfield)*1000*2<1800)
 //         {
 // //             std::cout << "track with pT = " << pT << "  did not reach the calorimeter" << std::endl;
 //             pfaCollection.push_back(track);
 //             continue;
 //         }
-//         
-        
-        
+//
+
+
             PseudoJet effectiveTrackEcal;
             PseudoJet effectiveTrackHcal;
-            
+
             // sort calo hits by distance from impact point of the track
             std::vector<std::pair<PseudoJet, PseudoJet>> closeHits;
             std::vector<std::pair<PseudoJet, PseudoJet>> farHits;
             std::vector<std::pair<PseudoJet, PseudoJet>> sortedHits;
             std::cout <<"sorting calo hits by distance from track " << i_track << std::endl;
-        
+
             if (Bfield>0)
             {
                 TGraph* thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, ecal_impact_radius);
                 Double_t impact_x, impact_y;
                 thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
-        
+
                 float impact_phi = atan(impact_y/impact_x);
                 if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
-                if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
-                double impact_theta = M_PI- 2*atan(exp(-track.eta()));                
+                if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}
+                double impact_theta = M_PI- 2*atan(exp(-track.eta()));
                 float scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
                 effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
-        
-        
-                thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);        
+
+
+                thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);
                 thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
                 impact_phi = atan(impact_y/impact_x);
                 if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
-                if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
-                impact_theta = M_PI- 2*atan(exp(-track.eta()));        
+                if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}
+                impact_theta = M_PI- 2*atan(exp(-track.eta()));
                 scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
                 effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
-            
+
                 for (auto hit : leftCaloHits)
                 {
                     PseudoJet scint_hit = hit.first;
                     float maxDeltaR = 0;
                     if      (scint_hit.user_index()==flag_JES) maxDeltaR = R_ECAL_cut[iR];
                     if      (scint_hit.user_index()==flag_JHS) maxDeltaR = R_HCAL_cut[iR];
-        
+
                     float thisDD;
                     if      (scint_hit.user_index()==flag_JES) thisDD = scint_hit.delta_R(effectiveTrackEcal);
                     if      (scint_hit.user_index()==flag_JHS) thisDD = scint_hit.delta_R(effectiveTrackHcal);
-                    
-                    if (maxDeltaR<=0 || thisDD<maxDeltaR) 
+
+                    if (maxDeltaR<=0 || thisDD<maxDeltaR)
                     {
                         closeHits.push_back(hit);
                     }
@@ -506,7 +509,7 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
                 }
                 sortedHits = sorted_by_dd(closeHits, effectiveTrackEcal);//, R_ECAL_cut[iR], R_HCAL_cut[iR]);
             }
-            else 
+            else
             {
                 for (auto hit : leftCaloHits)
                 {
@@ -514,12 +517,12 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
                     float maxDeltaR = 0;
                     if      (scint_hit.user_index()==flag_JES) maxDeltaR = R_ECAL_cut[iR];
                     if      (scint_hit.user_index()==flag_JHS) maxDeltaR = R_HCAL_cut[iR];
-        
+
                     float thisDD;
                     if      (scint_hit.user_index()==flag_JES) thisDD = scint_hit.delta_R(track);
                     if      (scint_hit.user_index()==flag_JHS) thisDD = scint_hit.delta_R(track);
-                    
-                    if (maxDeltaR<=0 || thisDD<maxDeltaR) 
+
+                    if (maxDeltaR<=0 || thisDD<maxDeltaR)
                     {
                         closeHits.push_back(hit);
                     }
@@ -530,13 +533,13 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
                 }
                 sortedHits = sorted_by_dd(closeHits, track);//, R_ECAL_cut[iR], R_HCAL_cut[iR]);
             }
-        
+
 //         std::cout << "n sorted hits found: " << sortedHits.size() << std::endl;
-        
+
             //clear collection of leftover calo hits
             leftCaloHits = farHits;
             farHits.clear();
-            
+
             for (auto hit : sortedHits)
             {
                 PseudoJet scint_hit = hit.first;
@@ -546,28 +549,28 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
 //             if      (Bfield > 0 && scint_hit.user_index()==flag_JES) deltaR = scint_hit.delta_R(effectiveTrackEcal);
 //             else if (Bfield > 0 && scint_hit.user_index()==flag_JHS) deltaR = scint_hit.delta_R(effectiveTrackHcal);
 //             else if (Bfield == 0)                                    deltaR = scint_hit.delta_R(track);
-            
+
 //             float hit_theta = 2*atan(exp(-scint_hit.eta()));
 //             float deltaR  = sqrt(pow(scint_hit.phi()-impact_phi,2) + pow(hit_theta-impact_theta,2));;
 //             std::cout << "deltaR = " << hit.delta_R(track) << " :: deltaDD = "  << deltaDD << std:: endl;
-                
+
                 std::cout <<"i_track = " << i_track << " --> cycling over calo hit" << std::endl;
-            
+
                 double this_E_DRO;
                 double this_S = scint_hit.E();
                 double this_C = cher_hit.E();
                 if      (scint_hit.user_index()==flag_JES) this_E_DRO = (scint_hit.E()-x_factor_ecal*cher_hit.E() )/(1-x_factor_ecal);
                 else if (scint_hit.user_index()==flag_JHS) this_E_DRO = (scint_hit.E()-x_factor_hcal*cher_hit.E() )/(1-x_factor_hcal);
-                
+
 //             this_E_DRO = scint_hit.E();
-            
+
 //                 totCaloE[i_track] += (totCaloS_EC-x_factor_ecal*totCaloC_EC )/(1-x_factor_ecal) + (totCaloS_HC-x_factor_hcal*totCaloC_HC )/(1-x_factor_hcal);
 //             totCaloE = totCaloS_EC+totCaloS_HC;
-            
+
             if (totCaloE[i_track] < targetEne &&
 //                 if (totCaloE[i_track] < targetEne+funcHcalRes->Eval(targetEne)*matchPFAcut*targetEne &&
-                fabs(totCaloE[i_track]+this_E_DRO-targetEne) < fabs(totCaloE[i_track]-targetEne)   
-//             if (current_tot_dro < targetEne &&                
+                fabs(totCaloE[i_track]+this_E_DRO-targetEne) < fabs(totCaloE[i_track]-targetEne)
+//             if (current_tot_dro < targetEne &&
 //                 fabs(current_tot_dro+this_E_DRO-targetEne) < fabs(current_tot_dro-targetEne) &&
 //                 ((scint_hit.user_index()==flag_JES  && deltaR < maxDeltaR_ECAL) ||
 //                  (scint_hit.user_index()==flag_JHS  && deltaR < maxDeltaR_HCAL) )
@@ -584,31 +587,31 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
                         totCaloS_HC[i_track] += this_S;
                         totCaloC_HC[i_track] += this_C;
                     }
-                    matchedCaloHits[i_track].push_back(hit);                    
+                    matchedCaloHits[i_track].push_back(hit);
                 }
                 else
                 {
                     leftCaloHits.push_back(hit);
                 }
             }
-        
+
             //update tot calo energy after DRO correction
             totCaloE[i_track] = (totCaloS_EC[i_track]-x_factor_ecal*totCaloC_EC[i_track] )/(1-x_factor_ecal) + (totCaloS_HC[i_track]-x_factor_hcal*totCaloC_HC[i_track] )/(1-x_factor_hcal);
-            
-            
-            //check if track has enough energy 
+
+
+            //check if track has enough energy
 //             if (totCaloE[i_track] > targetEne)
             {
                 //check if full track is good enough to be swapped out --> no further radial iterations
-                if (fabs(totCaloE[i_track]-targetEne)/targetEne < funcHcalRes->Eval(targetEne)*matchPFAcut ) 
+                if (fabs(totCaloE[i_track]-targetEne)/targetEne < funcHcalRes->Eval(targetEne)*matchPFAcut )
                 {
                     pfaCollection.push_back(track);
-                
+
                     h1ResidualCharged->Fill((totCaloE[i_track]-trueEne)/trueEne);
-                
+
                     trueTotCharged += trueEne;
                     recoTotCharged += totCaloE[i_track];
-                    
+
                     swappedTrack++;
                     swappedTrackList.push_back(i_track);
                 }
@@ -619,7 +622,7 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
 //                     {
 //                         leftCaloHits.push_back(non_accepted_hit);
 //                     }
-//                     matchedCaloHits[i_track].clear();          
+//                     matchedCaloHits[i_track].clear();
 //                     totCaloE[i_track] = 0;
 //                     totCaloS_EC[i_track] = 0;
 //                     totCaloC_EC[i_track] = 0;
@@ -627,58 +630,58 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
 //                     totCaloC_HC[i_track] = 0;
 //                 }
             }
-            
-            
-            
-/*            
-            if (stopClustering && fabs(totCaloE[i_track]-targetEne)/targetEne > funcHcalRes->Eval(targetEne)*matchPFAcut) 
+
+
+
+/*
+            if (stopClustering && fabs(totCaloE[i_track]-targetEne)/targetEne > funcHcalRes->Eval(targetEne)*matchPFAcut)
             {
                 for (auto non_accepted_hit : matchedCaloHits[i_track])
                 {
                     leftCaloHits.push_back(non_accepted_hit);
                 }
             }*/
-            
+
 //         totCaloE[i_track] += totCaloS_EC+totCaloS_HC;
 //         std::cout << "size sorted = " << sortedHits.size() << " :: size left =  " << leftCaloHits.size() << std::endl;
-            
+
             i_track++;
         }
     }//end of cycle over radial integrations
-        
+
     //final residual matching?
     //[...]
-      
-      
+
+
     //check if accept or reject track-hit matching
 //     int i_track = 0;
-    
+
 /*
     for (auto track : sortedTracks)
     {
-        
+
         float trueEne = track.E();
         float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
-        
+
         if (totCaloE[i_track]>0.005)
         {
-                
+
             //matching was good enough
-            //             if (fabs(totCaloE-trueEne)/trueEne <funcHcalRes->Eval(trueEne)) 
+            //             if (fabs(totCaloE-trueEne)/trueEne <funcHcalRes->Eval(trueEne))
             std::cout << "trueEne[" << i_track << "]: " << trueEne << " :: totCaloE["<<i_track<<"] = " << totCaloE[i_track] << std::endl;
-            if (fabs(totCaloE[i_track]-targetEne)/targetEne < funcHcalRes->Eval(targetEne)*matchPFAcut) 
+            if (fabs(totCaloE[i_track]-targetEne)/targetEne < funcHcalRes->Eval(targetEne)*matchPFAcut)
             {
                 pfaCollection.push_back(track);
-                
+
     //                 h2ScatterPFACharged->Fill(trueEne, totCaloE[i_track]/trueEne );
                 h1ResidualCharged->Fill((totCaloE[i_track]-trueEne)/trueEne);
-                
+
                 trueTotCharged += trueEne;
                 recoTotCharged += totCaloE[i_track];
-                    
+
                 swappedTrack++;
             }
-                
+
             //matching rejected
             else
             {
@@ -692,27 +695,27 @@ std::vector<PseudoJet> RunProtoPFA_Iterative (std::vector<PseudoJet> chargedTrac
         i_track++;
     }
     */
-    
-    if (sortedTracks.size()>0) 
+
+    if (sortedTracks.size()>0)
     {
 //         std::cout << "swapped tracks = " << swappedTrack << " / " << sortedTracks.size() << " = " << float (swappedTrack)/sortedTracks.size() << std::endl;
         h1SwappedTrackFrac->Fill(float (swappedTrack)/sortedTracks.size() );
     }
-    
+
     //add neutral hits - left over calo hits not matched to any charged track
     for (auto neutral_hit : leftCaloHits)
     {
         pfaCollection.push_back(neutral_hit.first);
         pfaCollection.push_back(neutral_hit.second);
     }
-    
-    
-    
-    
+
+
+
+
     if (trueTotCharged>0.) h1ResidualTotCharged->Fill((recoTotCharged-trueTotCharged)/trueTotCharged);
-    
+
     return pfaCollection;
-    
+
 }
 
 
