@@ -422,6 +422,8 @@ int main(int argc, char** argv)
   TH1F* h1ResidualTotCharged = new TH1F("h1ResidualTotCharged", "h1ResidualTotCharged", 800, -2, 2);
   TH1F* h1SwappedTrackFrac = new TH1F("h1SwappedTrackFrac", "h1SwappedTrackFrac", 40, 0, 1);
   TH1F* hLowPtTrackFrac = new TH1F("hLowPtTrackFrac", "hLowPtTrackFrac", 40, 0, 1);
+  TH1F* hTotMCTracks = new TH1F("hTotMCTracks", "hTotMCTracks", 40, 0, 1);
+  TH1F* hSwappedOverTot = new TH1F("hSwappedOverTot", "hSwappedOverTot", 40, 0, 1);
   
   TH1F * hEcalHitsEne = new TH1F ("hEcalHitsEne", "hEcalHitsEne", NBIN*2, 0, 25);  
   TH1F * hHcalHitsEne = new TH1F ("hHcalHitsEne", "hHcalHitsEne", NBIN*2, 0, 25);  
@@ -978,7 +980,7 @@ int main(int argc, char** argv)
               myPfaCollection = RunProtoPFA(allChargedTracks, allNonPhotonCaloHits,
                                             x_factor_ecal, x_factor_hcal,
                                             Bfield, matchPFACut, DRO_ON,
-                                            h1SwappedTrackFrac, hLowPtTrackFrac, h1ResidualCharged, h1ResidualTotCharged);
+                                            h1SwappedTrackFrac, hLowPtTrackFrac, h1ResidualCharged, h1ResidualTotCharged, hTotMCTracks, hSwappedOverTot);
     
               
     //neutral hits cleanup --> remove calo hits that are considered not matched to a neutral
@@ -1618,6 +1620,8 @@ int main(int argc, char** argv)
   
   h1SwappedTrackFrac->Write();
   hLowPtTrackFrac->Write();
+  hTotMCTracks->Write();
+  hSwappedOverTot->Write();
   h1ResidualCharged->Write();
   h1ResidualTotCharged->Write();
   
