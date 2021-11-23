@@ -1902,7 +1902,7 @@ int main(int argc, char** argv)
   
   if (local) theApp->Run();
   
-  
+  std::cout << "program completed" << std::endl;  
   
 }
 
