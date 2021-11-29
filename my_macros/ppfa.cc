@@ -163,7 +163,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         
         // if particle reached the calorimeter
         float ecal_impact_radius = 1900;
-        float hcal_impact_radius = 1900;
+        float hcal_impact_radius = 2500;
         
         PseudoJet effectiveTrackEcal;
         PseudoJet effectiveTrackHcal;
@@ -180,7 +180,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
             float impact_phi = atan(impact_y/impact_x);
             if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
             if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
-            double impact_theta = M_PI- 2*atan(exp(-track.eta()));                
+            double impact_theta = M_PI- 2*atan(exp(-track.eta()));
             float scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
             effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
         
