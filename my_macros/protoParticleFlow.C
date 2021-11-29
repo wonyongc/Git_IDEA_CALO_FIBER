@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     
   //init  
   bool SAVEPLOTS = false;  
-  bool local     = false;
+  bool local     = true;
   bool debugMode = false;
   bool DRO_ON    = true;
   
@@ -487,8 +487,10 @@ int main(int argc, char** argv)
     double neutrinoEne = 0;
     double muonEne = 0;
 
-    double mc_phi_muon = -999;
-    double mc_theta_muon = -999;
+    double mc_phi_muon_ecal = -999;
+    double mc_theta_muon_ecal = -999;
+    double mc_phi_muon_hcal = -999;
+    double mc_theta_muon_hcal = -999;
     
     TruthTree->GetEntry(iEvt);
     double gamma_ene = 0;
@@ -507,24 +509,21 @@ int main(int argc, char** argv)
           int charge   = myTruthTV.mcs_charge->at(i);
           double theta = 2*atan(exp(-eta));
           theta = M_PI- theta;
+
+          double px, py;
+          px = pT*cos(phi);
+          py = pT*sin(phi);
+
+          double pz = -pT*sinh(eta);
           
           if (   fabs(pdgId)!=12 && fabs(pdgId)!=14 && fabs(pdgId)!=16 && fabs(pdgId)!=13  // exclude neutrinos and muons
                  && fabs(pdgId)<10000 // exclude BSM
 //                         && fabs(eta)<etaAcceptance    // exclude particles outside the calorimeter
           )      
           {
-              
-              double px, py;
-              px = pT*cos(phi);
-              py = pT*sin(phi);
-              
-              double pz = -pT*sinh(eta);                    
-              
               PseudoJet this_MCT = PseudoJet(px, py, pz, ene);
               allMCHitsForJet.push_back(this_MCT);
-              
-              
-              
+
 //               float smeared_ene = funcTrackerRes->Eval(pT)*pT;
               float smeared_ene = ene;
               if (charge!=0 && smeared_ene>ene_EC_th*10)// || fabs(pdgId) == 130 || fabs(pdgId) == 2112 )
@@ -580,8 +579,40 @@ int main(int argc, char** argv)
               {
                 nMuons++;
                 muonEne+= ene;
-                mc_phi_muon = phi;
-                mc_theta_muon = theta;
+
+                mc_phi_muon_ecal = phi;
+                mc_theta_muon_ecal = theta;
+                mc_phi_muon_hcal = phi;
+                mc_theta_muon_hcal = theta;
+
+                if (Bfield != 0)
+                {
+
+                    float ecal_impact_radius = 1900;
+                    float hcal_impact_radius = 2500;
+
+                    TGraph* thisTraj = getEquivalentTrajectory (Bfield, px, py, pz, charge, ecal_impact_radius);
+                    Double_t impact_x, impact_y;
+                    thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
+
+                    float impact_phi = atan(impact_y/impact_x);
+                    if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
+                    if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}
+                    double impact_theta = M_PI- 2*atan(exp(-eta));
+
+                    mc_phi_muon_ecal = impact_phi;
+                    mc_theta_muon_ecal = impact_theta;
+
+                    thisTraj = getEquivalentTrajectory (Bfield, px, py, pz, charge, hcal_impact_radius);
+                    thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
+                    impact_phi = atan(impact_y/impact_x);
+                    if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
+                    if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}
+                    impact_theta = M_PI- 2*atan(exp(-eta));
+
+                    mc_phi_muon_hcal = impact_phi;
+                    mc_theta_muon_hcal = impact_theta;
+                }
               }
               if (fabs(pdgId)==12 || fabs(pdgId)==14 || fabs(pdgId)==16) 
               {
@@ -671,7 +702,7 @@ int main(int argc, char** argv)
         double C = this_cher/drh_C_norm;
         double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon_hcal,2)+pow(tower_theta_seed-mc_theta_muon_hcal,2) );
         if (deltaR <0.02)  
         {
             edepMuonCalo+=S;
@@ -707,7 +738,7 @@ int main(int argc, char** argv)
         double C = this_cher/drh_C_norm;
         double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon_hcal,2)+pow(tower_theta_seed-mc_theta_muon_hcal,2) );
         if (deltaR <0.02)  
         {            
             edepMuonCalo+=S;
@@ -748,7 +779,7 @@ int main(int argc, char** argv)
         double this_ene = (myTV.VecHit_ScepEneDepF->at(i)+myTV.VecHit_ScepEneDepR->at(i))/1000.;                    
         double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
-        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon,2)+pow(tower_theta_seed-mc_theta_muon,2) );
+        double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon_ecal,2)+pow(tower_theta_seed-mc_theta_muon_ecal,2) );
         if (deltaR<0.005)  
         {
             edepMuonCalo+=this_ene;
