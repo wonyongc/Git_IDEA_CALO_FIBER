@@ -331,7 +331,7 @@ TGraph * getTrajectory (float B, float px, float py, float pz, float charge, flo
     std::cout << "bending radius for pT = " << pT << " : " << R/1000 <<  " m" << std::endl;
     float y0 = 0;
     float x0 = 0;
-    float z0 = 0;
+//     float z0 = 0;
     float phi0 = atan(py/px)-h*M_PI/2;
 //     float phi0;
     if (px<0. && py <0.)   {phi0 = phi0 - M_PI;}
@@ -348,7 +348,7 @@ TGraph * getTrajectory (float B, float px, float py, float pz, float charge, flo
         float to_m = 100;
         float x;
         float y;
-        float z;
+//         float z;
         
         std::cout << "i = " << i << std::endl;
         
@@ -356,7 +356,7 @@ TGraph * getTrajectory (float B, float px, float py, float pz, float charge, flo
         {
             x = x0 + R*(cos(phi0+h*i*to_m*cos(lambda)/R) - cos(phi0) );
             y = y0 + R*(sin(phi0+h*i*to_m*cos(lambda)/R) - sin(phi0) );
-            z = z0 + i*to_m*sin(lambda);
+//             z = z0 + i*to_m*sin(lambda);
 //             std::cout <<" x  = " << x << " :: y = " << y << std::endl;
         }
         else if (B == 0.)
