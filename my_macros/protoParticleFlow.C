@@ -804,7 +804,7 @@ int main(int argc, char** argv)
             
             allEcalHits.push_back(std::make_pair(this_JES, this_JEC));
                                     
-            bool matchedToNeutrHad = false;
+//             bool matchedToNeutrHad = false;
             bool matchedToGamma = false;
             for (unsigned int i = 0; i< myTruthTV.mcs_E->size(); i++)
             {
