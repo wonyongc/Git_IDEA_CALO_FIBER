@@ -32,7 +32,27 @@ float hcal_impact_radius = 1900;
 float R_ECAL_cut[5] = {0.005, 0.01, 0.02, 0.035, 0.07};
 float R_HCAL_cut[5] = {0.01,  0.05, 0.10, 0.20,  0.5};
     
-    
+
+// DELPHES card
+//sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2)
+double resotr(double pttr, double etatr) 
+{
+  double sigma=0.;
+  double etalow=0.;
+  double etahigh=3.;
+  double a1=0.0001145;
+  double a2=0.0002024;
+  double a3=2.093e-005;
+  
+  if(fabs(etatr)>=etalow && fabs(etatr)<etahigh) 
+  {
+      double sigmaid=pttr*sqrt(a1*a1+a2*a2*pttr+a3*a3*pttr*pttr);
+      sigma=sigmaid;
+  }
+  
+  return sigma;
+}
+
 
 // unsigned int microseconds;
 
@@ -139,19 +159,33 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
 //         py = pT*sin(phi);        
 //         double pz = -pT*sinh(eta);
         
-        float trueEne = track.E();
-//         float targetEne = trueEne*eneResponse;
-        float targetEne = trueEne*funcTotHadRawResponse->Eval(trueEne);
+//         float trueEne = track.E();
         
-//         std::cout << "expected response for " << trueEne << " --> " << funcTotHadRawResponse->Eval(trueEne) << std::endl;
-//         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trueEne);
+        //assumption of pion mass + use smeared track momentum to calculate true target energy
+        float pion_mass  = 0.13957;    // [GeV/c²]
+        float pT         = track.perp();
+        float pT_smeared = gRandom->Gaus(pT, resotr(pT, track.eta())*pT);
+        std::cout << "pT = " << pT << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << std::endl;
+        
+        float p_tot  = pT_smeared*cosh(track.eta());
+        
+//         sqrt(pow(pT_smeared*cos(track.phi()),2) +
+//                             pow(pT_smeared*sin(track.phi()),2) +  
+//                             pow(pT_smeared*sinh(track.eta()),2) );
+        
+        float trackEne = sqrt(pow(pion_mass,2) + pow(p_tot,2));
+        
+//         float targetEne = trackEne*eneResponse;
+        float targetEne = trackEne*funcTotHadRawResponse->Eval(trackEne);
+        
+//         std::cout << "expected response for " << trackEne << " --> " << funcTotHadRawResponse->Eval(trackEne) << std::endl;
+//         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trackEne);
 //         if (smearedEne>0) targetEne = smearedEne;
         
 
         //calculate impact point on calorimeter
         
         float charge = track.user_index()/100;
-        float pT = track.perp();
     
         if (Bfield>0 && pT/fabs(charge)/(0.3*Bfield)*1000*2<1800)
         {
@@ -182,7 +216,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
             if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
             double impact_theta = M_PI- 2*atan(exp(-track.eta()));
             float scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
-            effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
+            effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trackEne);
         
         
             thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);        
@@ -192,7 +226,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
             if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
             impact_theta = M_PI- 2*atan(exp(-track.eta()));        
             scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
-            effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trueEne);
+            effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trackEne);
             
             sortedHits = sorted_by_dd(leftCaloHits, effectiveTrackHcal);
         }
@@ -264,15 +298,15 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         if (totCaloE>0.005)
         {
             //matching was good enough
-//             if (fabs(totCaloE-trueEne)/trueEne <funcHcalRes->Eval(trueEne)) 
+//             if (fabs(totCaloE-trackEne)/trackEne <funcHcalRes->Eval(trackEne)) 
             if (fabs(totCaloE-targetEne)/targetEne <funcHcalRes->Eval(targetEne)*matchPFAcut) 
             {
                 pfaCollection.push_back(track);
                 
-//                 h2ScatterPFACharged->Fill(trueEne, totCaloE/trueEne );
-                h1ResidualCharged->Fill((totCaloE-trueEne)/trueEne);
+//                 h2ScatterPFACharged->Fill(trackEne, totCaloE/trackEne );
+                h1ResidualCharged->Fill((totCaloE-trackEne)/trackEne);
                 
-                trueTotCharged += trueEne;
+                trueTotCharged += trackEne;
                 recoTotCharged += totCaloE;
                 
                 swappedTrack++;
