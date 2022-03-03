@@ -43,10 +43,16 @@ double resotr(double pttr, double etatr)
   double a1=0.0001145;
   double a2=0.0002024;
   double a3=2.093e-005;
+
+  //to get F.bedeschi resolution at https://indico.cern.ch/event/783429/contributions/3376675/attachments/1829951/3712651/Oxford_April2019_V1.pdf
+  double a1_mod=0.0006;
+  double a2_mod=0.0002024;
+  double a3_mod=3.593e-005;
   
   if(fabs(etatr)>=etalow && fabs(etatr)<etahigh) 
   {
-      double sigmaid=pttr*sqrt(a1*a1+a2*a2*pttr+a3*a3*pttr*pttr);
+//       double sigmaid=pttr*sqrt(a1*a1+a2*a2*pttr+a3*a3*pttr*pttr);
+      double sigmaid=pttr*sqrt(a1_mod*a1_mod+a2_mod*a2_mod*pttr+a3_mod*a3_mod*pttr*pttr);
       sigma=sigmaid;
   }
   
