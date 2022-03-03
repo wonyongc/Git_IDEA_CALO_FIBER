@@ -39,7 +39,7 @@ double resotr(double pttr, double etatr)
 {
   double sigma=0.;
   double etalow=0.;
-  double etahigh=3.;
+  double etahigh=3.;hTrackEne->Fill(ene);
   double a1=0.0001145;
   double a2=0.0002024;
   double a3=2.093e-005;
@@ -164,7 +164,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         //assumption of pion mass + use smeared track momentum to calculate true target energy
         float pion_mass  = 0.13957;    // [GeV/c²]
         float pT         = track.perp();
-        float pT_smeared = gRandom->Gaus(pT, resotr(pT, track.eta())*pT);
+        float pT_smeared = gRandom->Gaus(pT, resotr(pT, track.eta()));
         std::cout << "pT = " << pT << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << std::endl;
         
         float p_tot  = pT_smeared*cosh(track.eta());
