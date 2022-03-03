@@ -39,7 +39,7 @@ double resotr(double pttr, double etatr)
 {
   double sigma=0.;
   double etalow=0.;
-  double etahigh=3.;hTrackEne->Fill(ene);
+  double etahigh=3.;
   double a1=0.0001145;
   double a2=0.0002024;
   double a3=2.093e-005;
