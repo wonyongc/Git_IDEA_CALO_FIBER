@@ -653,12 +653,12 @@ int main(int argc, char** argv)
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;      
         continue;
     } 
-    if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0  ))
-    {
-        goodEvent = false;
-        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
-        continue;
-    } 
+//     if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0  ))
+//     {
+//         goodEvent = false;
+//         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
+//         continue;
+//     }
      
     //filling reco
 
