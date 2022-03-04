@@ -674,12 +674,12 @@ int main(int argc, char** argv)
         goodEvent = false;
         continue;
     }
-    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3)) 
-    {
-        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
-        goodEvent = false;
-        continue;
-    }
+//     if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3))
+//     {
+//         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
+//         goodEvent = false;
+//         continue;
+//     }
     if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
     {
         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
