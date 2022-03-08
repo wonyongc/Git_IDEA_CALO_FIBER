@@ -993,6 +993,7 @@ int main(int argc, char** argv)
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
           {
             goodEvent = false;
+            acceptance_failed_count++;
             if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
             continue;
           }
@@ -1413,8 +1414,12 @@ int main(int argc, char** argv)
   }
 
   
-  
-  std::cout << "selection efficiency: " << double(countGoodEvents)/double(NEVENTS) << std::endl;
+  std::cout << "***** CUTS EFFICIENCY REPORT ***** " << std::endl;
+  std::cout << "total selection efficiency:                 " << double(countGoodEvents)/double(NEVENTS) << std::endl;
+  std::cout << "events failing leakage cut:                 " << leaked_fail_count << " / " << NEVENTS << " = " << double(leaked_fail_count)/double(NEVENTS) << std::endl;
+  std::cout << "events failing neutrino cut:                " << neutrino_failed_count << " / " << NEVENTS <<  " = " << double(neutrino_failed_count)/double(NEVENTS) <<std::endl;
+  std::cout << "events failing muon cut:                    " << muon_failed_count << " / " << NEVENTS <<  " = " << double(muon_failed_count)/double(NEVENTS) <<std::endl;
+  std::cout << "events failing acceptance_failed_count cut: " << acceptance_failed_count << " / " << NEVENTS <<  " = " << double(acceptance_failed_count)/double(NEVENTS) <<std::endl;
   
   //plotting
   
