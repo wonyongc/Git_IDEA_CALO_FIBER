@@ -35,7 +35,7 @@ float R_HCAL_cut[5] = {0.01,  0.05, 0.10, 0.20,  0.5};
 
 // DELPHES card
 //sqrt(0.0001145^2 + 0.0002024^2*pt + (pt*2.093e-005)^2)
-double resotr(double pttr, double etatr) 
+double resotr(double pttr, double etatr)
 {
   double sigma=0.;
   double etalow=0.;
@@ -58,6 +58,30 @@ double resotr(double pttr, double etatr)
   
   return sigma;
 }
+
+
+double resoEtaTr(double ptot, double etatr)
+{
+  double etalow=0.;
+  double etahigh=3.;
+
+  //to get F.bedeschi resolution at https://indico.cern.ch/event/783429/contributions/3376675/attachments/1829951/3712651/Oxford_April2019_V1.pdf
+  double p[6];
+  p[0] =  -2.7517e-06;
+  p[1] =     0.224414;
+  p[2] =   0.00090913;
+  p[3] =    -0.794098;
+  p[4] =  -1.5211e-06;
+  p[5] =     0.384091;
+
+  TF1 * fitEtaRes = new TF1 ("fitEtaRes", "[0]*pow(x,[1]) + [2]*pow(x,[3]) + [4]*pow(x,[5])", 0, 100);
+  for (int i= 0; i<6; i++) fitEtaRes->SetParameter(i,p[i]);
+
+  double   sigma=fitEtaRes->Eval(ptot);
+  return sigma;
+}
+
+
 
 
 // unsigned int microseconds;
@@ -168,20 +192,26 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
 //         float trueEne = track.E();
         
         //assumption of pion mass + use smeared track momentum to calculate true target energy
-        float pion_mass  = 0.13957;    // [GeV/c²]
-        float pT         = track.perp();
-        float pT_smeared = gRandom->Gaus(pT, resotr(pT, track.eta()));
-        std::cout << "pT = " << pT << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << std::endl;
+        float pion_mass   = 0.13957;    // [GeV/c²]
+        float pT          = track.perp();
+        float pT_smeared  = gRandom->Gaus(pT, resotr(pT, track.eta()));
+        float p_tot       = pT*cosh(track.eta());
+        float eta_smeared = track.eta()+resoEtaTr(p_tot, track.eta());
+//         std::cout << "pT = " << pT << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << " ::  eta = " << track.eta() << " :: eta_smeared = " << eta_smeared << std::endl;
+
+        float px_smeared    = pT_smeared*cos(track.phi());
+        float py_smeared    = pT_smeared*sin(track.phi());
+        float pz_smeared    = pT_smeared*sinh(eta_smeared);
+        float p_tot_smeared = pT_smeared*cosh(eta_smeared);
+
+//         std::cout << "eta = " << eta << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << std::endl;
+
+        float trackEne = sqrt(pow(pion_mass,2) + pow(p_tot_smeared,2));
+        //redefine smeared guessed track
+        PseudoJet smeared_track = PseudoJet(px_smeared, py_smeared, pz_smeared, trackEne);
+        smeared_track.set_user_index(track.user_index());
+        track = smeared_track;
         
-        float p_tot  = pT_smeared*cosh(track.eta());
-        
-//         sqrt(pow(pT_smeared*cos(track.phi()),2) +
-//                             pow(pT_smeared*sin(track.phi()),2) +  
-//                             pow(pT_smeared*sinh(track.eta()),2) );
-        
-        float trackEne = sqrt(pow(pion_mass,2) + pow(p_tot,2));
-        
-//         float targetEne = trackEne*eneResponse;
         float targetEne = trackEne*funcTotHadRawResponse->Eval(trackEne);
         
 //         std::cout << "expected response for " << trackEne << " --> " << funcTotHadRawResponse->Eval(trackEne) << std::endl;
@@ -225,12 +255,12 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
             effectiveTrackEcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trackEne);
         
         
-            thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);        
+            thisTraj = getEquivalentTrajectory (Bfield, track.px(), track.py(), track.pz(), charge, hcal_impact_radius);
             thisTraj->GetPoint(thisTraj->GetN()-1, impact_x, impact_y);
             impact_phi = atan(impact_y/impact_x);
             if (impact_x<0. && impact_y <0.)   {impact_phi = impact_phi - M_PI;}
             if (impact_x<0. && impact_y >0.)   {impact_phi = M_PI + impact_phi;}        
-            impact_theta = M_PI- 2*atan(exp(-track.eta()));        
+            impact_theta = M_PI- 2*atan(exp(-track.eta()));
             scale_p = 1./sqrt(impact_x*impact_x + impact_y*impact_y) * sqrt(pow(track.px(),2)+pow(track.py(),2));
             effectiveTrackHcal = PseudoJet(impact_x*scale_p, impact_y*scale_p, track.pz(), trackEne);
             
