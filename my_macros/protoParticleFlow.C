@@ -687,7 +687,7 @@ int main(int argc, char** argv)
         leaked_fail_count++;
         continue;
     }
-    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 1.0))
+    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3))
     {
         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
         goodEvent = false;
