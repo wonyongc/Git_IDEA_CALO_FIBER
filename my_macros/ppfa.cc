@@ -218,7 +218,7 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
 //         float smearedEne = gRandom->Gaus(targetEne, funcHcalRes->Eval(targetEne)*trackEne);
 //         if (smearedEne>0) targetEne = smearedEne;
         
-
+//
         //calculate impact point on calorimeter
         
         float charge = track.user_index()/100;
