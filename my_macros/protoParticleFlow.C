@@ -458,6 +458,10 @@ int main(int argc, char** argv)
   if (NEVENTS>maxEVENTS)  NEVENTS = maxEVENTS;
   std::cout << "... running on " << NEVENTS << " events" << std::endl;
   int countGoodEvents = 0;
+  int leaked_fail_count = 0;
+  int neutrino_failed_count = 0;
+  int muon_failed_count = 0;
+  int acceptance_failed_count = 0;
   double ave_mass_dro = 0;
   double ave_mass_pfa = 0;
   
@@ -635,6 +639,8 @@ int main(int argc, char** argv)
     if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 ))
     {
         goodEvent = false;
+        if      (nMuons>1)     muon_failed_count++;
+        else if (nNeutrinos>1) neutrino_failed_count++;
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     }
@@ -642,6 +648,8 @@ int main(int argc, char** argv)
     if (output_tag == "hzjnbn" && (nMuons>0 || nNeutrinos >0  ))
     {
         goodEvent = false;
+        if      (nMuons>0)     muon_failed_count++;
+        else if (nNeutrinos>0) neutrino_failed_count++;
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
         continue;
     } 
@@ -650,15 +658,19 @@ int main(int argc, char** argv)
     if (output_tag == "hznb" && (nMuons>0 || nNeutrinos >2  ))
     {
         goodEvent = false;
+        if      (nMuons>0)     muon_failed_count++;
+        else if (nNeutrinos>2) neutrino_failed_count++;
         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos ", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;      
         continue;
     } 
-//     if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0  ))
-//     {
-//         goodEvent = false;
-//         if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
-//         continue;
-//     }
+    if (output_tag.find("zjj_scan") != string::npos && (nMuons>0 || nNeutrinos >0  ))
+    {
+        goodEvent = false;
+        if      (nMuons>0)     muon_failed_count++;
+        else if (nNeutrinos>0) neutrino_failed_count++;
+        if (debugMode) std::cout << Form(" skipping %s event with %d muons and %d neutrinos", output_tag.c_str(), nMuons, nNeutrinos) << std::endl;
+        continue;
+    }
      
     //filling reco
 
@@ -672,18 +684,21 @@ int main(int argc, char** argv)
     {
         if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
         goodEvent = false;
+        leaked_fail_count++;
         continue;
     }
-//     if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3))
-//     {
-//         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
-//         goodEvent = false;
-//         continue;
-//     }
+    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 1.0))
+    {
+        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
+        goodEvent = false;
+        leaked_fail_count++;
+        continue;
+    }
     if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
     {
         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
         goodEvent = false;
+        leaked_fail_count++;
         continue;
     }
     
@@ -854,6 +869,7 @@ int main(int argc, char** argv)
     {
       if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
         goodEvent = false;
+      leaked_fail_count++;
         continue;
     }
 
