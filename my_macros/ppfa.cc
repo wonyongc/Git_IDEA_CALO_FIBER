@@ -60,11 +60,8 @@ double resotr(double pttr, double etatr)
 }
 
 
-double resoEtaTr(double ptot, double etatr)
+double resoThetaTr(double ptot, double etatr)
 {
-  double etalow=0.;
-  double etahigh=3.;
-
   //to get F.bedeschi resolution at https://indico.cern.ch/event/783429/contributions/3376675/attachments/1829951/3712651/Oxford_April2019_V1.pdf
   double p[6];
   p[0] =  -2.7517e-06;
@@ -74,10 +71,10 @@ double resoEtaTr(double ptot, double etatr)
   p[4] =  -1.5211e-06;
   p[5] =     0.384091;
 
-  TF1 * fitEtaRes = new TF1 ("fitEtaRes", "[0]*pow(x,[1]) + [2]*pow(x,[3]) + [4]*pow(x,[5])", 0, 100);
-  for (int i= 0; i<6; i++) fitEtaRes->SetParameter(i,p[i]);
+  TF1 * fitThetaRes = new TF1 ("fitThetaRes", "[0]*pow(x,[1]) + [2]*pow(x,[3]) + [4]*pow(x,[5])", 0, 100);
+  for (int i= 0; i<6; i++) fitThetaRes->SetParameter(i,p[i]);
 
-  double   sigma=fitEtaRes->Eval(ptot);
+  double   sigma=fitThetaRes->Eval(ptot);
   return sigma;
 }
 
@@ -196,7 +193,10 @@ std::pair<std::vector<PseudoJet>,std::vector<PseudoJet> > RunProtoPFA (std::vect
         float pT          = track.perp();
         float pT_smeared  = gRandom->Gaus(pT, resotr(pT, track.eta()));
         float p_tot       = pT*cosh(track.eta());
-        float eta_smeared = track.eta()+resoEtaTr(p_tot, track.eta());
+        float theta_smeared = track.theta()+gRandom->Gaus(0,resoThetaTr(p_tot, track.theta()));
+        float eta_smeared   =   -log(tan((theta_smeared)/2.));
+
+//         float eta_smeared = track.eta()+resoThetaTr(p_tot, track.eta());
 //         std::cout << "pT = " << pT << " :: sigma/pT = " << resotr(pT, track.eta()) << " :: pT_smeared = " << pT_smeared << " ::  eta = " << track.eta() << " :: eta_smeared = " << eta_smeared << std::endl;
 
         float px_smeared    = pT_smeared*cos(track.phi());
