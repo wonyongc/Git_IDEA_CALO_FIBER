@@ -680,13 +680,13 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
-    {
-        if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
-        goodEvent = false;
-        leaked_fail_count++;
-        continue;
-    }
+//     if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
+//     {
+//         if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
+//         goodEvent = false;
+//         leaked_fail_count++;
+//         continue;
+//     }
 //     if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3))
 //     {
 //         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
@@ -694,13 +694,13 @@ int main(int argc, char** argv)
 //         leaked_fail_count++;
 //         continue;
 //     }
-    if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
-    {
-        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
-        goodEvent = false;
-        leaked_fail_count++;
-        continue;
-    }
+//     if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
+//     {
+//         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
+//         goodEvent = false;
+//         leaked_fail_count++;
+//         continue;
+//     }
     
     double totS = 0;
     double totEneDRH = 0;
@@ -865,13 +865,13 @@ int main(int argc, char** argv)
     
     
 
-    if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 0.3))
-    {
-      if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
-        goodEvent = false;
-      leaked_fail_count++;
-        continue;
-    }
+//     if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 0.3))
+//     {
+//       if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
+//         goodEvent = false;
+//       leaked_fail_count++;
+//         continue;
+//     }
 
     
     hScatterEneVis->Fill(totS,totEneDRH);
