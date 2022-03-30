@@ -446,7 +446,8 @@ int main(int argc, char** argv)
   TH2F* hNeutralSeedShowerShapeCher = new TH2F("hNeutralSeedShowerShapeCher", "hNeutralSeedShowerShapeCher", 1000, 0, 10, 100, 0, 1);
   TH2F* hNeutralSeedCSratio = new TH2F("hNeutralSeedCSratio", "hNeutralSeedCSratio", 1000, 0, 10, 100, 0, 10);
 
-  TH1F* hLeakage    = new TH1F ("hLeakage", "hLeakage", 3000, 0., 150);
+  TH1F* hLeakage    = new TH1F ("hLeakage", "hLeakage", 5000, 0., 250);
+  TH1F* hNeutrinoLeakage    = new TH1F ("hNeutrinoLeakage", "hNeutrinoLeakage", 5000, 0., 250);
 
     
   ///*******************************************///
@@ -637,6 +638,7 @@ int main(int argc, char** argv)
     hNChPionsMC->Fill(nChPions);
 
     hLeakage->Fill(myTV.leakage/1000.);
+    hNeutrinoLeakage->Fill(myTV.neutrinoleakage/1000.);
 
   
     if (output_tag == "wwlj" && (nMuons>1 || nNeutrinos >1 ))
@@ -1711,6 +1713,7 @@ int main(int argc, char** argv)
   hNeutralSeedShowerShapeCher->Write();
   hNeutralSeedCSratio->Write();
   hLeakage->Write();
+  hNeutrinoLeakage->Write();
 
   
   outputFile->Write();
