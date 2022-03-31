@@ -203,6 +203,8 @@ int main(int argc, char** argv)
   if (output_tag == "zjj_scan_150") thismass = 150;
   if (output_tag == "zjj_scan_250") thismass = 250;
   
+  double cutLeakage = 1.0;
+  //  double cutLeakage = 0.1*thismass;
   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
@@ -448,8 +450,12 @@ int main(int argc, char** argv)
 
   TH1F* hLeakage    = new TH1F ("hLeakage", "hLeakage", 5000, 0., 250);
   TH1F* hNeutrinoLeakage    = new TH1F ("hNeutrinoLeakage", "hNeutrinoLeakage", 5000, 0., 250);
+  TH2F* hLeakage_vsEta    = new TH2F ("hLeakage_vsEta", "hLeakage_vsEta", 100, -10, 10, 100, -10, 10);
+  TH2F* hLeakage_vsJetEneAsymmMCT  = new TH2F ("hLeakage_vsJetEneAsymmMCT", "hLeakage_vsJetEneAsymmMCT", 1000, -2, 2,  5000, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmRAW  = new TH2F ("hLeakage_vsJetEneAsymmRAW", "hLeakage_vsJetEneAsymmRAW", 1000, -2, 2,  5000, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmDRO  = new TH2F ("hLeakage_vsJetEneAsymmDRO", "hLeakage_vsJetEneAsymmDRO", 1000, -2, 2,  5000, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmPFA  = new TH2F ("hLeakage_vsJetEneAsymmPFA", "hLeakage_vsJetEneAsymmPFA", 1000, -2, 2,  5000, 0., 250);
 
-    
   ///*******************************************///
   ///		 Run over events	        ///
   ///*******************************************///
@@ -685,27 +691,28 @@ int main(int argc, char** argv)
     //                           DR HCAL
     //**************************************************************//
     
-//     if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > 1))// || myTV.leakage/1000.-muonEne))
-//     {
-//         if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
-//         goodEvent = false;
-//         leaked_fail_count++;
-//         continue;
-//     }
-//     if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 0.3))
-//     {
-//         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
-//         goodEvent = false;
-//         leaked_fail_count++;
-//         continue;
-//     }
-//     if (output_tag == "hzjnbn" && (myTV.leakage/1000. > 1))
-//     {
-//         if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
-//         goodEvent = false;
-//         leaked_fail_count++;
-//         continue;
-//     }
+    if (output_tag == "hznb"  && (myTV.leakage/1000. - neutrinoEne > cutLeakage))// || myTV.leakage/1000.-muonEne))
+    {
+        if (debugMode)        std::cout << "Leakage - E_neutrino = " << myTV.leakage/1000. << "  - " << neutrinoEne <<  " = " << myTV.leakage/1000.- neutrinoEne << " GeV :: E_mu = " << muonEne << std::endl;
+        goodEvent = false;
+        leaked_fail_count++;
+        continue;
+    }
+    //    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > 1.0))
+    if ((output_tag.find("zjj_scan") != string::npos) && (myTV.leakage/1000. > cutLeakage))
+    {
+        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. << " = " << myTV.leakage/1000. << std::endl;
+        goodEvent = false;
+        leaked_fail_count++;
+        continue;
+    }
+    if (output_tag == "hzjnbn" && (myTV.leakage/1000. > cutLeakage))
+    {
+        if (debugMode)        std::cout << "Leakage = " << myTV.leakage/1000. - neutrinoEne << " GeV " << std::endl;
+        goodEvent = false;
+        leaked_fail_count++;
+        continue;
+    }
     
     double totS = 0;
     double totEneDRH = 0;
@@ -870,13 +877,13 @@ int main(int argc, char** argv)
     
     
 
-//     if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > 0.3))
-//     {
-//       if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
-//         goodEvent = false;
-//       leaked_fail_count++;
-//         continue;
-//     }
+    if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > cutLeakage))
+    {
+      if (debugMode)        std::cout << "Leakage + muonCaloDep - E_neutrino - muonEne = " << myTV.leakage/1000. << " + " << edepMuonCalo << "  - " << neutrinoEne << " - " << muonEne <<  " = " << myTV.leakage/1000. + edepMuonCalo- neutrinoEne - muonEne << " GeV" << std::endl;
+        goodEvent = false;
+      leaked_fail_count++;
+        continue;
+    }
 
     
     hScatterEneVis->Fill(totS,totEneDRH);
@@ -995,6 +1002,8 @@ int main(int argc, char** argv)
       {
           //reject jets not fully contained in the calorimeter
           //both jets in barrel
+	hLeakage_vsEta->Fill(fabs(mct_jets[0].eta()), fabs(mct_jets[1].eta()), myTV.leakage/1000.);
+
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
           {
             goodEvent = false;
@@ -1206,6 +1215,8 @@ int main(int argc, char** argv)
           hMCT_MassJJ->Fill(jjMassMCT);
           hMCT_Jet1Ene->Fill(e1);
           hMCT_Jet2Ene->Fill(e2);
+
+          hLeakage_vsJetEneAsymmMCT->Fill(2*(e1-e2)/(e1+e2), myTV.leakage/1000.);          
 	  //	  if (debugMode) std::cout << "MCT: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassMCT << " GeV" << std::endl;
       }
       
@@ -1321,7 +1332,8 @@ int main(int argc, char** argv)
             
             hPFA_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hPFA_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
-          }          
+          }
+          hLeakage_vsJetEneAsymmPFA->Fill(2*(e1-e2)/(e1+e2), myTV.leakage/1000.);          
       }
 
       //Reco raw
@@ -1357,6 +1369,7 @@ int main(int argc, char** argv)
             hRAW_Phi2Diff   -> Fill(raw_jets[0].phi()-jetPhi2_MCT);
 
           }
+          hLeakage_vsJetEneAsymmRAW->Fill(2*(e1-e2)/(e1+e2), myTV.leakage/1000.);          
 	  //	  if (debugMode) std::cout << "RAW: E_j1 + E_j2 = " << e1+e2 << " :: p_j1 + p_j2 = " << p1p2Sum << " :: jjMass = " << jjMassRAW << " GeV" << std::endl;
       }
       
@@ -1402,8 +1415,8 @@ int main(int argc, char** argv)
             hDRO_JetEneDiff -> Fill((e1-mct_jets[1].E())/mct_jets[1].E());
             hDRO_JetEneDiff -> Fill((e2-mct_jets[0].E())/mct_jets[0].E());
           }
-          
-          
+          hLeakage_vsJetEneAsymmDRO->Fill(2*(e1-e2)/(e1+e2), myTV.leakage/1000.);          
+
           
 	  
           
@@ -1418,7 +1431,7 @@ int main(int argc, char** argv)
       countGoodEvents++;
   }
 
-  
+  std::cout << std::endl;
   std::cout << "***** CUTS EFFICIENCY REPORT ***** " << std::endl;
   std::cout << "total selection efficiency:                 " << double(countGoodEvents)/double(NEVENTS) << std::endl;
   std::cout << "events failing leakage cut:                 " << leaked_fail_count << " / " << NEVENTS << " = " << double(leaked_fail_count)/double(NEVENTS) << std::endl;
@@ -1714,7 +1727,11 @@ int main(int argc, char** argv)
   hNeutralSeedCSratio->Write();
   hLeakage->Write();
   hNeutrinoLeakage->Write();
-
+  hLeakage_vsEta->Write();
+  hLeakage_vsJetEneAsymmMCT->Write();
+  hLeakage_vsJetEneAsymmRAW->Write();
+  hLeakage_vsJetEneAsymmDRO->Write();
+  hLeakage_vsJetEneAsymmPFA->Write();
   
   outputFile->Write();
   outputFile->Close();
