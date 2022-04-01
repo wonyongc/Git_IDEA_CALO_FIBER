@@ -451,10 +451,11 @@ int main(int argc, char** argv)
   TH1F* hLeakage    = new TH1F ("hLeakage", "hLeakage", 5000, 0., 250);
   TH1F* hNeutrinoLeakage    = new TH1F ("hNeutrinoLeakage", "hNeutrinoLeakage", 5000, 0., 250);
   TH2F* hLeakage_vsEta    = new TH2F ("hLeakage_vsEta", "hLeakage_vsEta", 100, -10, 10, 100, -10, 10);
-  TH2F* hLeakage_vsJetEneAsymmMCT  = new TH2F ("hLeakage_vsJetEneAsymmMCT", "hLeakage_vsJetEneAsymmMCT", 1000, -2, 2,  5000, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmRAW  = new TH2F ("hLeakage_vsJetEneAsymmRAW", "hLeakage_vsJetEneAsymmRAW", 1000, -2, 2,  5000, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmDRO  = new TH2F ("hLeakage_vsJetEneAsymmDRO", "hLeakage_vsJetEneAsymmDRO", 1000, -2, 2,  5000, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmPFA  = new TH2F ("hLeakage_vsJetEneAsymmPFA", "hLeakage_vsJetEneAsymmPFA", 1000, -2, 2,  5000, 0., 250);
+
+  TH2F* hLeakage_vsJetEneAsymmMCT  = new TH2F ("hLeakage_vsJetEneAsymmMCT", "hLeakage_vsJetEneAsymmMCT", 50, -1.5, 1.5,  250, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmRAW  = new TH2F ("hLeakage_vsJetEneAsymmRAW", "hLeakage_vsJetEneAsymmRAW", 50, -1.5, 1.5,  250, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmDRO  = new TH2F ("hLeakage_vsJetEneAsymmDRO", "hLeakage_vsJetEneAsymmDRO", 50, -1.5, 1.5,  250, 0., 250);
+  TH2F* hLeakage_vsJetEneAsymmPFA  = new TH2F ("hLeakage_vsJetEneAsymmPFA", "hLeakage_vsJetEneAsymmPFA", 50, -1.5, 1.5,  250, 0., 250);
 
   ///*******************************************///
   ///		 Run over events	        ///
@@ -1439,10 +1440,7 @@ int main(int argc, char** argv)
   std::cout << "events failing muon cut:                    " << muon_failed_count << " / " << NEVENTS <<  " = " << double(muon_failed_count)/double(NEVENTS) <<std::endl;
   std::cout << "events failing acceptance_failed_count cut: " << acceptance_failed_count << " / " << NEVENTS <<  " = " << double(acceptance_failed_count)/double(NEVENTS) <<std::endl;
   
-  //plotting
-  
-
-  
+  //plotting 
 /*
   TCanvas * cJetComposition = new TCanvas ("cJetComposition", "cJetComposition", 500, 500);  
   cJetComposition->cd();
@@ -1601,7 +1599,7 @@ int main(int argc, char** argv)
   
   }
 
-  if (local) std::cout << "Finished plotting" << std::endl;
+  //  if (local) std::cout << "Finished plotting" << std::endl;
 
   std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) << std::endl;
 //   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
@@ -1736,19 +1734,6 @@ int main(int argc, char** argv)
   outputFile->Write();
   outputFile->Close();
   
-  int REBIN_COEFF = 16;
-//   hECALResidual->Rebin(REBIN_COEFF);
-  hHCALResidual->Rebin(REBIN_COEFF);
-  hNeutralResidual->Rebin(REBIN_COEFF);
-  hNeutrHadResidual->Rebin(REBIN_COEFF);
-  hNeutralResidualDRO->Rebin(REBIN_COEFF);
-  
-  hMCT_MassJJ->Rebin(4);
-  hMCTFastSim_MassJJ->Rebin(4);
-  hRAW_MassJJ->Rebin(4);
-  hDRO_MassJJ->Rebin(4);
-  hPFA_MassJJ->Rebin(4);
-  hPFA_RAW_MassJJ->Rebin(4);
   
   std::cout << "************************************************" << std::endl;
   
@@ -1757,6 +1742,21 @@ int main(int argc, char** argv)
   std::cout << "additional fitting and plotting " << std::endl;
   if (local)
   {
+
+      int REBIN_COEFF = 16;
+      //   hECALResidual->Rebin(REBIN_COEFF);
+      hHCALResidual->Rebin(REBIN_COEFF);
+      hNeutralResidual->Rebin(REBIN_COEFF);
+      hNeutrHadResidual->Rebin(REBIN_COEFF);
+      hNeutralResidualDRO->Rebin(REBIN_COEFF);
+  
+      hMCT_MassJJ->Rebin(4);
+      hMCTFastSim_MassJJ->Rebin(4);
+      hRAW_MassJJ->Rebin(4);
+      hDRO_MassJJ->Rebin(4);
+      hPFA_MassJJ->Rebin(4);
+      hPFA_RAW_MassJJ->Rebin(4);
+
       TF1 * fitGausResidual;  
       fitGausResidual = new TF1 ("fitGausResidual", "gaus", -1, 1);
 
