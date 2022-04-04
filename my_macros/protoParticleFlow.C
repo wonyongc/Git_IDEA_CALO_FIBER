@@ -136,7 +136,7 @@ int main(int argc, char** argv)
 //   std::string output_tag = "wwlj";
   std::string output_tag = "zjj_scan_90";
   
-  int NFILES = 100;
+  int NFILES = 1;
 //   double x_factor_hcal = 0.43;
   double x_factor_hcal = 0.445;
   double x_factor_ecal = 0.370;
@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 //   double PFA_JET_CALIB = 1.07/JET_CALIB;
  
   float matchPFACut = 0.75;
-  double cutLeakage = 1.;
+  double cutLeakage = 1.0;
   double etaAcceptance = 0.7;  //accept only  jet within this eta
 
 //   float matchPFACut = 4;
@@ -685,6 +685,47 @@ int main(int argc, char** argv)
      
 
 
+     //reconstructing MCT jets
+
+     // Monte Carlo truth
+    ClusterSequence csMCOnly(allMCHitsForJet, jet_def);
+    //fast sim
+    ClusterSequence csMCFastSim(allMCHitsForJetFastSim, jet_def);
+
+    std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
+    std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
+
+
+    hEtaJet->Fill(mct_jets[0].eta());
+    hEtaJet->Fill(mct_jets[1].eta());
+    hDeltaEtaJet->Fill(mct_jets[0].eta()-mct_jets[1].eta());
+
+    hThetaJet->Fill(mct_jets[0].theta());
+    hThetaJet->Fill(mct_jets[1].theta());
+    hDeltaThetaJet->Fill(mct_jets[0].theta()-mct_jets[1].theta());
+
+    //MCT jets
+    if(mct_jets.size()==2)
+    {
+        //reject jets not fully contained in the calorimeter
+        //both jets in barrel
+        hLeakage_vsEta->Fill((fabs(mct_jets[0].eta())+fabs(mct_jets[1].eta()))/2., myTV.leakage/1000.);
+        std::cout << "eta jet 1 = " << mct_jets[0].eta() << " :: eta jet 2 = " << mct_jets[1].eta() << " :: leakage = " << myTV.leakage/1000. << std::endl;
+        std::cout << "*************************************************************************************" << std::endl;
+        if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
+        {
+          goodEvent = false;
+          acceptance_failed_count++;
+          if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
+          continue;
+        }
+    }
+
+
+
+
+
+
     //filling reco
 
     TreeRun->GetEntry(iEvt);
@@ -926,50 +967,39 @@ int main(int argc, char** argv)
 //       continue;
 //     }
 
-    
-    
+
 
     
-    // run the clustering, extract the jets     
-   // Monte Carlo truth
-    ClusterSequence csMCOnly(allMCHitsForJet, jet_def);      
-    //fast sim
-    ClusterSequence csMCFastSim(allMCHitsForJetFastSim, jet_def);
-     
+    // run the clustering, extract the jets
     //reco
     ClusterSequence cs(allHitsForJet, jet_def);
               
-      
 //       std::vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
     std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
     std::vector<PseudoJet> mct_ghost_jets;
     std::vector<PseudoJet> raw_jets;
     std::vector<PseudoJet> dro_jets;
-                  
-    std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
-    std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
-      
 
-      if (debugMode) std::cout << " reco jets" << std::endl;
-      //reco jets
-      float totEneRAW = 0;
-      float totEneDRO = 0;
+    if (debugMode) std::cout << " reco jets" << std::endl;
+    //reco jets
+    float totEneRAW = 0;
+    float totEneDRO = 0;
       
-      for (unsigned i = 0; i < jets.size(); i++) 
-      {
+    for (unsigned i = 0; i < jets.size(); i++)
+    {
 //           cout << "jet " << i << ": "<< jets[i].pt() << " " << jets[i].rap() << " " << jets[i].phi() << endl;
           
-          std::vector<PseudoJet> constituents = jets[i].constituents();
-          std::vector<PseudoJet> mct_constituents;
+        std::vector<PseudoJet> constituents = jets[i].constituents();
+        std::vector<PseudoJet> mct_constituents;
           
-          double E_MCT = 0;
-          double E_JHS = 0;
-          double E_JHC = 0;
-          double E_JES = 0;
-          double E_JEC = 0;
+        double E_MCT = 0;
+        double E_JHS = 0;
+        double E_JHC = 0;
+        double E_JES = 0;
+        double E_JEC = 0;
           
-          for (unsigned j = 0; j < constituents.size(); j++) 
-          {
+        for (unsigned j = 0; j < constituents.size(); j++)
+        {
 //               std::cout << "    constituent " << j << "'s pt: "      << constituents[j].pt()  
 //                                                    << " :: E = "     << constituents[j].E() 
 //                                                    << " :: theta = " << constituents[j].theta()
@@ -977,70 +1007,43 @@ int main(int argc, char** argv)
 //                                                    << " :: phi = "   << constituents[j].phi()
 //                                                    << std::endl;
 //               
-              if      (constituents[j].user_index() == flag_JES) E_JES += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
-              else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
-              else if (fabs(constituents[j].user_index()) == 0 || fabs(constituents[j].user_index()) > 99 ) 
-              {
-                  mct_constituents.push_back(PseudoJet(constituents[j].px()*1.0e20,constituents[j].py()*1.0e20,constituents[j].pz()*1.0e20,constituents[j].E()*1.0e20));
-                  E_MCT += constituents[j].E()*1.0e20;              
-              }
-          }
-          if (jets[i].E()<= 0)continue;
-          
-	  //          if (debugMode) std::cout << "E_JES = " << E_JES << " :: E_JEC = " << E_JEC << " :: E_JHS = " << E_JHS << " :: E_JHC = " << E_JHC << std::endl;
-          if (mct_constituents.size()>0) 
-          {
-              ClusterSequence csMC(mct_constituents, jet_mc);
-              std::vector<PseudoJet> this_mct_jet = sorted_by_pt(csMC.exclusive_jets(int(1) ) );
-              if (this_mct_jet.size()>0) mct_ghost_jets.push_back(this_mct_jet[0]);
-          }
-              
-//           PseudoJet this_mct_jet = jets[i]*(E_MCT)/jets[i].E();
-//           mct_ghost_jets.push_back(this_mct_jet);
-          
-          PseudoJet this_raw_jet = jets[i]*(E_JES+E_JHS)/jets[i].E();
-          raw_jets.push_back(this_raw_jet);          
-          
-          double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
-          double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
-          double E_JTot = E_JE+E_JH;
-          PseudoJet dro_corr_jet = jets[i]*E_JTot/JET_CALIB/jets[i].E();
-          dro_jets.push_back(dro_corr_jet);
-          
-          totEneRAW+=E_JES+E_JHS;
-          totEneDRO+=E_JE+E_JH;
-          
-      }
-      
-//       mct_jets = mct_ghost_jets;
-      
-      hEtaJet->Fill(mct_jets[0].eta());
-      hEtaJet->Fill(mct_jets[1].eta());
-      hDeltaEtaJet->Fill(mct_jets[0].eta()-mct_jets[1].eta());
-      
-      hThetaJet->Fill(mct_jets[0].theta());
-      hThetaJet->Fill(mct_jets[1].theta());
-      hDeltaThetaJet->Fill(mct_jets[0].theta()-mct_jets[1].theta());
-      
-      //MCT jets
-      if(mct_jets.size()==2)
-      {
-          //reject jets not fully contained in the calorimeter
-          //both jets in barrel
-          hLeakage_vsEta->Fill((fabs(mct_jets[0].eta())+fabs(mct_jets[1].eta()))/2., myTV.leakage/1000.);
+            if      (constituents[j].user_index() == flag_JES) E_JES += constituents[j].E();
+            else if (constituents[j].user_index() == flag_JEC) E_JEC += constituents[j].E();
+            else if (constituents[j].user_index() == flag_JHS) E_JHS += constituents[j].E();
+            else if (constituents[j].user_index() == flag_JHC) E_JHC += constituents[j].E();
+            else if (fabs(constituents[j].user_index()) == 0 || fabs(constituents[j].user_index()) > 99 )
+            {
+                mct_constituents.push_back(PseudoJet(constituents[j].px()*1.0e20,constituents[j].py()*1.0e20,constituents[j].pz()*1.0e20,constituents[j].E()*1.0e20));
+                E_MCT += constituents[j].E()*1.0e20;
+            }
+        }
+        if (jets[i].E()<= 0)continue;
 
-          std::cout << "eta jet 1 = " << mct_jets[0].eta() << " :: eta jet 2 = " << mct_jets[1].eta() << " :: leakage = " << myTV.leakage/1000. << std::endl;
-          std::cout << "*************************************************************************************" << std::endl;
-          if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
-          {
-            goodEvent = false;
-            acceptance_failed_count++;
-            if (debugMode) std::cout << "skipping event with jets eta1 = " << fabs(mct_jets[0].eta()) << " :: eta2 = " << fabs(mct_jets[1].eta()) <<  " :: phi1 = " << mct_jets[0].phi() << " :: phi2 = " << mct_jets[1].phi() << std::endl;
-            continue;
-          }
-      }
+	//          if (debugMode) std::cout << "E_JES = " << E_JES << " :: E_JEC = " << E_JEC << " :: E_JHS = " << E_JHS << " :: E_JHC = " << E_JHC << std::endl;
+        if (mct_constituents.size()>0)
+        {
+            ClusterSequence csMC(mct_constituents, jet_mc);
+            std::vector<PseudoJet> this_mct_jet = sorted_by_pt(csMC.exclusive_jets(int(1) ) );
+            if (this_mct_jet.size()>0) mct_ghost_jets.push_back(this_mct_jet[0]);
+        }
+
+//         PseudoJet this_mct_jet = jets[i]*(E_MCT)/jets[i].E();
+//         mct_ghost_jets.push_back(this_mct_jet);
+
+        PseudoJet this_raw_jet = jets[i]*(E_JES+E_JHS)/jets[i].E();
+        raw_jets.push_back(this_raw_jet);
+
+        double E_JE   = (E_JES-x_factor_ecal*E_JEC )/(1-x_factor_ecal);
+        double E_JH   = (E_JHS-x_factor_hcal*E_JHC )/(1-x_factor_hcal);
+        double E_JTot = E_JE+E_JH;
+        PseudoJet dro_corr_jet = jets[i]*E_JTot/JET_CALIB/jets[i].E();
+        dro_jets.push_back(dro_corr_jet);
+          
+        totEneRAW+=E_JES+E_JHS;
+        totEneDRO+=E_JE+E_JH;
+
+    }
+
       
       
       
