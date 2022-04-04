@@ -169,6 +169,9 @@ int main(int argc, char** argv)
 //   double PFA_JET_CALIB = 1.07/JET_CALIB;
  
   float matchPFACut = 0.75;
+  double cutLeakage = 1.0;
+  double etaAcceptance = 0.7;  //accept only  jet within this eta
+
 //   float matchPFACut = 4;
   
   
@@ -184,6 +187,8 @@ int main(int argc, char** argv)
   }
   if (argc>6) Bfield = atof(argv[6]);   
   if (argc>7) matchPFACut = atof(argv[7]);   
+  if (argc>8) cutLeakage = atof(argv[8]);
+  if (argc>9) etaAcceptance = atof(argv[9]);
 
   if (Bfield == 2)
   {
@@ -203,13 +208,10 @@ int main(int argc, char** argv)
   if (output_tag == "zjj_scan_150") thismass = 150;
   if (output_tag == "zjj_scan_250") thismass = 250;
   
-  double cutLeakage = 1.0;
-  //  double cutLeakage = 0.1*thismass;
+  if (cutLeakage == -999) cutLeakage = 0.1*thismass;
   
   std::cout << "processing sample of: " << output_tag.c_str() << std::endl;  
   std::cout << "using x_factor_hcal = " << x_factor_hcal << " and x_factor_ecal = " << x_factor_ecal << std::endl;
-
-  
   
   double ecal_S_norm = 1.*calo_rescale;
   double ecal_C_norm = 7286*calo_rescale;
@@ -220,8 +222,6 @@ int main(int argc, char** argv)
   
 //   double drh_S_norm  = 410*calo_rescale;
 //   double drh_C_norm  = 105*calo_rescale;
-  
-
 
 //   if (ene_HC_th == 0.01)   PFA_JET_CALIB = 1.05;
 //   if (ene_HC_th == 0.002)  PFA_JET_CALIB = 1.05;
@@ -243,8 +243,8 @@ int main(int argc, char** argv)
     // single truth jet
   JetDefinition jet_mc(ee_genkt_algorithm, 4*M_PI, 1);
 
-  double etaAcceptance = 0.7;  //accept only  jet within this eta
-//   double phiAcceptance = 2.0;  //accept only  jet within this phi --> neglect phi border reconstruction effects..
+
+  //double etaAcceptance = 2.;  //accept only  jet within this eta
 //   double deltaR_match = 1.0;
   
   SCEPCal_GeometryHelper myGeometry;
@@ -450,12 +450,11 @@ int main(int argc, char** argv)
 
   TH1F* hLeakage    = new TH1F ("hLeakage", "hLeakage", 5000, 0., 250);
   TH1F* hNeutrinoLeakage    = new TH1F ("hNeutrinoLeakage", "hNeutrinoLeakage", 5000, 0., 250);
-  TH2F* hLeakage_vsEta    = new TH2F ("hLeakage_vsEta", "hLeakage_vsEta", 100, -10, 10, 100, -10, 10);
-
-  TH2F* hLeakage_vsJetEneAsymmMCT  = new TH2F ("hLeakage_vsJetEneAsymmMCT", "hLeakage_vsJetEneAsymmMCT", 50, -1.5, 1.5,  250, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmRAW  = new TH2F ("hLeakage_vsJetEneAsymmRAW", "hLeakage_vsJetEneAsymmRAW", 50, -1.5, 1.5,  250, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmDRO  = new TH2F ("hLeakage_vsJetEneAsymmDRO", "hLeakage_vsJetEneAsymmDRO", 50, -1.5, 1.5,  250, 0., 250);
-  TH2F* hLeakage_vsJetEneAsymmPFA  = new TH2F ("hLeakage_vsJetEneAsymmPFA", "hLeakage_vsJetEneAsymmPFA", 50, -1.5, 1.5,  250, 0., 250);
+  TH2F* hLeakage_vsEta    = new TH2F ("hLeakage_vsEta", "hLeakage_vsEta", 50, -3, 3, 500, 0., 125);
+  TH2F* hLeakage_vsJetEneAsymmMCT  = new TH2F ("hLeakage_vsJetEneAsymmMCT", "hLeakage_vsJetEneAsymmMCT", 50, -1.5, 1.5,  500, 0., 125);
+  TH2F* hLeakage_vsJetEneAsymmRAW  = new TH2F ("hLeakage_vsJetEneAsymmRAW", "hLeakage_vsJetEneAsymmRAW", 50, -1.5, 1.5,  500, 0., 125);
+  TH2F* hLeakage_vsJetEneAsymmDRO  = new TH2F ("hLeakage_vsJetEneAsymmDRO", "hLeakage_vsJetEneAsymmDRO", 50, -1.5, 1.5,  500, 0., 125);
+  TH2F* hLeakage_vsJetEneAsymmPFA  = new TH2F ("hLeakage_vsJetEneAsymmPFA", "hLeakage_vsJetEneAsymmPFA", 50, -1.5, 1.5,  500, 0., 125);
 
   ///*******************************************///
   ///		 Run over events	        ///
@@ -1003,7 +1002,7 @@ int main(int argc, char** argv)
       {
           //reject jets not fully contained in the calorimeter
           //both jets in barrel
-	hLeakage_vsEta->Fill(fabs(mct_jets[0].eta()), fabs(mct_jets[1].eta()), myTV.leakage/1000.);
+	hLeakage_vsEta->Fill((fabs(mct_jets[0].eta())+fabs(mct_jets[1].eta()))/2., myTV.leakage/1000.);
 
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
           {
@@ -1601,10 +1600,11 @@ int main(int argc, char** argv)
 
   //  if (local) std::cout << "Finished plotting" << std::endl;
 
-  std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) << std::endl;
-//   TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
-  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut) , "RECREATE");
+  std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance) << std::endl;
+  //  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
+  TFile * outputFile = new TFile (Form("./output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance) , "RECREATE");
   outputFile->cd();
+
   hMCT_MassJJ->Write();
   hMCTFastSim_MassJJ->Write();
   hPFA_MassJJ->Write();  
@@ -1641,7 +1641,6 @@ int main(int argc, char** argv)
   hMCTFastSim_Phi2Diff->Write();
   hRAW_Phi2Diff->Write();
   hDRO_Phi2Diff->Write();
-
   
   hRAW_ScatterEne->Write();
   hDRO_ScatterEne->Write();
@@ -1734,10 +1733,7 @@ int main(int argc, char** argv)
   outputFile->Write();
   outputFile->Close();
   
-  
   std::cout << "************************************************" << std::endl;
-  
-
 
   std::cout << "additional fitting and plotting " << std::endl;
   if (local)
