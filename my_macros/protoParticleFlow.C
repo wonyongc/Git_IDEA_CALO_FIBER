@@ -683,6 +683,8 @@ int main(int argc, char** argv)
         continue;
     }
      
+
+
     //filling reco
 
     TreeRun->GetEntry(iEvt);
@@ -928,26 +930,24 @@ int main(int argc, char** argv)
     
 
     
-    // run the clustering, extract the jets
-    // Monte Carlo truth
-    ClusterSequence csMCOnly(allMCHitsForJet, jet_def);
-      
+    // run the clustering, extract the jets     
+   // Monte Carlo truth
+    ClusterSequence csMCOnly(allMCHitsForJet, jet_def);      
     //fast sim
     ClusterSequence csMCFastSim(allMCHitsForJetFastSim, jet_def);
-      
+     
     //reco
     ClusterSequence cs(allHitsForJet, jet_def);
               
       
 //       std::vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
-      std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
-      std::vector<PseudoJet> mct_ghost_jets;
-      std::vector<PseudoJet> raw_jets;
-      std::vector<PseudoJet> dro_jets;
+    std::vector<PseudoJet> jets = sorted_by_pt(cs.exclusive_jets(nExpJets));
+    std::vector<PseudoJet> mct_ghost_jets;
+    std::vector<PseudoJet> raw_jets;
+    std::vector<PseudoJet> dro_jets;
                   
-      std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
-      std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
-      
+    std::vector<PseudoJet> mct_jets     = sorted_by_pt(csMCOnly.exclusive_jets(nExpJets));
+    std::vector<PseudoJet> fastSim_jets = sorted_by_pt(csMCFastSim.exclusive_jets(nExpJets));
       
 
       if (debugMode) std::cout << " reco jets" << std::endl;
