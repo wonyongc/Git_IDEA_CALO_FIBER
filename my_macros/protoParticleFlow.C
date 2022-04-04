@@ -169,7 +169,7 @@ int main(int argc, char** argv)
 //   double PFA_JET_CALIB = 1.07/JET_CALIB;
  
   float matchPFACut = 0.75;
-  double cutLeakage = 1.0;
+  double cutLeakage = 1.;
   double etaAcceptance = 0.7;  //accept only  jet within this eta
 
 //   float matchPFACut = 4;
@@ -255,9 +255,9 @@ int main(int argc, char** argv)
   TChain * TruthTree = new TChain("truth", "truth");  
   
 
-  
-  for (int iFile = 0; iFile<NFILES; iFile++)
-  {
+  int iFile = NFILES;
+//   for (int iFile = 0; iFile<NFILES; iFile++)
+//   {
     std::string fname_reco;
     std::string fname_truth;
 
@@ -291,7 +291,7 @@ int main(int argc, char** argv)
           TruthTree->Add(fname_truth.c_str());    
       }
     }
-  }
+//   }
 
   myG4TreeVars myTV;
   InitG4Tree (TreeRun, myTV);
@@ -715,6 +715,11 @@ int main(int argc, char** argv)
     }
     
     double totS = 0;
+    double totBarrelS = 0;
+    double totEndcapS = 0;
+    double totC = 0;
+    double totBarrelC = 0;
+    double totEndcapC = 0;
     double totEneDRH = 0;
     double edepMuonCalo = 0;
     
@@ -730,6 +735,9 @@ int main(int argc, char** argv)
         double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
         double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon_hcal,2)+pow(tower_theta_seed-mc_theta_muon_hcal,2) );
+
+//         if (this_ene!=0 && fabs(cos(tower_theta_seed))>0.8)  std::cout << "hcal tower theta = " << tower_theta_seed << " :: edep = " << this_ene << " GeV "  << std::endl;
+
         if (deltaR <0.02)  
         {
             edepMuonCalo+=S;
@@ -752,6 +760,11 @@ int main(int argc, char** argv)
             allCaloHits.push_back(std::make_pair(this_JHS, this_JHC));
         }
         totS+=S;        
+        if (fabs(cos(tower_theta_seed))<0.707 ) totBarrelS+=S;
+        else                                    totEndcapS+=S;
+        totC+=C;
+        if (fabs(cos(tower_theta_seed))<0.707 ) totBarrelC+=C;
+        else                                    totEndcapC+=C;
         totEneDRH+=this_ene;
     }
     if (debugMode) std::cout << " filling HCAL right calo hits" << std::endl;
@@ -766,6 +779,8 @@ int main(int argc, char** argv)
         double tower_phi_seed = this_vec.Phi();
         double tower_theta_seed = this_vec.Theta();
         double deltaR = sqrt(pow(tower_phi_seed-mc_phi_muon_hcal,2)+pow(tower_theta_seed-mc_theta_muon_hcal,2) );
+
+//         if (this_ene!=0 && fabs(cos(tower_theta_seed))>0.8)    std::cout << "hcal tower theta = " << tower_theta_seed << " :: edep = " << this_ene << " GeV "  << std::endl;
         if (deltaR <0.02)  
         {            
             edepMuonCalo+=S;
@@ -788,16 +803,25 @@ int main(int argc, char** argv)
 
         }
         totS+=S;        
+        if (fabs(cos(tower_theta_seed))<0.707 ) totBarrelS+=S;
+        else                                    totEndcapS+=S;
+        totC+=C;
+        if (fabs(cos(tower_theta_seed))<0.707 ) totBarrelC+=C;
+        else                                    totEndcapC+=C;
         totEneDRH+=this_ene;
         
     }
-      
+    std::cout << "totS = " << totS << " :: totBarrelS = " << totBarrelS << " :: totEndcapS = " << totEndcapS << std::endl;
+    std::cout << "totC = " << totC << " :: totBarrelC = " << totBarrelC << " :: totEndcapC = " << totEndcapC << std::endl;
+    std::cout << "totS/totC = " << totS/totC << " :: totBarrelS/totBarrelC = " << totBarrelS/totBarrelC << " :: totEndcapS/totEndcapC = " << totEndcapS/totEndcapC << std::endl;
     
     //**************************************************************//    
     //                             ECAL
     //**************************************************************//
     
     double totEcalEne = 0;
+    double totBarrelEcalEne = 0;
+    double totEndcapEcalEne = 0;
     if (debugMode) std::cout << " filling ECAL calo hits" << std::endl;
     for (long unsigned int i = 0; i<myTV.VecHit_CrystalID->size(); i++)
     {
@@ -872,9 +896,12 @@ int main(int argc, char** argv)
             }
         }
         totEcalEne+=this_ene;
+        if (fabs(cos(tower_theta_seed))<0.707 ) totBarrelEcalEne+=this_ene;
+        else                                    totEndcapEcalEne+=this_ene;
     }
     
-    
+    std::cout << "totEcalEne = " << totEcalEne << " :: totBarrelEcalEne = " << totBarrelEcalEne << " :: totEndcapEcalEne = " << totEndcapEcalEne << std::endl;
+    std::cout << "totBarrel = " << totBarrelS+totBarrelEcalEne << " :: totEndcap = " << totEndcapS+totEndcapEcalEne << std::endl;
     
 
     if (output_tag == "wwlj" && (myTV.leakage/1000. + edepMuonCalo - neutrinoEne -muonEne > cutLeakage))
@@ -1002,8 +1029,10 @@ int main(int argc, char** argv)
       {
           //reject jets not fully contained in the calorimeter
           //both jets in barrel
-	hLeakage_vsEta->Fill((fabs(mct_jets[0].eta())+fabs(mct_jets[1].eta()))/2., myTV.leakage/1000.);
+          hLeakage_vsEta->Fill((fabs(mct_jets[0].eta())+fabs(mct_jets[1].eta()))/2., myTV.leakage/1000.);
 
+          std::cout << "eta jet 1 = " << mct_jets[0].eta() << " :: eta jet 2 = " << mct_jets[1].eta() << " :: leakage = " << myTV.leakage/1000. << std::endl;
+          std::cout << "*************************************************************************************" << std::endl;
           if ( fabs(mct_jets[0].eta()) > etaAcceptance || fabs(mct_jets[1].eta()) > etaAcceptance   )
           {
             goodEvent = false;
@@ -1600,9 +1629,9 @@ int main(int argc, char** argv)
 
   //  if (local) std::cout << "Finished plotting" << std::endl;
 
-  std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance) << std::endl;
+  std::cout << "writing output file: " << Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f_job%d.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance, iFile) << std::endl;
   //  TFile * outputFile = new TFile (Form("output_jjMass_HG_%s_xh%.3f_xe%.3f_dre%.3f_drh%.3f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, maxDeltaRMatchEcal, maxDeltaRMatchHcal ) , "RECREATE");
-  TFile * outputFile = new TFile (Form("./output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance) , "RECREATE");
+  TFile * outputFile = new TFile (Form("./output_jjMass_HG_%s_xh%.3f_xe%.3f_hit_eth%.3f_B%.0fT_sigmaPFA%.3f_leakCut%.0fGeV_etaCut%.2f_job%d.root",output_tag.c_str(), x_factor_hcal, x_factor_ecal, ene_EC_th, Bfield, matchPFACut, cutLeakage, etaAcceptance, iFile) , "RECREATE");
   outputFile->cd();
 
   hMCT_MassJJ->Write();
