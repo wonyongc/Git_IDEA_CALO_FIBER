@@ -273,8 +273,11 @@ int main(int argc, char** argv)
     }
     else 
     {
-       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
-       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B%dT/%s_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);
+      //       fname_reco  = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/reco/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+       fname_reco  = Form("/afs/cern.ch/work/m/mlucchin/Git_IDEA_CALO_FIBER/root_files/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
+       //       fname_truth = Form("/eos/user/m/mlucchin/WORKAREA/SCEPCal_IDEA_Samples/hep_outputs/mc_truth/B%dT/%s_job_%d_output_tuple.root", int(Bfield), output_tag.c_str(), iFile);
+       fname_truth = Form("/afs/cern.ch/work/m/mlucchin/HepMC_Files/%s_job_%d_output_tuple.root", output_tag.c_str(), iFile);
+
        if (local)
        {   
            fname_reco  = Form("../root_files/hep_outputs/output_SCEPCal_B%dT_HG_%s_job_%d.root", int(Bfield), output_tag.c_str(), iFile);
