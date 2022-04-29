@@ -439,15 +439,17 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     G4OpticalSurface* photocath_opsurf = new G4OpticalSurface("photocath_opsurf",glisur,polished,dielectric_metal);
     photocath_opsurf->SetMaterialPropertiesTable(mpPMTPC);*/
     
-    bool placeFIBERS  = true;
-    bool placeHCAL    = true;
-    bool placeSCEPCAL = true;
-    bool placeTiming  = true;
-    
-    bool displaySlice = false;    
+    bool placeFIBERS  = false;
+    bool placeHCAL    = false;
+    bool placeSCEPCAL = false;
+    bool placeTiming  = false;
+
+    bool displaySlice = true;
     bool displayECALHalfSlice = false;
     bool displayTimingModule  = false;
-    
+
+    bool outsideSolenoid = false;
+    bool largerSolenoid  = false;
     
     ////////////// Calorimeter parameters
     innerR = 2500; //inner radius /1800
@@ -496,6 +498,30 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     solenoid_L  = 2.1*m;
     solenoid_IR = 2.11757*m;
     solenoid_OR = 2.5*m;
+
+    //timing layer radial envelopes
+    G4double SCEP_Timing_InnerR = 1775.*mm;
+    G4double SCEP_Timing_OuterR = 1795.*mm;
+
+
+    if (outsideSolenoid) //place the crystal ECAL outside solenoid
+    {
+        SCEP_Timing_InnerR  = solenoid_OR+0.01*m;         //inner radius of timing grid
+        SCEP_Timing_OuterR  = SCEP_Timing_InnerR+0.02*m;         //inner radius of timing grid
+        SCEP_innerR         = SCEP_Timing_OuterR+0.02*m;  //inner radius of crystal calorimeter
+        innerR              = SCEP_innerR+SCEP_xtal_L+0.02*m;  //inner radius of fiber calorimeter
+    }
+    else if (largerSolenoid) //place the crystal ECAL outside solenoid
+    {
+        SCEP_Timing_InnerR  = solenoid_IR+0.01*m;         //inner radius of timing grid
+        SCEP_Timing_OuterR  = SCEP_Timing_InnerR+0.02*m;         //inner radius of timing grid
+        SCEP_innerR         = SCEP_Timing_OuterR+0.02*m;  //inner radius of crystal calorimeter
+        solenoid_IR         = SCEP_innerR+SCEP_xtal_L+0.02*m;
+        solenoid_OR         = solenoid_IR+(2.5-2.11757)*m;
+        innerR              = solenoid_OR+0.02*m;  //inner radius of fiber calorimeter
+    }
+
+    G4double SCEP_Timing_Length = SCEP_Timing_InnerR;
     
     
     //////////////
@@ -712,7 +738,7 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     	        
 //         if (j == NbOfZRot/4 || j == NbOfZRot/4*3) 
 //     if (j < NbOfZRot/4  || j > NbOfZRot/4*3) 
-//     if (j < NbOfZRot/3  || j > NbOfZRot/3*1.5) 
+//     if (j < NbOfZRot/3  || j > NbOfZRot/3*1.5)
 //         if (j < NbOfZRot/3*0.5  || j > NbOfZRot/3*1.5) 
     if (placeHCAL)
     {
@@ -1299,10 +1325,6 @@ G4VPhysicalVolume* B4DetectorConstruction::DefineVolumes()
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
     //                Define and place the SCEPCal timing layers 
     //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-    
-    G4double SCEP_Timing_InnerR = 1775.*mm;
-    G4double SCEP_Timing_OuterR = 1795.*mm;
-    G4double SCEP_Timing_Length = SCEP_Timing_InnerR;
     
         
     //to get a 60x60 mm module
